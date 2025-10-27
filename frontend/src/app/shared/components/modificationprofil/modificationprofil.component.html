@@ -1,0 +1,15 @@
+<div class="modification-container">
+  <h2>Modifier le profil</h2>
+  <form [formGroup]="profilForm" (ngSubmit)="onSubmit()">
+    <label>Nom</label>
+    <input type="text" formControlName="nom" />
+
+    <label>Prénom</label>
+    <input type="text" formControlName="prenom" />
+
+    <label>Email</label>
+    <input type="email" formControlName="email" />
+
+    <button type="submit">Enregistrer</button>
+  </form>
+</div>

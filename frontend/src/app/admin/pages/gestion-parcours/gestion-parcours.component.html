@@ -1,0 +1,57 @@
+<div class="container mt-4">
+  <h2 class="mb-4 text-uppercase text-primary">Parcours {{ typeParcours | lowercase }}</h2>
+
+  <div *ngFor="let parcours of filteredParcours" class="mb-5">
+    <table class="table table-bordered table-striped">
+      <thead class="table-dark">
+        <tr>
+          <th>Matière</th>
+          <th>Parcours </th>
+          <th>Étudiants</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let matiere of parcours.matieres">
+          <!-- Matière -->
+          <td class="fw-bold">{{ matiere.nom }}</td>
+
+          
+          <!-- Chapitres (liste simple) -->
+<td>
+  <ul class="mb-0">
+    <li *ngFor="let chapitre of matiere.chapitres">
+      {{ chapitre.titre }}
+    </li>
+  </ul>
+</td>
+
+
+          <!-- Étudiants du chapitre sélectionné -->
+          <td>
+            <button class="btn btn-sm btn-outline-primary mb-2"
+                    (click)="toggleEtudiants(matiere.nom)">
+              {{ isEtudiantsVisible(matiere.nom) ? 'Masquer' : 'Afficher' }} les étudiants
+            </button>
+
+            <div *ngIf="isEtudiantsVisible(matiere.nom)">
+              <ng-container *ngFor="let chapitre of matiere.chapitres">
+                <ul *ngIf="chapitre.etudiants.length > 0" class="list-group">
+                  <li *ngFor="let etudiant of chapitre.etudiants" class="list-group-item">
+                    <strong>{{ etudiant.nomComplet }}</strong><br>
+                    Email: {{ etudiant.email }}<br>
+                    Numéro: {{ etudiant.numero }}<br>
+                    Niveau: {{ etudiant.niveau }}<br>
+                    Classe: {{ etudiant.classe }}
+                  </li>
+                </ul>
+                <div *ngIf="chapitre.etudiants.length === 0" class="text-muted mt-2">
+                  Aucun étudiant concerné.
+                </div>
+              </ng-container>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

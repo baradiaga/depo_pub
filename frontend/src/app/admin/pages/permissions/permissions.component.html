@@ -1,0 +1,37 @@
+<div class="permissions-container">
+  <h2>Gestion des Permissions par Rôle</h2>
+
+  <label for="roleSelect">Choisir un rôle :</label>
+  <select id="roleSelect" [(ngModel)]="selectedRole" class="dropdown">
+    <option value="">-- Sélectionner un rôle --</option>
+    <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
+  </select>
+
+  <div *ngIf="selectedRole" class="permissions-table">
+    <h3>Permissions pour le rôle : {{ selectedRole }}</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Table</th>
+          <th *ngFor="let action of actions" class="action-header">
+            {{ action | titlecase }}
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let table of tables">
+          <td>{{ table }}</td>
+          <td *ngFor="let action of actions">
+            <input
+              type="checkbox"
+              [checked]="hasPermission(selectedRole, table, action)"
+              [disabled]="isReadOnly(selectedRole)"
+              (change)="togglePermission(selectedRole, table, action)"
+            />
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

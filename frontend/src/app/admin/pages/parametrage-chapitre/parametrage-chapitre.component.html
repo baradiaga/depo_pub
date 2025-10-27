@@ -1,0 +1,77 @@
+<div class="container mt-4">
+  <h2>Paramétrage d'un nouveau chapitre</h2>
+  <hr>
+
+  <!-- Formulaire de création de chapitre -->
+  <div class="card">
+    <div class="card-body">
+      <!-- Ligne 1: Matière et Titre -->
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label for="matiere" class="form-label">Matière</label>
+          <select id="matiere" class="form-select" [(ngModel)]="matiereSelectionnee">
+            <option value="" disabled>-- Choisissez une matière --</option>
+            <option *ngFor="let matiere of matieres" [value]="matiere">{{ matiere }}</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label for="titre" class="form-label">Titre du chapitre</label>
+          <input type="text" id="titre" class="form-control" [(ngModel)]="titre" placeholder="Ex: Les équations du second degré">
+        </div>
+      </div>
+
+      <!-- Ligne 2: Niveau et Objectif -->
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label for="niveau" class="form-label">Niveau / Nombre de sections initial</label>
+          <input type="number" id="niveau" class="form-control" [(ngModel)]="niveau" (ngModelChange)="majStructure()" min="1">
+        </div>
+        <div class="col-md-6">
+          <label for="objectif" class="form-label">Objectif du chapitre</label>
+          <textarea id="objectif" class="form-control" [(ngModel)]="objectif" rows="3" placeholder="Ex: Être capable de résoudre n'importe quelle équation de type ax²+bx+c=0"></textarea>
+        </div>
+      </div>
+
+      <!-- Ligne 3: Gestion des sections -->
+      <div class="mb-3">
+        <h5>Sections du chapitre</h5>
+        <!-- Boucle sur le tableau 'sections' pour afficher un champ par section -->
+        <div *ngFor="let section of sections; let i = index; trackBy: trackByIndex" class="input-group mb-2">
+          <span class="input-group-text">Section {{ i + 1 }}</span>
+          <input type="text" class="form-control" [(ngModel)]="section.titre" placeholder="Titre de la section {{ i + 1 }}">
+          <!-- Le bouton de suppression n'est affiché que s'il y a plus d'une section -->
+          <button class="btn btn-outline-danger" type="button" (click)="supprimerSection(i)" [disabled]="sections.length <= 1">
+            &times; <!-- Symbole de croix pour supprimer -->
+          </button>
+        </div>
+        <!-- Bouton pour ajouter dynamiquement une nouvelle section -->
+        <button class="btn btn-outline-secondary btn-sm mt-2" (click)="ajouterSection()">
+          + Ajouter une section
+        </button>
+      </div>
+
+      <!-- Ligne 4: Bouton d'enregistrement -->
+      <hr>
+      <div class="d-flex justify-content-end">
+        <button class="btn btn-primary" (click)="enregistrerChapitre()">
+          Enregistrer le chapitre
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section pour afficher les chapitres (si nécessaire) -->
+  <!-- Le bouton et le tableau sont conditionnels -->
+  <div class="mt-4">
+    <button class="btn btn-info" (click)="toggleTableau()">
+      {{ afficherTableau ? 'Masquer' : 'Afficher' }} les chapitres enregistrés
+    </button>
+
+    <div *ngIf="afficherTableau" class="mt-3">
+      <!-- Ici, vous mettriez le composant qui affiche la liste des chapitres -->
+      <!-- Exemple: <app-liste-chapitres></app-liste-chapitres> -->
+      <p>La liste des chapitres s'affichera ici.</p>
+    </div>
+  </div>
+
+</div>

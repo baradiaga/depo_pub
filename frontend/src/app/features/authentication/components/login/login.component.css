@@ -1,0 +1,132 @@
+/* --- Conteneur principal qui prend tout l'écran --- */
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh; /* Prend au moins toute la hauteur de l'écran */
+  background-color: #f0f2f5; /* Un gris clair pour le fond */
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* --- La carte de connexion --- */
+.login-card {
+  background-color: #ffffff;
+  padding: 40px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px; /* Limite la largeur sur les grands écrans */
+  text-align: center;
+}
+
+/* --- Titre et sous-titre --- */
+.login-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #1c1e21;
+  margin-bottom: 8px;
+}
+
+.login-subtitle {
+  font-size: 16px;
+  color: #606770;
+  margin-bottom: 24px;
+}
+
+/* --- Style des groupes de formulaire (label + input) --- */
+.form-group {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.form-group label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #606770;
+  margin-bottom: 6px;
+}
+
+/* --- Style des champs de saisie --- */
+.form-control {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 16px;
+  border: 1px solid #dddfe2;
+  border-radius: 6px;
+  box-sizing: border-box; /* Assure que le padding n'augmente pas la largeur */
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #1877f2; /* Un bleu pour le focus */
+  box-shadow: 0 0 0 2px rgba(24, 119, 242, 0.2);
+}
+
+/* --- Conteneur pour le champ mot de passe et le bouton pour l'afficher --- */
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  color: #606770;
+  padding: 0;
+}
+
+/* --- Message d'erreur --- */
+.error-message {
+  background-color: #fde2e2;
+  color: #721c24;
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+/* --- Bouton de connexion --- */
+.login-btn {
+  width: 100%;
+  padding: 12px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: #1877f2; /* Bleu Facebook */
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.login-btn:hover:not(:disabled) {
+  background-color: #166fe5;
+}
+
+.login-btn:disabled {
+  background-color: #a0bdf0;
+  cursor: not-allowed;
+}
+
+/* --- Pied de la carte (lien mot de passe oublié) --- */
+.login-footer {
+  margin-top: 20px;
+}
+
+.login-footer a {
+  color: #1877f2;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.login-footer a:hover {
+  text-decoration: underline;
+}

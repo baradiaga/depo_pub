@@ -1,0 +1,27 @@
+.admin-container { max-width: 1200px; margin: auto; font-family: sans-serif; }
+.main-title { border-bottom: 2px solid #3f51b5; padding-bottom: 10px; }
+.view-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #ccc; }
+.view-tabs button { padding: 10px 15px; border: none; background: #f0f0f0; cursor: pointer; border-radius: 5px 5px 0 0; }
+.view-tabs button.active { background: #3f51b5; color: white; font-weight: bold; }
+.btn { padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; }
+.btn.primary { background-color: #3f51b5; color: white; border-color: #3f51b5; }
+.btn.danger { background-color: #f44336; color: white; border-color: #f44336; }
+.btn.secondary { background-color: #e0e0e0; }
+.btn.small { padding: 4px 8px; font-size: 0.8em; }
+.add-btn { margin-bottom: 20px; font-size: 1.1em; }
+.fonctionnalite-list { display: grid; gap: 20px; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); }
+.fonctionnalite-card { border: 1px solid #ccc; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+.card-header { display: flex; justify-content: space-between; align-items: center; background: #f5f5f5; padding: 10px; border-bottom: 1px solid #ccc; }
+.card-header h3 { margin: 0; }
+.card-body { padding: 10px; }
+.card-body ul { padding-left: 20px; }
+.form-container { background: #f9f9f9; padding: 20px; border-radius: 5px; border: 1px solid #ddd; }
+.form-grid, .sub-feature-form { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; margin-bottom: 10px; align-items: center; }
+.form-container input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; width: 100%; box-sizing: border-box; }
+.form-actions { margin-top: 20px; display: flex; gap: 10px; }
+.role-selector { margin-bottom: 20px; }
+.role-selector select { padding: 8px; font-size: 1.1em; }
+.permissions-grid { display: grid; gap: 20px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+.permission-group { border: 1px solid #eee; padding: 15px; border-radius: 5px; }
+.permission-group h4 { margin-top: 0; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+.permission-group ul { list-style: none; padding: 0; }

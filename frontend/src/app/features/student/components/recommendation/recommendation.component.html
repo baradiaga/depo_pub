@@ -1,0 +1,88 @@
+<!-- État de chargement initial -->
+<div *ngIf="isLoading" class="text-center mt-5">
+  <div class="spinner-border text-primary" role="status">
+    <span class="visually-hidden">Chargement...</span>
+  </div>
+  <p>Analyse de vos résultats en cours...</p>
+</div>
+
+<!-- Contenu principal (affiché une fois le chargement terminé) -->
+<div class="container mt-4" *ngIf="!isLoading">
+  
+  <!-- Section du score (toujours visible) -->
+  <div class="card text-center mb-4 shadow-sm">
+    <div class="card-header">
+      <h2>Votre Résultat</h2>
+    </div>
+    <div class="card-body">
+      <!-- ========================================================== -->
+      <!-- ===> CORRECTION CLÉ <==== -->
+      <!-- ========================================================== -->
+      <h3 class="card-title">Score : {{ scoreObtenu | number:'1.0-2' }} / {{ totalPointsPossible | number:'1.0-2' }}</h3>
+      <p class="card-text" style="font-size: 1.5rem;">
+        Soit <strong>{{ pourcentage | number:'1.0-2' }}%</strong> de réussite.
+      </p>
+    </div>
+  </div>
+
+  <!-- Conteneur principal pour la création du parcours -->
+  <div class="card" *ngIf="!parcoursValide">
+    <div class="card-body">
+
+      <!-- Cas 1 : L'étudiant a réussi (score > 66%) -->
+      <div *ngIf="aReussi">
+        <h4 class="card-title text-success">Félicitations ! Excellent résultat !</h4>
+        <p>Vous maîtrisez bien le chapitre <strong>"{{ chapitreActuel?.nom }}"</strong>.</p>
+        <p>Choisissez les prochains chapitres que vous souhaitez aborder pour continuer votre progression :</p>
+      </div>
+
+      <!-- Cas 2 : L'étudiant n'a pas réussi (score <= 66%) -->
+      <div *ngIf="!aReussi">
+        <h4 class="card-title text-warning">Créons votre parcours de révision</h4>
+        <!-- Message spécifique si le score est très bas -->
+        <p *ngIf="pourcentage < 33">
+          Votre score est un peu bas pour le chapitre <strong>"{{ chapitreActuel?.nom }}"</strong>. Nous vous l'avons pré-sélectionné pour révision.
+          N'hésitez pas à ajouter d'autres chapitres que vous souhaitez revoir.
+        </p>
+        <!-- Message pour un score moyen -->
+        <p *ngIf="pourcentage >= 33">
+          Votre résultat est correct, mais peut être amélioré. Sélectionnez les chapitres que vous souhaitez inclure dans votre parcours de révision.
+        </p>
+      </div>
+
+      <hr>
+
+      <!-- Liste des chapitres à cocher -->
+      <div class="form-group">
+        <div *ngFor="let chapitre of chapitresPourSelection" class="form-check my-2">
+          <input 
+            class="form-check-input" 
+            type="checkbox" 
+            [id]="'chapitre-' + chapitre.id"
+            [checked]="estCoche(chapitre.id)"
+            (change)="toggleChapitre(chapitre.id, $event)">
+          <label class="form-check-label" [for]="'chapitre-' + chapitre.id">
+            {{ chapitre.nom }}
+          </label>
+        </div>
+      </div>
+
+      <!-- Bouton de validation -->
+      <button 
+        class="btn btn-primary mt-3 w-100" 
+        (click)="validerParcours()" 
+        [disabled]="chapitresChoisis.length === 0">
+        Valider mon parcours personnalisé
+      </button>
+
+    </div>
+  </div>
+
+  <!-- Message de confirmation après validation -->
+  <div *ngIf="parcoursValide" class="alert alert-success mt-4 text-center">
+    <h4>Parcours enregistré !</h4>
+    <p>Votre parcours de révision a bien été enregistré. Vous pouvez maintenant le retrouver dans votre tableau de bord.</p>
+    <a routerLink="/matieres" class="btn btn-outline-success">Aller au tableau de bord</a>
+  </div>
+
+</div>

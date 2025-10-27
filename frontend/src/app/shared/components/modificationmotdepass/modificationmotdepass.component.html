@@ -1,0 +1,35 @@
+<div class="password-container">
+  <h2>Modifier le mot de passe</h2>
+
+  <form [formGroup]="passwordForm" (ngSubmit)="onSubmit()">
+
+    <!-- Ancien mot de passe -->
+    <label>Ancien mot de passe</label>
+    <div class="password-field">
+      <input [type]="showOldPassword ? 'text' : 'password'" formControlName="ancienMotDePasse" />
+      <button type="button" (click)="togglePasswordVisibility('old')">
+        {{ showOldPassword ? '👁️' : '👁️‍🗨️' }}
+      </button>
+    </div>
+
+    <!-- Nouveau mot de passe -->
+    <label>Nouveau mot de passe</label>
+    <div class="password-field">
+      <input [type]="showNewPassword ? 'text' : 'password'" formControlName="nouveauMotDePasse" />
+      <button type="button" (click)="togglePasswordVisibility('new')">
+        {{ showNewPassword ? '👁️' : '👁️‍🗨️' }}
+      </button>
+    </div>
+
+    <!-- Confirmation -->
+    <label>Confirmer le nouveau mot de passe</label>
+    <div class="password-field">
+      <input [type]="showConfirmPassword ? 'text' : 'password'" formControlName="confirmationMotDePasse" />
+      <button type="button" (click)="togglePasswordVisibility('confirm')">
+        {{ showConfirmPassword ? '👁️' : '👁️‍🗨️' }}
+      </button>
+    </div>
+
+    <button type="submit">Valider</button>
+  </form>
+</div>

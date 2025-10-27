@@ -1,0 +1,117 @@
+/* Conteneur principal */
+.form-group {
+  margin-bottom: 1.5rem;
+  max-width: 600px;
+}
+
+/* Labels */
+label {
+  font-weight: 600;
+  display: block;
+  margin-top: 10px;
+  margin-bottom: 5px;
+  color: #1c5980;
+}
+
+/* Sélecteurs */
+select.form-control {
+  width: 100%;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+/* Texte principal */
+h4 {
+  color: #1c5980;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+}
+
+/* Textareas */
+textarea {
+  width: 100%;
+  min-height: 100px;
+  resize: vertical;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+textarea:focus {
+  border-color: #1c5980;
+  outline: none;
+  box-shadow: 0 0 5px rgba(28, 89, 128, 0.2);
+}
+
+/* Champ fichier */
+input[type="file"] {
+  margin-top: 6px;
+}
+
+/* Bloc de section */
+.mb-3.border.p-3.rounded {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  margin-bottom: 20px;
+}
+
+/* Boutons */
+button {
+  margin-top: 15px;
+  margin-right: 10px;
+  padding: 10px 16px;
+  font-size: 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+button.btn-primary {
+  background-color: #1c5980;
+  color: white;
+}
+
+button.btn-primary:hover {
+  background-color: #154766;
+}
+
+button.btn-success {
+  background-color: #28a745;
+  color: white;
+}
+
+button.btn-success:hover {
+  background-color: #218838;
+}
+
+button.btn-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+button.btn-secondary:hover {
+  background-color: #5a6268;
+}
+/* Style pour les inputs texte des titres (chapitre + sections) */
+input[type="text"].form-control {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 14px;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+input[type="text"].form-control:focus {
+  border-color: #1c5980; /* même bleu que tes labels */
+  box-shadow: 0 0 5px rgba(28, 89, 128, 0.3);
+  outline: none;
+  background-color: #fff;
+}

@@ -1,0 +1,125 @@
+<!-- Fichier : src/app/features/admin/pages/gestion-element-constitutif/gestion-element-constitutif.component.html -->
+
+<div class="container mt-4">
+  <div class="card shadow-sm">
+    <div class="card-header">
+      <h2>Gestion des Éléments Constitutifs</h2>
+    </div>
+    <div class="card-body">
+
+      <!-- ÉTAPE 1 : SÉLECTION DE L'UNITÉ D'ENSEIGNEMENT -->
+      <div class="form-group mb-4">
+        <label for="unite-select" class="form-label">Sélectionnez une Unité d'Enseignement</label>
+        <select id="unite-select" class="form-select" (change)="onSelectUnite($any($event.target).value)">
+          <option [value]="null">-- Choisissez une UE --</option>
+          <option *ngFor="let ue of unites$ | async" [value]="ue.id">
+            {{ ue.nom }} ({{ ue.code }})
+          </option>
+        </select>
+      </div>
+
+      <!-- CETTE SECTION S'AFFICHE SI UNE UE EST SÉLECTIONNÉE -->
+      <div *ngIf="selectedUniteId">
+        <hr>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h4>Éléments de l'UE sélectionnée</h4>
+          <button *ngIf="!isFormVisible" (click)="showNewForm()" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Ajouter un Élément
+          </button>
+        </div>
+
+        <!-- BLOC 1 : FORMULAIRE (Création / Modification) -->
+        <div *ngIf="isFormVisible" class="card bg-light p-4 mb-4">
+          <h5>{{ isEditing ? 'Modifier l\'Élément' : 'Nouvel Élément' }}</h5>
+          <form [formGroup]="elementForm" (ngSubmit)="onSubmit()">
+
+            <div class="row">
+              <!-- Champ NOM -->
+              <div class="col-md-6 mb-3">
+                <label for="nom" class="form-label">Nom de l'élément <span class="text-danger">*</span></label>
+                <input type="text" id="nom" class="form-control" formControlName="nom">
+              </div>
+
+              <!-- Champ CODE -->
+              <div class="col-md-6 mb-3">
+                <label for="code" class="form-label">Code <span class="text-danger">*</span></label>
+                <input type="text" id="code" class="form-control" formControlName="code">
+              </div>
+            </div>
+
+            <div class="row">
+              <!-- Champ CRÉDITS -->
+              <div class="col-md-6 mb-3">
+                <label for="credit" class="form-label">Crédits ECTS <span class="text-danger">*</span></label>
+                <input type="number" id="credit" class="form-control" formControlName="credit">
+              </div>
+
+              <!-- Champ ENSEIGNANT -->
+              <div class="col-md-6 mb-3">
+                <label for="enseignantId" class="form-label">Enseignant Responsable <span class="text-danger">*</span></label>
+                <select id="enseignantId" class="form-select" formControlName="enseignantId">
+                  <option [ngValue]="null" disabled>-- Choisissez un enseignant --</option>
+                  <option *ngFor="let ens of enseignants$ | async" [value]="ens.id">
+                    {{ ens.prenom }} {{ ens.nom }}
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Champ DESCRIPTION -->
+            <div class="mb-3">
+              <label for="description" class="form-label">Description</label>
+              <textarea id="description" class="form-control" formControlName="description" rows="3"></textarea>
+            </div>
+
+            <!-- Boutons d'action -->
+            <div class="d-flex justify-content-end gap-2">
+              <button type="button" (click)="onCancel()" class="btn btn-secondary">Annuler</button>
+              <button type="submit" class="btn btn-success" [disabled]="elementForm.invalid">
+                {{ isEditing ? 'Mettre à jour' : 'Créer' }}
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- BLOC 2 : TABLEAU DES ÉLÉMENTS -->
+        <div *ngIf="!isFormVisible">
+          <div *ngIf="isLoadingElements" class="text-center">
+            <div class="spinner-border" role="status"><span class="visually-hidden">Chargement...</span></div>
+          </div>
+
+          <div *ngIf="!isLoadingElements && elements.length > 0" class="table-responsive">
+            <table class="table table-hover align-middle">
+              <thead>
+                <tr>
+                  <th>Nom</th>
+                  <th>Code</th>
+                  <th>Crédits</th>
+                  <th>Responsable</th>
+                  <th class="text-end">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let el of elements">
+                  <td>{{ el.nom }}</td>
+                  <td>{{ el.code }}</td>
+                  <td>{{ el.credit }}</td>
+                  <td>{{ el.enseignantNom }}</td>
+                  <td class="text-end">
+                    <button (click)="showEditForm(el)" class="btn btn-sm btn-outline-warning me-2" title="Modifier"><i class="fas fa-edit"></i></button>
+                    <button (click)="onDelete(el.id)" class="btn btn-sm btn-outline-danger" title="Supprimer"><i class="fas fa-trash"></i></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div *ngIf="!isLoadingElements && elements.length === 0" class="alert alert-info">
+            Aucun élément constitutif trouvé pour cette unité. Cliquez sur "Ajouter un Élément" pour commencer.
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

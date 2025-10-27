@@ -1,0 +1,41 @@
+<!-- Fichier : src/app/pages/profilutilisateur/profilutilisateur.component.html -->
+
+<div class="profile-container">
+
+  <!-- Affiche un message de chargement pendant que les données arrivent -->
+  <div *ngIf="isLoading" class="loading-message">
+    Chargement du profil...
+  </div>
+
+  <!-- Affiche un message d'erreur si l'appel API a échoué -->
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Le contenu principal ne s'affiche que si on a bien reçu les données de l'utilisateur -->
+  <div *ngIf="user && !isLoading">
+    <h2>Profil utilisateur</h2>
+    
+    <div class="profile-details">
+      <div class="detail-item">
+        <span class="label">Nom :</span>
+        <span class="value">{{ user.nom }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="label">Prénom :</span>
+        <span class="value">{{ user.prenom }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="label">Courriel :</span>
+        <span class="value">{{ user.email }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="label">Rôle :</span>
+        <span class="value">{{ user.role }}</span>
+      </div>
+    </div>
+
+    <button (click)="onEdit()" class="edit-button">Modifier</button>
+  </div>
+
+</div>

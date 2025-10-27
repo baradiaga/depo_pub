@@ -1,0 +1,23 @@
+<h2>Liste des utilisateurs</h2>
+
+<ul>
+  <li *ngFor="let user of paginatedUsers">
+    {{ user.id }} - {{ user.name }}
+  </li>
+</ul>
+
+<div class="pagination">
+  <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
+    ◀ Précédent
+  </button>
+
+  <button *ngFor="let page of pages"
+          (click)="goToPage(page)"
+          [class.active]="page === currentPage">
+    {{ page }}
+  </button>
+
+  <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">
+    Suivant ▶
+  </button>
+</div>

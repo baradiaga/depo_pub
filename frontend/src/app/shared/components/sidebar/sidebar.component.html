@@ -1,0 +1,57 @@
+<!-- 
+  La logique principale est maintenant ici :
+  - On utilise le pipe 'async' pour s'abonner à menuItems$.
+  - 'let items' crée une variable locale 'items' contenant le tableau de fonctionnalités.
+  - On vérifie si 'items' n'est pas null et a une longueur > 0.
+  - Si c'est le cas, on affiche le menu. Sinon, on affiche le template #noMenu.
+-->
+<ng-container *ngIf="(menuItems$ | async) as items; else noMenu">
+  <div class="main-menu" *ngIf="items.length > 0; else noMenu">
+    
+    <!-- On boucle maintenant sur 'items', qui est le résultat de l'observable -->
+    <ng-container *ngFor="let item of items; let i = index">
+      <div class="menu-item-container">
+        
+        <!-- L'action de clic appelle maintenant toggleSubMenu(item.id) -->
+        <button 
+          (click)="toggleSubMenu(item.id)" 
+          class="menu-item"
+          [class.active]="activeMenu === item.id">
+          
+          <!-- On utilise 'item.icon' de notre entité Fonctionnalite -->
+          <i *ngIf="item.icon" class="icon" [ngClass]="'icon-' + item.icon"></i>
+          
+          <!-- On utilise 'item.nom' au lieu de 'item.label' -->
+          {{ item.nom }}
+          
+          <!-- La logique de la flèche est la même, mais on vérifie 'item.sousFonctionnalites' -->
+          <i *ngIf="item.sousFonctionnalites && item.sousFonctionnalites.length > 0" 
+             class="arrow" 
+             [class.expanded]="activeMenu === item.id">▼</i>
+        </button>
+        
+        <!-- Le sous-menu s'affiche si activeMenu correspond à l'ID de l'item -->
+        <div *ngIf="activeMenu === item.id && item.sousFonctionnalites && item.sousFonctionnalites.length > 0" 
+             class="submenu">
+          
+          <!-- On boucle sur 'item.sousFonctionnalites' -->
+          <a 
+            *ngFor="let child of item.sousFonctionnalites" 
+            [routerLink]="child.route"
+            class="submenu-item"
+            routerLinkActive="active-submenu">
+            <!-- On utilise 'child.label' de notre entité SousFonctionnalite -->
+            {{ child.label }}
+          </a>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</ng-container>
+
+<!-- Ce template s'affiche si l'observable est vide ou si l'utilisateur n'a aucune permission -->
+<ng-template #noMenu>
+  <div class="no-menu-message">
+    <p>Aucun menu disponible.</p>
+  </div>
+</ng-template>

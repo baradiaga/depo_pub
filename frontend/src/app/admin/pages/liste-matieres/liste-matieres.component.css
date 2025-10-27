@@ -1,0 +1,194 @@
+.container {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+h3 {
+  font-weight: bold;
+  color: #1c5980 !important;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.table thead {
+  background-color: #1c5980;
+  color: white;
+}
+
+.table th, 
+.table td {
+  padding: 12px 15px;
+  vertical-align: middle !important;
+  text-align: center;
+}
+
+.table tbody tr {
+  background-color: #fff;
+  transition: background-color 0.3s ease;
+}
+
+.table tbody tr:hover {
+  background-color: #f5faff;
+}
+
+.table-striped tbody tr:nth-child(odd) {
+  background-color: #fafafa;
+}
+
+.table td strong {
+  color: #1c5980;
+}
+
+/* Centrer le bouton */
+.table td button {
+  display: inline-block;
+  margin: auto;
+}
+
+/* Style bouton */
+button.btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+button.btn-outline-primary {
+  border-color: #1c5980;
+  color: #1c5980;
+}
+
+button.btn-outline-primary:hover {
+  background-color: #1c5980;
+  color: white;
+}
+
+/* Détails du chapitre affiché */
+td[colspan="3"] {
+  background-color: #f9f9f9;
+  border-left: 4px solid #1c5980;
+  border-radius: 6px;
+  padding: 15px;
+}
+
+td[colspan="3"] h6 {
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+td[colspan="3"] ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+td[colspan="3"] ul li {
+  list-style: " ";
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .table thead {
+    display: none;
+  }
+
+  .table, 
+  .table tbody, 
+  .table tr, 
+  .table td {
+    display: block;
+    width: 100%;
+  }
+
+  .table tr {
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
+  }
+
+  .table td {
+    padding: 8px;
+    text-align: right;
+    position: relative;
+  }
+
+  .table td::before {
+    content: attr(data-label);
+    position: absolute;
+    left: 8px;
+    font-weight: bold;
+    color: #1c5980;
+  }
+
+  button.btn {
+    width: 100%;
+  }
+}
+/* Titre principal */
+.structure-title {
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  color: #1c5980;
+  margin-bottom: 15px;
+  text-transform: uppercase;
+}
+
+/* Carte chapitre */
+.chapitre-card {
+  background: #ffffff;
+  border: 1px solid #d9e3ec;
+  border-left: 5px solid #1c5980;
+  border-radius: 8px;
+  padding: 12px 15px;
+  margin-bottom: 12px;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.chapitre-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* En-tête chapitre */
+.chapitre-header {
+  font-size: 16px;
+  font-weight: bold;
+  color: #1c5980;
+  margin-bottom: 8px;
+}
+
+.chapitre-title {
+  text-transform: capitalize;
+}
+
+/* Liste des sections */
+.section-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.section-list li {
+  padding: 5px 0;
+  border-bottom: 1px dashed #d9e3ec;
+  font-size: 14px;
+}
+
+.section-list li:last-child {
+  border-bottom: none;
+}
+
+.section-list li::before {
+  content: "📄 ";
+}

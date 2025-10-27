@@ -1,0 +1,27 @@
+<div class="role-management-container">
+  <h2 class="title">{{ modeEdition ? 'Modifier un rôle' : 'Ajouter un rôle' }}</h2>
+
+  <div class="form-container">
+    <input [(ngModel)]="nouveauRole" placeholder="Nom du rôle" class="input" />
+    <button (click)="modeEdition ? enregistrerModification() : ajouterRole()" class="btn primary">
+      {{ modeEdition ? 'Enregistrer' : 'Ajouter' }}
+    </button>
+    <button *ngIf="modeEdition" (click)="annulerEdition()" class="btn secondary">Annuler</button>
+  </div>
+
+  <table class="roles-table">
+    <thead>
+      <tr><th>Rôle</th><th>Actions</th></tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let role of roles; let i = index">
+        <td>{{ role }}</td>
+        <td>
+          <button class="btn edit" (click)="modifierRole(role, i.toString())">✏️</button>
+          <button class="btn delete" (click)="confirmerSuppression(i)">🗑️</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+</div>

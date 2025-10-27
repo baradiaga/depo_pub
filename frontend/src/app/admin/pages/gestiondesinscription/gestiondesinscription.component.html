@@ -1,0 +1,183 @@
+<div class="container mt-4">
+  <!-- ============================================= -->
+  <!-- CARTE 1 : FORMULAIRE D'INSCRIPTION            -->
+  <!-- ============================================= -->
+  <div class="card shadow-sm">
+    <div class="card-header">
+      <h2>Formulaire d'Inscription</h2>
+    </div>
+    <div class="card-body">
+      <form [formGroup]="inscriptionForm" (ngSubmit)="enregistrer()">
+        <!-- Ligne 1 : Nom, Prénom, Email -->
+        <div class="row mb-3">
+          <div class="col-md-4">
+            <label for="nom" class="form-label">Nom <span class="text-danger">*</span></label>
+            <input type="text" id="nom" class="form-control" formControlName="nom">
+          </div>
+          <div class="col-md-4">
+            <label for="prenom" class="form-label">Prénom <span class="text-danger">*</span></label>
+            <input type="text" id="prenom" class="form-control" formControlName="prenom">
+          </div>
+          <div class="col-md-4">
+            <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+            <input type="email" id="email" class="form-control" formControlName="email">
+          </div>
+        </div>
+
+        <!-- Ligne 2 : Date de naissance, Lieu de naissance, Nationalité -->
+        <div class="row mb-3">
+          <div class="col-md-4">
+            <label for="dateDeNaissance" class="form-label">Date de Naissance <span class="text-danger">*</span></label>
+            <input type="date" id="dateDeNaissance" class="form-control" formControlName="dateDeNaissance">
+          </div>
+          <div class="col-md-4">
+            <label for="lieuDeNaissance" class="form-label">Lieu de Naissance</label>
+            <input type="text" id="lieuDeNaissance" class="form-control" formControlName="lieuDeNaissance">
+          </div>
+          <div class="col-md-4">
+            <label for="nationalite" class="form-label">Nationalité</label>
+            <input type="text" id="nationalite" class="form-control" formControlName="nationalite">
+          </div>
+        </div>
+
+        <!-- Ligne 3 : Sexe, Adresse, Téléphone -->
+        <div class="row mb-3">
+          <div class="col-md-4">
+            <label class="form-label">Sexe <span class="text-danger">*</span></label>
+            <div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" id="sexeH" value="HOMME" formControlName="sexe">
+                <label class="form-check-label" for="sexeH">Homme</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" id="sexeF" value="FEMME" formControlName="sexe">
+                <label class="form-check-label" for="sexeF">Femme</label>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <label for="adresse" class="form-label">Adresse</label>
+            <input type="text" id="adresse" class="form-control" formControlName="adresse">
+          </div>
+          <div class="col-md-4">
+            <label for="telephone" class="form-label">Téléphone <span class="text-danger">*</span></label>
+            <input type="text" id="telephone" class="form-control" formControlName="telephone">
+          </div>
+        </div>
+
+        <!-- Ligne 4 : Année Académique, Filière -->
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label for="anneeAcademique" class="form-label">Année Académique <span class="text-danger">*</span></label>
+            <input type="text" id="anneeAcademique" class="form-control" formControlName="anneeAcademique">
+          </div>
+          <div class="col-md-6">
+            <label for="filiere" class="form-label">Filière <span class="text-danger">*</span></label>
+            <input type="text" id="filiere" class="form-control" formControlName="filiere">
+          </div>
+        </div>
+
+        <!-- Ligne 5 : Matières -->
+        <div class="mb-3">
+          <label class="form-label d-flex justify-content-between align-items-center">
+            <span>Matières à inscrire <span class="text-danger">*</span></span>
+            
+            <!-- NOUVEAU BOUTON POUR OUVRIR LA MODALE -->
+            <button type="button" class="btn btn-sm btn-outline-primary" (click)="openAddMatiereModal()">
+              + Ajouter une matière
+            </button>
+          </label>
+          <div class="border p-3 rounded" style="max-height: 150px; overflow-y: auto;">
+            <div *ngIf="matieresDisponibles.length === 0" class="text-muted">
+              Aucune matière disponible. Cliquez sur "Ajouter une matière" pour en créer une.
+            </div>
+            <div *ngFor="let matiere of matieresDisponibles" class="form-check">
+              <input class="form-check-input" type="checkbox" [value]="matiere.id" (change)="onMatiereChange($event)" [id]="'matiere-' + matiere.id">
+              <label class="form-check-label" [for]="'matiere-' + matiere.id">{{ matiere.nom }}</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Boutons d'action -->
+        <div class="d-flex justify-content-end gap-2 mt-4">
+          <button type="button" class="btn btn-secondary" (click)="annuler()">Annuler</button>
+          <button type="submit" class="btn btn-primary" [disabled]="inscriptionForm.invalid">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================= -->
+  <!-- CARTE 2 : LISTE DES ÉTUDIANTS INSCRITS        -->
+  <!-- ============================================= -->
+  <div class="card shadow-sm mt-5">
+    <div class="card-header">
+      <h3>Liste des Étudiants Inscrits</h3>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-striped table-hover">
+          <thead>
+            <tr>
+              <th>Nom Complet</th>
+              <th>Email</th>
+              <th>Téléphone</th>
+              <th>Filière</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let etudiant of inscriptions">
+              <td>{{ etudiant.prenom }} {{ etudiant.nom }}</td>
+              <td>{{ etudiant.email }}</td>
+              <td>{{ etudiant.telephone }}</td>
+              <td>{{ etudiant.filiere }}</td>
+              <td class="text-center">
+                <button class="btn btn-sm btn-warning me-2" (click)="modifier(etudiant)">Modifier</button>
+                <button class="btn btn-sm btn-danger" (click)="supprimer(etudiant.id)">Supprimer</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================================================================== -->
+<!-- --- NOUVELLE FONCTIONNALITÉ : FENÊTRE MODALE POUR AJOUTER MATIÈRE --- -->
+<!-- ==================================================================== -->
+<div class="modal-backdrop fade show" *ngIf="showAddMatiereModal"></div>
+<div class="modal" tabindex="-1" [style.display]="showAddMatiereModal ? 'block' : 'none'">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form [formGroup]="addMatiereForm" (ngSubmit)="onAjouterMatiere()">
+        <div class="modal-header">
+          <h5 class="modal-title">Ajouter une nouvelle matière</h5>
+          <button type="button" class="btn-close" (click)="closeAddMatiereModal()"></button>
+        </div>
+        <div class="modal-body">
+          
+          <!-- Champ de saisie pour le nom de la matière -->
+          <div class="mb-3">
+            <label for="newMatiereNom" class="form-label">Nom de la matière <span class="text-danger">*</span></label>
+            <input type="text" id="newMatiereNom" class="form-control" formControlName="nom" required>
+            <div *ngIf="addMatiereForm.get('nom')?.invalid && addMatiereForm.get('nom')?.touched" class="text-danger mt-1 small">
+              Le nom est obligatoire.
+            </div>
+          </div>
+
+          <!-- Affichage des messages d'erreur du serveur -->
+          <div *ngIf="addMatiereError" class="alert alert-danger mt-3">
+            {{ addMatiereError }}
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeAddMatiereModal()">Annuler</button>
+          <button type="submit" class="btn btn-primary" [disabled]="addMatiereForm.invalid">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

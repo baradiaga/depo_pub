@@ -1,0 +1,35 @@
+<div class="container">
+  <h2 class="title">Gestion de l'Échelle de Connaissance</h2>
+
+  <!-- Formulaire -->
+  <form (ngSubmit)="addOrUpdateEchelle()" class="form">
+    <input type="text" placeholder="Intervalle (ex: 0% - 33%)" [(ngModel)]="newEchelle.intervalle" name="intervalle" required>
+    <input type="text" placeholder="Description" [(ngModel)]="newEchelle.description" name="description" required>
+    <input type="text" placeholder="Recommandation" [(ngModel)]="newEchelle.recommandation" name="recommandation" required>
+    <button type="submit">{{ editingId ? 'Modifier' : 'Ajouter' }}</button>
+    <button type="button" (click)="resetForm()" *ngIf="editingId">Annuler</button>
+  </form>
+
+  <!-- Tableau -->
+  <table class="knowledge-table">
+    <thead>
+      <tr>
+        <th>Intervalle</th>
+        <th>Description</th>
+        <th>Recommandation</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let echelle of echelles">
+        <td>{{ echelle.intervalle }}</td>
+        <td>{{ echelle.description }}</td>
+        <td>{{ echelle.recommandation }}</td>
+        <td>
+          <button (click)="editEchelle(echelle)">Modifier</button>
+          <button (click)="deleteEchelle(echelle.id)">Supprimer</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

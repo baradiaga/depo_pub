@@ -1,0 +1,68 @@
+<div class="container mt-4">
+  <h2 class="mb-4 text-center">Attribution des fonctionnalités par rôle</h2>
+  <div class="d-flex justify-content-end mb-3 gap-2">
+  
+
+
+  <!-- Sélection du rôle -->
+  <div class="mb-4">
+    <label class="form-label fw-bold">Sélectionner un rôle :</label>
+    <select [(ngModel)]="selectedRole" class="form-select w-50">
+      <option value="" disabled selected>-- Choisir un rôle --</option>
+      <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
+    </select>
+  </div>
+  <br><br>
+  <!-- Bouton pour afficher la liste simple -->
+
+
+
+
+  <!-- Tableau des fonctionnalités -->
+  <div *ngIf="selectedRole">
+    <table class="table table-bordered table-striped align-middle">
+      <thead class="table-light text-center">
+        <tr>
+          <th style="width: 5%">#</th>
+          <th style="width: 30%">Fonctionnalité principale</th>
+          <th style="width: 65%">Sous-fonctionnalités</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let featureGroup of allFeatures; let i = index">
+          <td class="text-center">{{ i + 1 }}</td>
+          <td>
+            <input
+              type="checkbox"
+              class="form-check-input me-2"
+              [checked]="visibleModules.has(featureGroup.module)"
+              (change)="onMainFeatureToggle($event, featureGroup.module)"
+              [id]="'module-' + i"
+            />
+            <label class="form-check-label" [for]="'module-' + i">
+              {{ featureGroup.module }}
+            </label>
+          </td>
+          <td>
+            <div *ngIf="visibleModules.has(featureGroup.module)" class="d-flex flex-wrap gap-3 fade-in">
+              <div class="form-check" *ngFor="let sub of featureGroup.subFeatures">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  [checked]="isFeatureAssigned(sub)"
+                  (change)="toggleFeatureAssignment(sub)"
+                  [id]="sub + i"
+                />
+                <label class="form-check-label" [for]="sub + i">{{ sub }}</label>
+              </div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="text-end mt-3">
+      <button class="btn btn-success" (click)="enregistrer()">Enregistrer</button>
+    </div>
+  </div>
+</div>

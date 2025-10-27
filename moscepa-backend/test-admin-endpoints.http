@@ -1,0 +1,134 @@
+### Tests des endpoints d'administration MOSCEPA
+### Seuls les administrateurs peuvent accéder à ces endpoints
+
+### Variables
+@baseUrl = http://localhost:8080/api
+@adminEmail = admin@moscepa.com
+@adminPassword = password123
+
+### 1. Connexion en tant qu'administrateur
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{adminPassword}}"
+}
+
+> {%
+client.global.set("authToken", response.body.token);
+%}
+
+### 2. Vérifier le profil de l'utilisateur connecté
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{authToken}}
+
+### 3. Créer un nouvel utilisateur (réservé aux admins)
+POST {{baseUrl}}/admin/users
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "nom": "Nouveau",
+  "prenom": "Utilisateur",
+  "email": "nouveau.utilisateur@moscepa.com",
+  "motDePasse": "motdepasse123",
+  "role": "ETUDIANT",
+  "actif": true
+}
+
+### 4. Lister tous les utilisateurs
+GET {{baseUrl}}/admin/users
+Authorization: Bearer {{authToken}}
+
+### 5. Récupérer un utilisateur par ID
+GET {{baseUrl}}/admin/users/1
+Authorization: Bearer {{authToken}}
+
+### 6. Mettre à jour un utilisateur
+PUT {{baseUrl}}/admin/users/2
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "nom": "Dupont",
+  "prenom": "Jean-Michel",
+  "email": "jean.dupont@moscepa.com",
+  "role": "ETUDIANT",
+  "actif": true
+}
+
+### 7. Rechercher des utilisateurs
+GET {{baseUrl}}/admin/users/search?q=Dupont
+Authorization: Bearer {{authToken}}
+
+### 8. Lister les utilisateurs par rôle
+GET {{baseUrl}}/admin/users/role/ETUDIANT
+Authorization: Bearer {{authToken}}
+
+### 9. Obtenir les statistiques des utilisateurs
+GET {{baseUrl}}/admin/users/stats
+Authorization: Bearer {{authToken}}
+
+### 10. Vérifier si un email existe
+GET {{baseUrl}}/admin/users/check-email?email=test@example.com
+Authorization: Bearer {{authToken}}
+
+### 11. Désactiver un utilisateur
+PATCH {{baseUrl}}/admin/users/2/deactivate
+Authorization: Bearer {{authToken}}
+
+### 12. Réactiver un utilisateur
+PATCH {{baseUrl}}/admin/users/2/activate
+Authorization: Bearer {{authToken}}
+
+### 13. Supprimer un utilisateur (attention: suppression définitive)
+# DELETE {{baseUrl}}/admin/users/6
+# Authorization: Bearer {{authToken}}
+
+### 14. Test d'accès non autorisé (sans token)
+GET {{baseUrl}}/admin/users
+
+### 15. Test avec un utilisateur non-admin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "jean.dupont@moscepa.com",
+  "password": "password123"
+}
+
+> {%
+client.global.set("studentToken", response.body.token);
+%}
+
+### Tentative d'accès aux endpoints admin avec un compte étudiant (doit échouer)
+GET {{baseUrl}}/admin/users
+Authorization: Bearer {{studentToken}}
+
+### 16. Créer un utilisateur avec des données invalides (test de validation)
+POST {{baseUrl}}/admin/users
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "nom": "",
+  "prenom": "Test",
+  "email": "email-invalide",
+  "motDePasse": "123",
+  "role": "ETUDIANT"
+}
+
+### 17. Créer un utilisateur avec un email déjà existant
+POST {{baseUrl}}/admin/users
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "nom": "Test",
+  "prenom": "Doublon",
+  "email": "admin@moscepa.com",
+  "motDePasse": "motdepasse123",
+  "role": "ETUDIANT"
+}
+

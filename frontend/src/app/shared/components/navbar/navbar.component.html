@@ -1,0 +1,29 @@
+<nav class="navbar">
+  <div class="navbar-left">
+    <h1 class="logo">MOSCEPA</h1>
+  </div>
+  <div class="navbar-right">
+    <!-- Conteneur qui s'affiche UNIQUEMENT si l'utilisateur est authentifié -->
+    <ng-container *ngIf="isAuthenticated$ | async">
+      <button class="icon-btn" aria-label="Notifications">🔔</button>
+      <button class="icon-btn" aria-label="Profil">👤</button>
+      
+      <!-- BOUTON DE DÉCONNEXION -->
+      <!-- Le (click)="logout()" appelle la méthode que nous avons créée dans navbar.component.ts -->
+      <button class="btn btn-logout" (click)="logout()">Déconnexion</button>
+    </ng-container>
+
+    <!-- Conteneur qui s'affiche UNIQUEMENT si l'utilisateur N'EST PAS authentifié -->
+    <ng-container *ngIf="!(isAuthenticated$ | async)">
+      <!-- Ce bouton redirige vers la page de connexion -->
+      <a routerLink="/login" class="btn">Connexion</a>
+    </ng-container>
+
+    <!-- Le sélecteur de thème reste visible dans tous les cas -->
+    <div class="theme-selector">
+      <button class="btn" (click)="setTheme('auto')">Auto</button>
+      <button class="btn" (click)="setTheme('light')">Clair</button>
+      <button class="btn" (click)="setTheme('dark')">Sombre</button>
+    </div>
+  </div>
+</nav>

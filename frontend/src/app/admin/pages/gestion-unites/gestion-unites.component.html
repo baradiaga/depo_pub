@@ -1,0 +1,115 @@
+<div class="gestion-container">
+  <h1>Gestion des Unités d'Enseignement</h1>
+
+  <!-- Bouton pour afficher le formulaire de création, visible seulement si le formulaire n'est pas déjà affiché -->
+  <div class="header-actions" *ngIf="!afficherFormulaire">
+    <!-- Ce bouton ne s'affiche que pour les rôles autorisés à créer -->
+    <button *ngIf="authService.getUserRole() === 'ADMIN' || authService.getUserRole() === 'RESPONSABLE_FORMATION'" 
+            (click)="nouvelleUe()" class="btn btn-primary">
+      Ajouter une UE
+    </button>
+    <br>
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- === LE FORMULAIRE COMPLET (pour création ou modification) === -->
+  <!-- ========================================================== -->
+  <div *ngIf="afficherFormulaire" class="form-container">
+    <h3>{{ isEditing ? 'Modifier l\'Unité d\'Enseignement' : 'Nouvelle Unité d\'Enseignement' }}</h3>
+    
+    <form (ngSubmit)="onSubmit()" #ueForm="ngForm">
+      <div class="form-group">
+        <label for="nom">Nom de l'unité</label>
+        <input type="text" id="nom" class="form-control" [(ngModel)]="ueEnCours.nom" name="nom" required>
+      </div>
+
+      <div class="form-group">
+        <label for="code">Code</label>
+        <input type="text" id="code" class="form-control" [(ngModel)]="ueEnCours.code" name="code" required>
+      </div>
+
+      <div class="form-group">
+        <label for="credit">Crédits ECTS</label>
+        <input type="number" id="credit" class="form-control" [(ngModel)]="ueEnCours.credit" name="credit" required min="0">
+      </div>
+
+      <div class="form-group">
+        <label for="semestre">Semestre</label>
+        <input type="number" id="semestre" class="form-control" [(ngModel)]="ueEnCours.semestre" name="semestre" required min="1">
+      </div>
+
+      <div class="form-group">
+        <label for="responsable">Responsable</label>
+        <input type="text" id="responsable" class="form-control" [(ngModel)]="ueEnCours.nomResponsable" name="responsable">
+      </div>
+
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea id="description" class="form-control" [(ngModel)]="ueEnCours.description" name="description" rows="4"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="objectifs">Objectifs</label>
+        <textarea id="objectifs" class="form-control" [(ngModel)]="ueEnCours.objectifs" name="objectifs" rows="4"></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-success" [disabled]="!ueForm.form.valid">
+          {{ isEditing ? 'Mettre à jour' : 'Créer' }}
+        </button>
+        <button type="button" (click)="onReset()" class="btn btn-secondary">
+          Annuler
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- === LE TABLEAU QUI AFFICHE LA LISTE DES UE === -->
+  <!-- ========================================================== -->
+  <div *ngIf="!afficherFormulaire" class="table-container">
+    <!-- Message de chargement -->
+    <div *ngIf="isLoading" class="loading-message">Chargement des données...</div>
+    
+    <!-- Le tableau s'affiche si le chargement est fini et qu'il y a des données -->
+    <table *ngIf="!isLoading && uniteList.length > 0">
+      <thead>
+        <tr>
+          <th>Nom</th>
+          <th>Code</th>
+          <th>Crédits</th>
+          <th>semestre</th>
+          <th>Responsable</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let ue of uniteList">
+          <td>{{ ue.nom }}</td>
+          <td>{{ ue.code }}</td>
+          <td>{{ ue.credit }}</td>
+          
+          <td>{{ ue.semestre }}</td>
+          <td>{{ ue.nomResponsable }}</td>
+          <td class="actions-cell">
+            <!-- Bouton Modifier (conditionnel) -->
+            <button *ngIf="authService.getUserRole() === 'ADMIN' || authService.getUserRole() === 'RESPONSABLE_FORMATION'" 
+                    (click)="modifierUnite(ue)" class="btn btn-warning">
+              Modifier
+            </button>
+            <!-- Bouton Supprimer (conditionnel) -->
+            <button *ngIf="authService.getUserRole() === 'ADMIN'" 
+                    (click)="supprimerUnite(ue.id)" class="btn btn-danger">
+              Supprimer
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Message si aucune donnée n'est trouvée -->
+    <div *ngIf="!isLoading && uniteList.length === 0" class="no-data-message">
+      Aucune unité d'enseignement trouvée. Cliquez sur "Ajouter une UE" pour commencer.
+    </div>
+  </div>
+</div>

@@ -1,0 +1,130 @@
+# Tests API MOSCEPA Backend avec Authentification JWT
+# Utilisez l'extension REST Client de VSCode pour exécuter ces tests
+
+@baseUrl = http://localhost:8080/api
+@authUrl = http://localhost:8080/api/auth
+
+### 1. Connexion utilisateur (Admin)
+POST {{authUrl}}/login
+Content-Type: application/json
+
+{
+    "email": "admin@moscepa.com",
+    "motDePasse": "password123"
+}
+
+### 2. Connexion utilisateur (Étudiant)
+POST {{authUrl}}/login
+Content-Type: application/json
+
+{
+    "email": "jean.dupont@moscepa.com",
+    "motDePasse": "password123"
+}
+
+### 3. Vérifier l'authentification
+GET {{authUrl}}/check
+
+### 4. Récupérer le profil utilisateur connecté
+GET {{authUrl}}/me
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+### 5. Vérifier si un email existe
+GET {{authUrl}}/check-email?email=admin@moscepa.com
+
+### 6. Déconnexion
+POST {{authUrl}}/logout
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+### ===== ENDPOINTS PROTÉGÉS (Nécessitent un token JWT) =====
+
+### 7. Récupérer toutes les matières (PROTÉGÉ)
+GET {{baseUrl}}/matieres
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+### 8. Créer une nouvelle matière (PROTÉGÉ)
+POST {{baseUrl}}/matieres
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+{
+    "nom": "Biologie",
+    "description": "Science du vivant et des organismes"
+}
+
+### 9. Récupérer les noms des matières (PROTÉGÉ)
+GET {{baseUrl}}/matieres/noms
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+### 10. Créer un nouvel étudiant (PROTÉGÉ)
+POST {{baseUrl}}/etudiants
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+{
+    "nom": "Durand",
+    "prenom": "Alice",
+    "email": "alice.durand@example.com",
+    "matieresAReprendre": ["Mathématiques", "Physique"]
+}
+
+### 11. Récupérer tous les étudiants (PROTÉGÉ)
+GET {{baseUrl}}/etudiants
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+### 12. Récupérer un étudiant par ID (PROTÉGÉ)
+GET {{baseUrl}}/etudiants/1
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+### 13. Récupérer les questions d'un chapitre (PROTÉGÉ)
+GET {{baseUrl}}/tests/chapitre/1
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+### 14. Récupérer le test d'un chapitre (PROTÉGÉ)
+GET {{baseUrl}}/tests/chapitre/1/test
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+### 15. Sauvegarder un résultat de test (PROTÉGÉ)
+POST {{baseUrl}}/tests/resultats
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+{
+    "etudiantId": 1,
+    "testId": 1,
+    "chapitreId": 1,
+    "score": 85.5,
+    "bonnesReponses": 8,
+    "totalQuestions": 10,
+    "reponses": [0, 1, 2, 0, 1, 2, 0, 1, 2, 0]
+}
+
+### 16. Récupérer les résultats d'un étudiant (PROTÉGÉ)
+GET {{baseUrl}}/tests/resultats/etudiant/1
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+### 17. Récupérer les résultats d'un chapitre (PROTÉGÉ)
+GET {{baseUrl}}/tests/resultats/chapitre/1
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+### ===== TESTS D'ERREUR =====
+
+### 18. Tentative d'accès sans token (doit retourner 401)
+GET {{baseUrl}}/matieres
+
+### 19. Connexion avec mauvais identifiants (doit retourner 401)
+POST {{authUrl}}/login
+Content-Type: application/json
+
+{
+    "email": "wrong@email.com",
+    "motDePasse": "wrongpassword"
+}
+
+### ===== COMPTES DE TEST DISPONIBLES =====
+# Email: admin@moscepa.com | Mot de passe: password123 | Rôle: ADMIN
+# Email: jean.dupont@moscepa.com | Mot de passe: password123 | Rôle: ETUDIANT
+# Email: marie.martin@moscepa.com | Mot de passe: password123 | Rôle: ENSEIGNANT
+# Email: pierre.bernard@moscepa.com | Mot de passe: password123 | Rôle: TUTEUR
+# Email: sophie.leroy@moscepa.com | Mot de passe: password123 | Rôle: TECHNOPEDAGOGUE
+

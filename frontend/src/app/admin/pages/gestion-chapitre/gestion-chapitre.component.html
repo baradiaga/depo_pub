@@ -1,0 +1,63 @@
+<div class="container mt-4">
+  <h2>Construction des Chapitres</h2>
+  <hr>
+
+  <!-- Étape 1: Sélection de la structure -->
+  <div class="card mb-4">
+    <div class="card-header">
+      Étape 1 : Charger la structure du chapitre
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <label for="matiere" class="form-label">Matière</label>
+          <select id="matiere" class="form-select" [(ngModel)]="matiereSelectionnee" (ngModelChange)="chargerStructure()">
+            <option value="">-- Choisissez une matière --</option>
+            <option *ngFor="let m of matieres" [value]="m">{{ m }}</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label for="niveau" class="form-label">Niveau</label>
+          <select id="niveau" class="form-select" [(ngModel)]="niveauSelectionne" (ngModelChange)="chargerStructure()" [disabled]="!matiereSelectionnee">
+            <option [ngValue]="null">-- Choisissez un niveau --</option>
+            <option *ngFor="let n of niveaux" [value]="n">{{ n }}</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Étape 2: Remplissage du contenu (affiché seulement si une structure est chargée) -->
+  <div *ngIf="chapitreCharge; else noStructure">
+    <div class="card">
+      <div class="card-header">
+        <h3>Étape 2 : Remplir le contenu pour "{{ chapitreCharge.titre }}"</h3>
+      </div>
+      <div class="card-body">
+        <!-- Boucle sur chaque section pour afficher un éditeur -->
+        <div *ngFor="let section of chapitreCharge.sections" class="mb-4 border p-3">
+          <h4>Section : {{ section.titre }}</h4>
+          <angular-editor [placeholder]="'Saisissez le contenu...'" [(ngModel)]="section.contenu"></angular-editor>
+          
+          <!-- Gestion des ressources (UI seulement pour l'instant) -->
+          <div class="mt-2">
+            <label class="form-label">Ajouter une ressource (fichier)</label>
+            <input type="file" class="form-control" (change)="onFileSelected($event, section.id)">
+          </div>
+        </div>
+      </div>
+      <div class="card-footer text-end">
+        <button class="btn btn-success" (click)="enregistrerChapitreComplet()">
+          Enregistrer tout le chapitre
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Message si aucune structure n'est chargée -->
+  <ng-template #noStructure>
+    <div class="alert alert-info">
+      Veuillez sélectionner une matière et un niveau pour charger la structure d'un chapitre.
+    </div>
+  </ng-template>
+</div>

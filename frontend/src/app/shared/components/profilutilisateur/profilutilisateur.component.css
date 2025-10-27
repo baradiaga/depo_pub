@@ -1,0 +1,96 @@
+/* Fichier : src/app/pages/profilutilisateur/profilutilisateur.component.css */
+
+/* Conteneur principal pour centrer la carte de profil */
+.profile-container {
+  max-width: 600px; /* Largeur maximale de la carte */
+  margin: 2rem auto; /* Centre la carte horizontalement et ajoute de l'espace en haut/bas */
+  padding: 2rem;
+  background-color: #ffffff; /* Fond blanc pour la carte */
+  border-radius: 8px; /* Bords arrondis */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* Ombre subtile pour un effet de profondeur */
+  border: 1px solid #e9ecef;
+}
+
+/* Titre de la page */
+h2 {
+  text-align: center;
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #343a40;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid #3498db; /* Ligne de séparation bleue */
+  padding-bottom: 0.5rem;
+}
+
+/* Conteneur pour tous les détails du profil */
+.profile-details {
+  display: flex;
+  flex-direction: column; /* Les détails s'empilent verticalement */
+  gap: 1rem; /* Espace entre chaque ligne de détail */
+  margin-bottom: 2.5rem; /* Espace avant le bouton "Modifier" */
+}
+
+/* Style pour chaque ligne de détail (ex: "Nom: Diaga") */
+.detail-item {
+  display: flex;
+  align-items: center;
+  font-size: 1rem;
+  padding: 10px;
+  border-bottom: 1px solid #f1f3f5; /* Ligne de séparation très légère */
+}
+
+.detail-item:last-child {
+  border-bottom: none; /* Pas de ligne pour le dernier élément */
+}
+
+/* Le label (ex: "Nom :") */
+.detail-item .label {
+  font-weight: 600;
+  color: #495057;
+  width: 120px; /* Largeur fixe pour un alignement parfait */
+  flex-shrink: 0; /* Empêche le label de rétrécir */
+}
+
+/* La valeur (ex: "Diaga") */
+.detail-item .value {
+  color: #212529;
+  word-break: break-all; /* Permet aux longs emails de passer à la ligne correctement */
+}
+
+/* Style pour le bouton "Modifier" */
+.edit-button {
+  display: block; /* Le bouton prend toute la largeur disponible */
+  width: 100%;
+  padding: 12px 20px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: #3498db; /* Bleu vif */
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.edit-button:hover {
+  background-color: #2980b9; /* Un bleu un peu plus foncé au survol */
+}
+
+.edit-button:active {
+  transform: scale(0.98); /* Petit effet de pression au clic */
+}
+
+/* Styles pour les messages de chargement et d'erreur */
+.loading-message,
+.error-message {
+  text-align: center;
+  padding: 2rem;
+  font-size: 1.1rem;
+  font-style: italic;
+  color: #6c757d;
+}
+
+.error-message {
+  color: #dc3545; /* Rouge pour les erreurs */
+  font-weight: 500;
+}

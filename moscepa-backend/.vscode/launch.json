@@ -1,0 +1,26 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "MOSCEPA Backend",
+            "request": "launch",
+            "mainClass": "com.moscepa.MoscepaBackendApplication",
+            "projectName": "moscepa-backend",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env",
+            "vmArgs": "-Dspring.profiles.active=dev"
+        },
+        {
+            "type": "java",
+            "name": "Debug MOSCEPA Backend",
+            "request": "launch",
+            "mainClass": "com.moscepa.MoscepaBackendApplication",
+            "projectName": "moscepa-backend",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env",
+            "vmArgs": "-Dspring.profiles.active=dev -Xdebug"
+        }
+    ]
+}
+

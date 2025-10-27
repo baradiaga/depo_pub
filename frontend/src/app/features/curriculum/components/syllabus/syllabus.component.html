@@ -1,0 +1,48 @@
+<!-- Dans src/app/features/curriculum/components/syllabus/syllabus.component.html -->
+
+<div class="syllabus-container">
+  <!-- Affiche le titre seulement si les données sont chargées -->
+  <h2 *ngIf="!isLoading">Syllabus : {{ slug }}</h2>
+
+  <!-- Affiche un indicateur de chargement -->
+  <div *ngIf="isLoading" class="text-center mt-5">
+    <div class="spinner-border" style="width: 3rem; height: 3rem;" role="status">
+      <span class="visually-hidden">Chargement...</span>
+    </div>
+    <p class="mt-2">Chargement du syllabus...</p>
+  </div>
+
+  <!-- Affiche le tableau seulement si le chargement est terminé et qu'il y a des chapitres -->
+  <table *ngIf="!isLoading && chapitres.length > 0" class="syllabus-table">
+    <thead>
+      <tr>
+        <th>Chapitre</th>
+        <th>Nom</th>
+        <th>Test</th>
+        <th>Résultat</th>
+        <th>Catégorie</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Boucle sur les chapitres reçus de l'API -->
+      <tr *ngFor="let chapitre of chapitres">
+        <td>{{ chapitre.numero ?? 'N/A' }}</td>
+        <td>{{ chapitre.nom }}</td>
+        <td>
+          <button class="btn btn-primary btn-sm" (click)="lancerTest(chapitre)">Faire le test</button>
+        </td>
+        <td>{{ chapitre.resultat ?? 'Non évalué' }}</td>
+        <td>{{ chapitre.categorie ?? 'Général' }}</td>
+        <td>
+          <button class="btn btn-secondary btn-sm" (click)="modifierChapitre(chapitre)">...</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Affiche un message si le chargement est terminé mais qu'il n'y a aucun chapitre -->
+  <div *ngIf="!isLoading && chapitres.length === 0" class="alert alert-info mt-4">
+    Aucun chapitre n'a été trouvé pour cette matière.
+  </div>
+</div>

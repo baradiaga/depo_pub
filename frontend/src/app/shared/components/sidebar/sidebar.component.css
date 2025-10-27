@@ -1,0 +1,185 @@
+.main-menu {
+  width: 100%;
+  background-color: #f8f9fa;
+  border-right: 1px solid #dee2e6;
+  min-height: 100vh;
+  padding: 1rem 0;
+}
+
+.menu-item {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 5px;
+  text-align: left;
+    background-color: #1c5980;
+
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #e5e9ec;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-left: 3px solid transparent;
+}
+
+.menu-item:hover {
+  background-color: #e9ecef;
+  color: #007bff;
+  border-left-color: #007bff;
+}
+
+.menu-item.active {
+  background-color: #007bff;
+  color: white;
+  border-left-color: #0056b3;
+}
+
+.menu-item .icon {
+  margin-right: 10px;
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+}
+
+.menu-item .arrow {
+  font-size: 12px;
+  transition: transform 0.3s ease;
+}
+
+.menu-item .arrow.expanded {
+  transform: rotate(180deg);
+}
+
+.submenu {
+  background-color: #ffffff;
+  border-left: 3px solid #007bff;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 500px;
+  }
+}
+
+.submenu-item {
+  width: 100%;
+  padding: 10px 20px 10px 45px;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: 13px;
+  color: #6c757d;
+  transition: all 0.2s ease;
+  display: block;
+  border-left: 2px solid transparent;
+}
+
+.submenu-item:hover {
+  background-color: #f8f9fa;
+  color: #007bff;
+  border-left-color: #007bff;
+}
+
+.submenu-item.active-submenu {
+  background-color: #e3f2fd;
+  color: #1976d2;
+  border-left-color: #1976d2;
+  font-weight: 500;
+}
+
+.custom-permissions-indicator {
+  padding: 10px 20px;
+  background-color: #fff3cd;
+  border-left: 3px solid #ffc107;
+  margin: 10px 0;
+}
+
+.custom-permissions-indicator small {
+  color: #856404;
+  font-weight: 500;
+}
+
+.no-menu-message {
+  padding: 20px;
+  text-align: center;
+  color: #6c757d;
+}
+
+.no-menu-message p {
+  margin: 10px 0;
+  font-size: 14px;
+}
+
+.debug-info {
+  padding: 10px 20px;
+  background-color: #f1f3f4;
+  border-top: 1px solid #dee2e6;
+  margin-top: auto;
+}
+
+.debug-info small {
+  color: #6c757d;
+  font-size: 11px;
+}
+
+.debug-btn {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  font-size: 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.debug-btn:hover {
+  background: #5a6268;
+}
+
+/* Icônes personnalisées (à adapter selon vos icônes) */
+.icon-settings::before { content: "⚙️"; }
+.icon-users::before { content: "👥"; }
+.icon-book::before { content: "📚"; }
+.icon-layout::before { content: "📋"; }
+.icon-user-plus::before { content: "👤+"; }
+.icon-equal::before { content: "⚖️"; }
+.icon-route::before { content: "🛤️"; }
+.icon-folder::before { content: "📁"; }
+.icon-bar-chart::before { content: "📊"; }
+.icon-tag::before { content: "🏷️"; }
+.icon-help-circle::before { content: "❓"; }
+.icon-refresh-cw::before { content: "🔄"; }
+.icon-play-circle::before { content: "▶️"; }
+.icon-user-check::before { content: "✅"; }
+.icon-graduation-cap::before { content: "🎓"; }
+.icon-lightbulb::before { content: "💡"; }
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .main-menu {
+    min-height: auto;
+  }
+  
+  .menu-item {
+    padding: 10px 15px;
+    font-size: 13px;
+  }
+  
+  .submenu-item {
+    padding: 8px 15px 8px 35px;
+    font-size: 12px;
+  }
+}

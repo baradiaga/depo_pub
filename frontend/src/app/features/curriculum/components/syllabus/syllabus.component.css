@@ -1,0 +1,48 @@
+.syllabus-container {
+  padding: 20px;
+  max-width: 900px;
+  margin: 0 auto;
+  background-color: #fff;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+}
+
+.syllabus-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.syllabus-table th,
+.syllabus-table td {
+  border: 1px solid #ddd;
+  padding: 12px 15px;
+  text-align: left;
+  word-wrap: break-word;
+}
+
+.syllabus-table th {
+  background-color: #1c5980;
+  color: white;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.syllabus-table tr:hover {
+  background-color: #f1f9ff;
+  cursor: pointer;
+}
+
+@media (max-width: 600px) {
+  .syllabus-container {
+    padding: 10px;
+  }
+  .syllabus-table th,
+  .syllabus-table td {
+    padding: 8px 10px;
+    font-size: 14px;
+  }
+}

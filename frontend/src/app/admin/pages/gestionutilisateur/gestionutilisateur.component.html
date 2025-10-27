@@ -1,0 +1,60 @@
+<div class="toggle-buttons">
+  <button class="btn primary" (click)="afficherFormulaireUtilisateur = !afficherFormulaireUtilisateur">
+    {{ afficherFormulaireUtilisateur ? 'Fermer le formulaire' : 'Ajouter un utilisateur' }}
+  </button>
+
+  <button class="btn secondary" (click)="afficherListeUtilisateurs = !afficherListeUtilisateurs">
+    {{ afficherListeUtilisateurs ? 'Masquer la liste' : 'Lister les utilisateurs' }}
+  </button>
+</div>
+
+<!-- Formulaire d'ajout -->
+<div *ngIf="afficherFormulaireUtilisateur">
+  <h2 class="title">Ajouter un utilisateur</h2>
+
+  <form (ngSubmit)="ajouterUtilisateur()" class="form-container">
+    <input [(ngModel)]="nouvelUtilisateur.nom" name="nom" placeholder="Nom" class="input" required />
+    <input [(ngModel)]="nouvelUtilisateur.prenom" name="prenom" placeholder="Prénom" class="input" required />
+    <input [(ngModel)]="nouvelUtilisateur.email" name="email" placeholder="Email" class="input" type="email" required />
+    <select [(ngModel)]="nouvelUtilisateur.role" name="role" class="input" required>
+      <option value="">-- Rôle --</option>
+      <option *ngFor="let role of rolesDisponibles" [value]="role">{{ role }}</option>
+    </select>
+    <input [(ngModel)]="nouvelUtilisateur.motDePasse" name="motDePasse" placeholder="Mot de passe" class="input" type="password" required />
+    <button class="btn primary" type="submit">Ajouter</button>
+  </form>
+</div>
+
+<!-- Liste des utilisateurs -->
+<div *ngIf="afficherListeUtilisateurs">
+  <h2 class="title">Utilisateurs existants</h2>
+
+  <table class="users-table">
+    <thead>
+      <tr>
+        <th>Nom</th>
+        <th>Prénom</th>
+        <th>Email</th>
+        <th>Rôle</th>
+        <th>Changer de rôle</th>
+        <th>Supprimer</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let user of utilisateurs">
+        <td>{{ user.nom }}</td>
+        <td>{{ user.prenom }}</td>
+        <td>{{ user.email }}</td>
+        <td><strong>{{ user.role }}</strong></td>
+        <td>
+          <select [(ngModel)]="user.role" (change)="modifierRoleUtilisateur(user)">
+            <option *ngFor="let role of rolesDisponibles" [value]="role">{{ role }}</option>
+          </select>
+        </td>
+        <td>
+          <button class="btn danger" (click)="supprimerUtilisateur(user)">Supprimer</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

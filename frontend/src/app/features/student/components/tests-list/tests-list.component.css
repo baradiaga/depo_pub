@@ -1,0 +1,131 @@
+.tests-container {
+  max-width: 900px;
+  margin: 20px auto;
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #fefefe;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+.chapitre-titre {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 20px;
+  border-bottom: 3px solid #2980b9;
+  padding-bottom: 8px;
+  text-align: center;
+}
+
+.qcm-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 15px;
+}
+
+.qcm-table th, .qcm-table td {
+  border: 1px solid #ccc;
+  padding: 10px 12px;
+  text-align: center;
+  vertical-align: middle;
+  font-size: 1rem;
+}
+
+.qcm-table thead {
+  background-color: #2980b9;
+  color: white;
+}
+
+.question-text {
+  text-align: left;
+  font-weight: 600;
+  color: #34495e;
+}
+
+input[type="radio"] {
+  transform: scale(1.2);
+  cursor: pointer;
+  margin-right: 6px;
+  accent-color: #2980b9;
+}
+
+label {
+  cursor: pointer;
+  user-select: none;
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+}
+
+.page-info {
+  font-weight: 700;
+  color: #7f8c8d;
+  align-self: center;
+  user-select: none;
+}
+
+button {
+  background-color: #2980b9;
+  border: none;
+  color: white;
+  padding: 12px 25px;
+  font-size: 1rem;
+  font-weight: 700;
+  border-radius: 5px;
+  cursor: pointer;
+  box-shadow: 0 5px 8px rgba(41, 128, 185, 0.5);
+  transition: background-color 0.3s ease;
+}
+
+button:hover:not(:disabled) {
+  background-color: #1c5980;
+}
+
+button:disabled {
+  background-color: #bdc3c7;
+  cursor: not-allowed;
+}
+
+/* Centrage du bouton Valider */
+.valider-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 30px;
+}
+
+.valider-container button {
+  padding: 12px 25px;
+  font-size: 1rem;
+  background-color: #2980b9;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 700;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  transition: background-color 0.3s ease;
+}
+
+.valider-container button:disabled {
+  background-color: #bdc3c7;
+  cursor: not-allowed;
+}
+
+.valider-container button:hover:not(:disabled) {
+  background-color: #1c5980;
+}
+
+/* Message d’erreur */
+.erreur-message {
+  margin-top: 12px;
+  color: red;
+  font-size: 14px;
+  text-align: center;
+}

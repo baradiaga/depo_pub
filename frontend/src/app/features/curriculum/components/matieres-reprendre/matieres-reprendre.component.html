@@ -1,0 +1,46 @@
+<!-- Barre de recherche -->
+<input type="text" class="form-control mb-4" placeholder="Rechercher une matière..." 
+       [(ngModel)]="searchTerm" (input)="filterMatieres()">
+
+<!-- Titre -->
+<h3>Matières à Reprendre</h3>
+
+<!-- Tableau des matières -->
+<table class="table table-hover">
+  <thead>
+    <tr>
+      <th>UE</th>
+      <th>Ordre</th>
+      <th>EC</th>
+      <th>Coefficient</th>
+      <th>Syllabus</th>
+      <th>Statut</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- Boucle sur la liste des matières filtrées -->
+    <tr *ngFor="let matiere of filteredMatieres">
+      <td>{{ matiere.ue }}</td>
+      <td>{{ matiere.ordre }}</td>
+      <td>{{ matiere.ec }}</td>
+      <td>{{ matiere.coefficient }}</td>
+        <td>
+      <a [routerLink]="['/app/curriculum/matieres', matiere.matiereId]">Voir le syllabus</a>
+   </td>
+      <td>
+        <span class="badge" 
+              [ngClass]="{'badge-warning': matiere.statut === 'À reprendre', 'badge-success': matiere.statut === 'Terminé'}">
+          {{ matiere.statut }}
+        </span>
+      </td>
+      <td>
+        <button class="btn btn-primary btn-sm">Action</button>
+      </td>
+    </tr>
+    <!-- Message si aucune matière n'est trouvée -->
+    <tr *ngIf="filteredMatieres.length === 0">
+      <td colspan="7" class="text-center">Aucune matière à afficher.</td>
+    </tr>
+  </tbody>
+</table>

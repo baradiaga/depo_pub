@@ -1,0 +1,44 @@
+.dashboard-container {
+  padding: 2rem;
+}
+
+.dashboard-title {
+  font-size: 24px;
+  margin-bottom: 1rem;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 1rem;
+}
+
+.card {
+  background-color: #f4f4f4;
+  border-radius: 10px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: 0.3s;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.card:hover {
+  background-color: #e0f7fa;
+}
+
+.card-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.card-content h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.card-content p {
+  margin: 0.5rem 0 0;
+  font-size: 14px;
+  color: #555;
+}

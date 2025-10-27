@@ -1,0 +1,151 @@
+/* ================= Thème clair par défaut ================= */
+.light-theme {
+  --primary-color: #1c5980;        /* Couleur principale (liens, accents) */
+  --primary-text: #2c3e50;         /* Texte principal */
+  --bg-color: #ffffff;             /* Fond général */
+
+  /* Tableaux */
+  --table-header-bg: var(--primary-color);
+  --table-header-text: #ffffff;
+  --row-hover: #e8f1f8;
+
+  /* Cases à cocher */
+  --checkbox-checked-bg: var(--primary-color);
+
+  /* Boutons */
+  --btn-bg: var(--primary-color);
+  --btn-bg-hover: #154663;
+
+  /* Cartes / inputs / ombres */
+  --card-shadow: rgba(0, 0, 0, 0.1);
+  --input-bg: #ffffff;
+  --input-text: #2c3e50;
+}
+
+/* ================= Thème sombre ================= */
+.dark-theme {
+  /* Couleur principale (liens, accents) */
+  --primary-color: #1c9ae0;        /* Bleu clair pour accents */
+  --primary-text: #ffffff;         /* Texte principal */
+  
+  /* Fond général */
+  --bg-color: #2b2c3a;             /* Bleu-gris sombre */
+  
+  /* Tableaux */
+  --table-header-bg: #3a3b4d;      /* Header plus visible */
+  --table-header-text: #ffffff;
+  --row-hover: #3f4160;            /* Survol plus contrasté */
+  
+  /* Cases à cocher */
+  --checkbox-checked-bg: #1c9ae0;  /* Bleu vif pour contraste */
+  
+  /* Boutons */
+  --btn-bg: #3a3b4d;               /* Fond boutons sombre */
+  --btn-bg-hover: #1c9ae0;         /* Bleu vif au hover */
+  
+  /* Cartes / inputs / ombres */
+  --card-shadow: rgba(0, 0, 0, 0.3);
+  --input-bg: #3a3b4d;             /* Fond champs formulaires */
+  --input-text: #ffffff;           /* Texte champs formulaires */
+}
+
+/* ================= Application globale ================= */
+body {
+  background-color: var(--bg-color);
+  color: var(--primary-text);
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* ================= Textes et éléments ================= */
+.light-theme p, .light-theme span, .light-theme li, .light-theme h1, 
+.light-theme h2, .light-theme h3, .light-theme h4, .light-theme h5, 
+.light-theme h6, .light-theme a, .light-theme button, .light-theme label,
+.light-theme input, .light-theme select, .light-theme textarea {
+  color: var(--primary-text);
+}
+
+.dark-theme p, .dark-theme span, .dark-theme li, .dark-theme h1, 
+.dark-theme h2, .dark-theme h3, .dark-theme h4, .dark-theme h5, 
+.dark-theme h6, .dark-theme a, .dark-theme button, .dark-theme label,
+.dark-theme input, .dark-theme select, .dark-theme textarea {
+  color: var(--primary-text);
+}
+
+/* ================= Boutons ================= */
+button {
+  background-color: var(--btn-bg);
+  color: var(--primary-text);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 6px 12px;
+  transition: background 0.2s, color 0.2s;
+}
+
+button:hover {
+  background-color: var(--btn-bg-hover);
+  color: var(--primary-text);
+}
+
+/* ================= Inputs et selects ================= */
+input, select, textarea {
+  background-color: var(--input-bg);
+  color: var(--input-text);
+  border: 1px solid #555;
+  border-radius: 4px;
+  padding: 5px 8px;
+}
+
+/* ================= Cartes ================= */
+.card {
+  background-color: var(--bg-color);
+  color: var(--primary-text);
+  box-shadow: 0 2px 6px var(--card-shadow);
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 15px;
+}
+
+/* ================= Tableaux ================= */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: var(--bg-color);
+  color: var(--primary-text);
+}
+
+th {
+  background-color: var(--table-header-bg);
+  color: var(--table-header-text);
+  padding: 8px;
+  text-align: left;
+}
+
+tr:hover {
+  background-color: var(--row-hover);
+}
+
+td {
+  padding: 8px;
+  border-bottom: 1px solid #ccc;
+}
+
+/* ================= Cases à cocher ================= */
+input[type="checkbox"]:checked {
+  background-color: var(--checkbox-checked-bg);
+}
+
+/* ================= Badges ================= */
+.badge {
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.85em;
+  font-weight: bold;
+  text-transform: capitalize;
+}
+
+.badge.non\ commencé { background-color: #dc3545; color: white; }
+.badge.en\ cours { background-color: #ffc107; color: #212529; }
+.badge.terminé { background-color: #28a745; color: white; }

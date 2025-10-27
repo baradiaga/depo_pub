@@ -1,0 +1,65 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Liste des Chapitres par Matière</h2>
+    <!-- Optionnel : Bouton pour rafraîchir les données -->
+    <button class="btn btn-sm btn-outline-primary" (click)="chargerDonneesDepuisBackend()">
+      <i class="bi bi-arrow-clockwise"></i> Rafraîchir
+    </button>
+  </div>
+  <hr>
+
+  <!-- 
+    CORRECTION : La boucle principale itère maintenant sur 'matieresAvecDetails', 
+    qui est la variable remplie par l'appel API.
+  -->
+  <div *ngFor="let matiere of matieresAvecDetails" class="card mb-3 shadow-sm">
+    
+    <!-- En-tête cliquable pour chaque matière -->
+    <div class="card-header bg-light" (click)="toggleContenu(matiere.nom)" style="cursor: pointer;">
+      <h4 class="mb-0 d-flex justify-content-between align-items-center">
+        {{ matiere.nom }}
+        <span *ngIf="matiere.chapitres.length > 0" class="badge bg-primary rounded-pill">
+          {{ matiere.chapitres.length }} chapitre(s)
+        </span>
+      </h4>
+    </div>
+
+    <!-- Contenu affiché/masqué conditionnellement avec une petite animation -->
+    <div *ngIf="isContenuVisible(matiere.nom)" class="card-body">
+      <ul class="list-group list-group-flush">
+        
+        <!-- Boucle sur les chapitres de la matière actuelle -->
+        <li *ngFor="let chapitre of matiere.chapitres" class="list-group-item">
+          
+          <!-- 
+            CORRECTION : On utilise 'chapitre.nom' au lieu de 'chapitre.titre' 
+            pour correspondre à l'interface 'ChapitrePourListe'.
+          -->
+          <h5>{{ chapitre.nom }} (Niveau {{ chapitre.niveau }})</h5>
+          
+          <p class="mb-2 text-muted">
+            <strong>Objectif :</strong> {{ chapitre.objectif || 'Non défini' }}
+          </p>
+          
+          <!-- Lien pour aller vers le composant de construction/remplissage du chapitre -->
+          <a [routerLink]="['/admin/gestion-chapitre']" [queryParams]="{ matiere: matiere.nom, niveau: chapitre.niveau }" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-pencil-square"></i> Modifier le contenu
+          </a>
+        </li>
+
+        <!-- Message si une matière n'a pas encore de chapitres -->
+        <li *ngIf="matiere.chapitres.length === 0" class="list-group-item text-muted fst-italic">
+          Aucun chapitre défini pour cette matière.
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 
+    Message affiché si aucune matière n'est retournée par le backend.
+    J'ai ajouté une condition pour ne pas l'afficher pendant le chargement.
+  -->
+  <div *ngIf="matieresAvecDetails.length === 0" class="alert alert-info mt-4">
+    Aucune matière avec des chapitres n'a été trouvée dans la base de données.
+  </div>
+</div>

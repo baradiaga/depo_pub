@@ -1,0 +1,52 @@
+<div class="container">
+  <h2 class="title">Gestion des Catégories</h2>
+
+  <!-- Ajout -->
+  <div class="form">
+    <input [(ngModel)]="nouvelleCategorie.nom" placeholder="Nom de la catégorie" />
+
+    <!-- Liste déroulante pour échelle de connaissance -->
+    <select [(ngModel)]="nouvelleCategorie.echelleConnaissance">
+      <option *ngFor="let echelle of echellesConnaissance" [value]="echelle">{{ echelle }}</option>
+    </select>
+
+    <button (click)="ajouterCategorie()">Ajouter</button>
+  </div>
+
+  <!-- Liste -->
+  <table>
+    <thead>
+      <tr>
+        <th> categories</th>
+        <th>Échelle de connaissance</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let categorie of categories">
+        <!-- Affichage normal -->
+        <td *ngIf="editionCategorie?.id !== categorie.id">{{ categorie.nom }}</td>
+        <td *ngIf="editionCategorie?.id !== categorie.id">{{ categorie.echelleConnaissance }}</td>
+
+        <!-- Mode édition -->
+        <td *ngIf="editionCategorie?.id === categorie.id">
+          <input [(ngModel)]="editionCategorie.nom" />
+        </td>
+        <td *ngIf="editionCategorie?.id === categorie.id">
+          <select [(ngModel)]="editionCategorie.echelleConnaissance">
+            <option *ngFor="let echelle of echellesConnaissance" [value]="echelle">{{ echelle }}</option>
+          </select>
+        </td>
+
+        <!-- Actions -->
+        <td>
+          <button *ngIf="editionCategorie?.id !== categorie.id" (click)="startEdition(categorie)">Modifier</button>
+          <button *ngIf="editionCategorie?.id !== categorie.id" (click)="supprimerCategorie(categorie.id)">Supprimer</button>
+
+          <button *ngIf="editionCategorie?.id === categorie.id" (click)="validerModification()">Valider</button>
+          <button *ngIf="editionCategorie?.id === categorie.id" (click)="annulerModification()">Annuler</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

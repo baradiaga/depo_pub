@@ -1,0 +1,68 @@
+.parcours-container {
+  padding: 1rem;
+}
+
+.matiere-section {
+  margin-bottom: 2rem;
+}
+
+/* ✅ Centre le nom de la matière (h3) */
+.matiere-section h3 {
+  margin-bottom: 0.5rem;
+  color: #2c3e50;
+  text-align: center;
+}
+
+/* ✅ grille fluide */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+/* ✅ cartes compactes */
+.card {
+  background: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  transition: transform 0.2s;
+  /* ✅ Optionnel : Centrer le contenu de la carte */
+  /* text-align: center; */
+}
+
+.card:hover {
+  transform: scale(1.03);
+}
+
+/* ✅ Centre le titre de la recommandation (h4) */
+.card h4 {
+  margin: 0 0 6px 0;
+  font-size: 1rem;
+  font-weight: bold;
+  color: #34495e;
+  text-align: center;
+}
+
+/* ✅ score coloré */
+.score-faible { color: red; font-weight: bold; }
+.score-moyen { color: orange; font-weight: bold; }
+.score-eleve { color: green; font-weight: bold; }
+
+/* ✅ bouton réduit */
+.btn-voir {
+  margin-top: 8px;
+  padding: 4px 8px;
+  font-size: 0.8rem;
+  border: none;
+  background: #3498db;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-voir:hover {
+  background: #2980b9;
+}
