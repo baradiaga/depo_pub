@@ -6,14 +6,28 @@ import { Observable } from 'rxjs';
 
 // L'import de 'environment' est supprimé
 
-export interface ElementConstitutif {
+export interface EnseignantDto {
+  id: number;
+  nom: string;
+  prenom: string;
+}
+
+export interface ElementConstitutifRequest {
   id?: number;
   nom: string;
   code: string;
   description: string;
   credit: number;
   enseignantId: number | null;
-  enseignantNom?: string;
+}
+
+export interface ElementConstitutifResponse {
+  id?: number;
+  nom: string;
+  code: string;
+  description: string;
+  credit: number;
+  enseignant: EnseignantDto | null;
 }
 
 @Injectable({
@@ -27,16 +41,16 @@ export class ElementConstitutifService {
 
   constructor(private http: HttpClient ) { }
 
-  getElementsForUnite(ueId: number): Observable<ElementConstitutif[]> {
-    return this.http.get<ElementConstitutif[]>(`${this.baseUrl}/unites-enseignement/${ueId}/elements-constitutifs` );
+  getElementsForUnite(ueId: number): Observable<ElementConstitutifResponse[]> {
+    return this.http.get<ElementConstitutifResponse[]>(`${this.baseUrl}/unites-enseignement/${ueId}/elements-constitutifs` );
   }
 
-  create(ueId: number, element: ElementConstitutif): Observable<ElementConstitutif> {
-    return this.http.post<ElementConstitutif>(`${this.baseUrl}/unites-enseignement/${ueId}/elements-constitutifs`, element );
+  create(ueId: number, element: ElementConstitutifRequest): Observable<ElementConstitutifResponse> {
+    return this.http.post<ElementConstitutifResponse>(`${this.baseUrl}/unites-enseignement/${ueId}/elements-constitutifs`, element );
   }
 
-  update(id: number, element: ElementConstitutif): Observable<ElementConstitutif> {
-    return this.http.put<ElementConstitutif>(`${this.baseUrl}/elements-constitutifs/${id}`, element );
+  update(id: number, element: ElementConstitutifRequest): Observable<ElementConstitutifResponse> {
+    return this.http.put<ElementConstitutifResponse>(`${this.baseUrl}/elements-constitutifs/${id}`, element );
   }
 
   delete(id: number): Observable<void> {

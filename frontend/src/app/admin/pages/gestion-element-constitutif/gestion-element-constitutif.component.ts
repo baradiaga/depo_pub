@@ -6,7 +6,7 @@ import { ToastrService } from 'ngx-toastr';
 import { Observable } from 'rxjs';
 
 import { UniteEnseignement, UniteEnseignementService } from '../../../services/unite-enseignement.service';
-import { ElementConstitutif, ElementConstitutifService } from '../../../services/element-constitutif.service';
+import { ElementConstitutifService, ElementConstitutifResponse, ElementConstitutifRequest } from '../../../services/element-constitutif.service';
 import { Utilisateur, UtilisateurService } from '../../../services/utilisateur.service';
 
 @Component({
@@ -20,7 +20,7 @@ export class GestionElementConstitutifComponent implements OnInit {
   unites$!: Observable<UniteEnseignement[]>;
   enseignants$!: Observable<Utilisateur[]>;
 
-  elements: ElementConstitutif[] = [];
+  elements: ElementConstitutifResponse[] = [];
   selectedUniteId: number | null = null;
   isLoadingElements = false;
   isFormVisible = false;
@@ -85,7 +85,7 @@ export class GestionElementConstitutifComponent implements OnInit {
     this.elementForm.reset();
   }
 
-  showEditForm(element: ElementConstitutif): void {
+  showEditForm(element: ElementConstitutifResponse): void {
     this.isEditing = true;
     this.isFormVisible = true;
     this.elementForm.patchValue({
@@ -97,7 +97,7 @@ export class GestionElementConstitutifComponent implements OnInit {
       // =======================================================
       credit: element.credit,
       description: element.description,
-      enseignantId: element.enseignantId
+      enseignantId: element.enseignant ? element.enseignant.id : null
     });
   }
 
@@ -112,7 +112,7 @@ export class GestionElementConstitutifComponent implements OnInit {
     }
     if (!this.selectedUniteId) return;
 
-    const formData = this.elementForm.value;
+    const formData: ElementConstitutifRequest = this.elementForm.value;
     console.log('Données envoyées au back-end :', formData);
 
     const action$ = this.isEditing

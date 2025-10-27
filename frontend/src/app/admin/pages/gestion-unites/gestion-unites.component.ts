@@ -53,7 +53,7 @@ export class GestionUnitesComponent implements OnInit {
   }
 
   initUe(): UniteEnseignement {
-    return { nom: '', code: '', description: '', credit: 0, semestre: 1, nomResponsable: '', objectifs: '' };
+    return { nom: '', code: '', description: '', credit: 0, semestre: 1, objectifs: '' };
   }
 
   nouvelleUe(): void {

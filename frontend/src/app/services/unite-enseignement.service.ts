@@ -12,7 +12,7 @@ export interface UniteEnseignement {
   description: string;
   credit: number;
   semestre: number;
-  nomResponsable: string;
+  responsable?: { id: number, nom: string, prenom: string };
   objectifs: string;
 }
 
