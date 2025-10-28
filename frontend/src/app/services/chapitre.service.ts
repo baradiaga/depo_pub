@@ -9,7 +9,7 @@ export interface ChapitrePayload {
   titre: string;
   niveau: number;
   objectif: string;
-  sections: { titre: string }[];
+  sections: { titre: string, contenu: string }[];
 }
 
 /**

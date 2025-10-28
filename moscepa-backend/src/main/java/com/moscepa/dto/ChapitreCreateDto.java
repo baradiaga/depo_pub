@@ -43,10 +43,14 @@ public class ChapitreCreateDto {
     /**
      * DTO imbriqué pour représenter une section.
      */
-    public static class SectionDto {
-        private String titre;
-
-        public String getTitre() { return titre; }
-        public void setTitre(String titre) { this.titre = titre; }
-    }
+        public static class SectionDto {
+            private String titre;
+            private String contenu; // Ajout du contenu
+    
+            public String getTitre() { return titre; }
+            public void setTitre(String titre) { this.titre = titre; }
+    
+            public String getContenu() { return contenu; }
+            public void setContenu(String contenu) { this.contenu = contenu; }
+        }
 }

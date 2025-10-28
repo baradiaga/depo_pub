@@ -104,7 +104,7 @@
                   <td>{{ el.nom }}</td>
                   <td>{{ el.code }}</td>
                   <td>{{ el.credit }}</td>
-                  <td>{{ el.enseignantNom }}</td>
+	                  <td>{{ el.enseignant ? el.enseignant.prenom + ' ' + el.enseignant.nom : 'Non assigné' }}</td>
                   <td class="text-end">
                     <button (click)="showEditForm(el)" class="btn btn-sm btn-outline-warning me-2" title="Modifier"><i class="fas fa-edit"></i></button>
                     <button (click)="onDelete(el.id)" class="btn btn-sm btn-outline-danger" title="Supprimer"><i class="fas fa-trash"></i></button>
