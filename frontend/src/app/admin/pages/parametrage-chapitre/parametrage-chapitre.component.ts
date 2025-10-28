@@ -13,7 +13,7 @@ export class ParametrageChapitreComponent implements OnInit {
   matieres: string[] = []; // <-- Initialisé comme un tableau vide
   titre: string = '';
   objectif: string = '';
-  sections: { titre: string }[] = [{ titre: '' }];
+  sections: { titre: string, contenu: string }[] = [{ titre: '', contenu: '' }];
   afficherTableau: boolean = false;
 
   // 2. INJECTER MatiereService dans le constructeur
@@ -49,11 +49,11 @@ export class ParametrageChapitreComponent implements OnInit {
   // ... toutes les autres méthodes (majStructure, enregistrerChapitre, etc.) restent inchangées ...
 
   majStructure() {
-    this.sections = Array(this.niveau).fill(null).map(() => ({ titre: '' }));
+    this.sections = Array(this.niveau).fill(null).map(() => ({ titre: '', contenu: '' }));
   }
 
   ajouterSection() {
-    this.sections.push({ titre: '' });
+    this.sections.push({ titre: '', contenu: '' });
   }
 
   supprimerSection(index: number) {
