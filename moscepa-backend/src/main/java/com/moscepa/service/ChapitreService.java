@@ -63,6 +63,7 @@ public class ChapitreService {
                 .map(sectionDto -> {
                     Section section = new Section();
                     section.setTitre(sectionDto.getTitre());
+                    section.setContenu(sectionDto.getContenu()); // Remplir le contenu de la section
                     section.setChapitre(nouveauChapitre); // Lier chaque section au chapitre parent.
                     return section;
                 })
