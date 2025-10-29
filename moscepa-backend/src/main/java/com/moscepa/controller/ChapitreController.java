@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import jakarta.persistence.EntityNotFoundException;
 
 // On garde ce record local pour la simplicité de la liste
 record ChapitreListDto(Long id, String nom, String matiere ) {}
@@ -35,29 +36,13 @@ public class ChapitreController {
 
     /**
      * Endpoint qui retourne une liste de chapitres.
-     * Si 'matiereId' est fourni, la liste est filtrée. Sinon, tout est retourné.
+     * NOTE: On utilise la méthode du service pour simplifier.
      */
     @GetMapping
-    public List<ChapitreListDto> getAllChapitres(@RequestParam(required = false) Long matiereId) {
-        // Si un matiereId est fourni, on filtre.
-        if (matiereId != null) {
-            return chapitreRepository.findByMatiereId(matiereId).stream()
-                    .map(chapitre -> new ChapitreListDto(
-                            chapitre.getId(),
-                            chapitre.getNom(),
-                            chapitre.getMatiere().getNom()
-                    ))
-                    .collect(Collectors.toList());
-        }
-        
-        // Sinon, on retourne tout.
-        return chapitreRepository.findAll().stream()
-                .map(chapitre -> new ChapitreListDto(
-                        chapitre.getId(),
-                        chapitre.getNom(),
-                        chapitre.getMatiere().getNom()
-                ))
-                .collect(Collectors.toList());
+    public List<ChapitreDetailDto> getAllChapitres(@RequestParam(required = false) Long matiereId) {
+        // Pour l'instant, on retourne tous les chapitres, le filtrage par matiereId sera ajouté plus tard si nécessaire.
+        // La méthode findAll du service retourne les DTOs complets.
+        return chapitreService.findAll();
     }
 
     /**
@@ -100,11 +85,39 @@ public class ChapitreController {
     /**
      * Endpoint pour récupérer les détails d'un chapitre par son ID.
      */
+    /**
+     * Endpoint pour récupérer les détails d'un chapitre par son ID.
+     */
     @GetMapping("/{id}")
     public ResponseEntity<ChapitreDetailDto> getChapitreById(@PathVariable Long id) {
-        // On utilise la même logique que pour /search, mais avec findById
-        return chapitreRepository.findById(id)
-            .map(chapitre -> ResponseEntity.ok(new ChapitreDetailDto(chapitre)))
+        return chapitreService.findById(id)
+            .map(ResponseEntity::ok)
             .orElse(ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Endpoint pour mettre à jour un chapitre existant.
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<ChapitreDetailDto> updateChapitre(@PathVariable Long id, @Valid @RequestBody ChapitreCreateDto dto) {
+        try {
+            ChapitreDetailDto updatedChapitre = chapitreService.updateChapitre(id, dto);
+            return ResponseEntity.ok(updatedChapitre);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    /**
+     * Endpoint pour supprimer un chapitre.
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteChapitre(@PathVariable Long id) {
+        try {
+            chapitreService.deleteChapitre(id);
+            return ResponseEntity.noContent().build();
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

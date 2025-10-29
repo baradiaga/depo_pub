@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Optional;
+import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,12 +25,79 @@ public class ChapitreService {
 
     private final ChapitreRepository chapitreRepository;
     private final MatiereRepository matiereRepository;
+    
+    // DTO simple pour la liste, si ChapitreDetailDto est trop lourd
+    // Je vais utiliser ChapitreDetailDto pour l'instant, mais je pourrais créer un ChapitreListDto plus tard.
+    public record ChapitreListDto(Long id, String titre, String matiereNom) {}
 
     @Autowired
     public ChapitreService(ChapitreRepository chapitreRepository, MatiereRepository matiereRepository) {
         this.chapitreRepository = chapitreRepository;
         this.matiereRepository = matiereRepository;
     }
+
+    /**
+     * Récupère tous les chapitres sous forme de DTO de détail.
+     */
+    @Transactional(readOnly = true)
+    public List<ChapitreDetailDto> findAll() {
+        return chapitreRepository.findAll().stream()
+                .map(ChapitreDetailDto::new)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Récupère un chapitre par son ID.
+     */
+    @Transactional(readOnly = true)
+    public Optional<ChapitreDetailDto> findById(Long id) {
+        return chapitreRepository.findById(id)
+                .map(ChapitreDetailDto::new);
+    }
+
+    /**
+     * Met à jour un chapitre existant.
+     * NOTE: L'implémentation complète des sections est complexe (diffing).
+     * Pour l'instant, on se concentre sur les champs principaux.
+     */
+    @Transactional
+    public ChapitreDetailDto updateChapitre(Long id, ChapitreCreateDto dto) {
+        Chapitre existingChapitre = chapitreRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Chapitre non trouvé avec l'ID: " + id));
+
+        Matiere matiere = matiereRepository.findByNom(dto.getMatiere())
+                .orElseThrow(() -> new RuntimeException("Matière non trouvée avec le nom: " + dto.getMatiere()));
+
+        // Mise à jour des champs de base
+        existingChapitre.setNom(dto.getTitre());
+        existingChapitre.setNiveau(dto.getNiveau());
+        existingChapitre.setObjectif(dto.getObjectif());
+        existingChapitre.setMatiere(matiere);
+
+        // NOTE: La gestion des sections doit être améliorée pour l'UPDATE.
+        // Ici, on ne fait que la mise à jour des champs principaux.
+        // Pour une gestion complète des sections (ajout/suppression/modification),
+        // il faudrait une logique de "diffing" des listes.
+        // Pour l'instant, nous allons ignorer les sections dans l'update pour ne pas
+        // risquer de supprimer des données sans un DTO d'update plus précis.
+
+        Chapitre chapitreSauvegarde = chapitreRepository.save(existingChapitre);
+        return new ChapitreDetailDto(chapitreSauvegarde);
+    }
+
+    /**
+     * Supprime un chapitre par son ID.
+     */
+    @Transactional
+    public void deleteChapitre(Long id) {
+        if (!chapitreRepository.existsById(id)) {
+            throw new EntityNotFoundException("Chapitre non trouvé avec l'ID: " + id);
+        }
+        chapitreRepository.deleteById(id);
+    }
+    
+    // --- Ancienne méthode creerChapitre (pour référence) ---
+    
 
     /**
      * Crée un nouveau chapitre et ses sections associées à partir d'un DTO.
