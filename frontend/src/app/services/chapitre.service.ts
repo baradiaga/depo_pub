@@ -29,11 +29,12 @@ export interface ChapitreDetail {
 /**
  * Interface légère pour les listes de chapitres.
  */
-export interface ChapitreInfo {
-  id: number;
-  nom: string;
-  matiere: string;
-}
+// L'interface ChapitreInfo n'est plus nécessaire car le backend retourne ChapitreDetail pour la liste.
+// export interface ChapitreInfo {
+//   id: number;
+//   nom: string;
+//   matiere: string;
+// }
 
 @Injectable({
   providedIn: 'root'
@@ -46,8 +47,20 @@ export class ChapitreService {
 
   // --- Méthodes ---
 
-  creerChapitre(chapitre: ChapitrePayload): Observable<any> {
-    return this.http.post(this.apiUrl, chapitre );
+  creerChapitre(chapitre: ChapitrePayload): Observable<ChapitreDetail> {
+    return this.http.post<ChapitreDetail>(this.apiUrl, chapitre );
+  }
+
+  getAllChapitres(): Observable<ChapitreDetail[]> {
+    return this.http.get<ChapitreDetail[]>(this.apiUrl);
+  }
+
+  updateChapitre(id: number, chapitre: ChapitrePayload): Observable<ChapitreDetail> {
+    return this.http.put<ChapitreDetail>(`${this.apiUrl}/${id}`, chapitre);
+  }
+
+  deleteChapitre(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
   /**
@@ -65,8 +78,8 @@ export class ChapitreService {
   /**
    * Récupère la liste des chapitres pour une matière spécifique.
    */
-  getChapitresParMatiere(matiereId: number): Observable<ChapitreInfo[]> {
+  getChapitresParMatiere(matiereId: number): Observable<ChapitreDetail[]> {
     const params = { matiereId: matiereId.toString() };
-    return this.http.get<ChapitreInfo[]>(this.apiUrl, { params } );
+    return this.http.get<ChapitreDetail[]>(this.apiUrl, { params } );
   }
 }
