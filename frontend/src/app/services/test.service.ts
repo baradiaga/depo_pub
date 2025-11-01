@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { EtudiantTestsDashboard } from '../models/dashboard.model';
 
 // --- Interfaces ---
 
@@ -22,6 +23,7 @@ export interface ResultatTest {
 } )
 export class TestService {
   private apiUrl = 'http://localhost:8080/api/tests';
+  private etudiantApiUrl = 'http://localhost:8080/api/etudiants';
 
   constructor(private http: HttpClient ) { }
 
@@ -39,5 +41,13 @@ export class TestService {
   soumettreReponses(testId: number, reponses: { [key: string]: any }): Observable<ResultatTest> {
     const url = `${this.apiUrl}/${testId}/submit`;
     return this.http.post<ResultatTest>(url, reponses );
+  }
+
+  /**
+   * Récupère les données structurées pour le tableau de bord des tests de l'étudiant.
+   */
+  getEtudiantTestsDashboard(): Observable<EtudiantTestsDashboard> {
+    const url = `${this.etudiantApiUrl}/dashboard/tests`;
+    return this.http.get<EtudiantTestsDashboard>(url);
   }
 }

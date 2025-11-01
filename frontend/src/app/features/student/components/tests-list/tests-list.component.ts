@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TestService, Question, ResultatTest } from '../../../../services/test.service';
 import { ChapitreService, ChapitreDetail } from '../../../../services/chapitre.service';
+import { EtudiantTestsDashboard, MatiereDashboard, ChapitreDashboard, TestDashboard } from '../../../../models/dashboard.model';
 
 @Component({
   selector: 'app-tests-list',
@@ -9,9 +10,15 @@ import { ChapitreService, ChapitreDetail } from '../../../../services/chapitre.s
   styleUrls: ['./tests-list.component.css']
 })
 export class TestsListComponent implements OnInit {
-  chapitreId!: number;
-  matiereId!: number;
-  // ... (autres propriétés)
+  // --- Nouvelles propriétés pour le Dashboard ---
+  dashboard: EtudiantTestsDashboard | null = null;
+  matieres: MatiereDashboard[] = [];
+  matiereSelectionnee: MatiereDashboard | null = null;
+  chapitreSelectionne: ChapitreDashboard | null = null;
+  testSelectionne: TestDashboard | null = null;
+
+  // --- Propriétés pour le Test en cours ---
+  isTestMode = false; // Vrai si un test est en cours de passation
   isLoading = true;
   isSubmitting = false;
   reponsesUtilisateur: Map<number, any> = new Map();
@@ -29,36 +36,54 @@ export class TestsListComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    const idParam = this.route.snapshot.paramMap.get('chapitreId');
-    if (idParam) {
-      this.chapitreId = +idParam;
-      console.log(`[TestsList] ngOnInit: Chapitre ID récupéré de l'URL = ${this.chapitreId}`);
-      this.loadChapitreDetailsAndQuestions();
-    } else {
-      console.error("[TestsList] ngOnInit: Aucun ID de chapitre trouvé dans l'URL !");
-      this.isLoading = false;
-    }
+    // Le composant ne charge plus un test directement via l'URL, mais le dashboard.
+    this.loadDashboard();
   }
 
-  loadChapitreDetailsAndQuestions(): void {
+  loadDashboard(): void {
     this.isLoading = true;
-    console.log(`[TestsList] loadChapitreDetails: Appel du service pour récupérer les détails du chapitre ${this.chapitreId}`);
-    this.chapitreService.getChapitreById(this.chapitreId).subscribe({
-      next: (chapitreDetail) => {
-        this.matiereId = chapitreDetail.matiereId;
-        console.log(`[TestsList] loadChapitreDetails: Matière ID récupérée = ${this.matiereId}`);
-        this.loadQuestions(); // On charge les questions seulement après avoir eu le matiereId
+    this.testService.getEtudiantTestsDashboard().subscribe({
+      next: (data) => {
+        this.dashboard = data;
+        this.matieres = data.matieres;
+        this.isLoading = false;
       },
       error: (err) => {
-        console.error("[TestsList] ERREUR lors du chargement des détails du chapitre", err);
+        console.error("[TestsList] ERREUR lors du chargement du dashboard", err);
         this.isLoading = false;
       }
     });
   }
 
-  loadQuestions(): void {
-    // ... (logique inchangée)
-    this.testService.getQuestionsPourChapitre(this.chapitreId).subscribe({
+  // --- Logique de sélection ---
+
+  selectionnerMatiere(matiere: MatiereDashboard): void {
+    this.matiereSelectionnee = matiere;
+    this.chapitreSelectionne = null;
+    this.testSelectionne = null;
+  }
+
+  selectionnerChapitre(chapitre: ChapitreDashboard): void {
+    this.chapitreSelectionne = chapitre;
+    this.testSelectionne = null;
+  }
+
+  selectionnerTest(test: TestDashboard): void {
+    this.testSelectionne = test;
+    this.questions = [];
+    this.displayedQuestions = [];
+    this.page = 1;
+    this.totalPages = 1;
+    this.reponsesUtilisateur = new Map();
+    this.isTestMode = true;
+    this.loadQuestions(this.chapitreSelectionne!.id); // Les tests sont liés au chapitre
+  }
+
+  // --- Logique de chargement des questions (adaptée) ---
+
+  loadQuestions(chapitreId: number): void {
+    this.isLoading = true;
+    this.testService.getQuestionsPourChapitre(chapitreId).subscribe({
         next: (data) => {
             this.questions = data;
             this.totalPages = Math.ceil(this.questions.length / this.pageSize);
@@ -72,25 +97,30 @@ export class TestsListComponent implements OnInit {
     });
   }
 
+  // --- Logique de validation du test (adaptée) ---
+
   validerTest(): void {
+    if (!this.testSelectionne) return;
+
     this.isSubmitting = true;
     const reponsesAEnvoyer = Object.fromEntries(this.reponsesUtilisateur);
-    const testId = this.chapitreId; 
+    const testId = this.testSelectionne.id; 
 
-    console.log(`[TestsList] validerTest: Soumission du test pour chapitre ID ${testId}`);
     this.testService.soumettreReponses(testId, reponsesAEnvoyer).subscribe({
       next: (resultat: ResultatTest) => {
         this.isSubmitting = false;
-        console.log('[TestsList] validerTest: Réponse du back-end reçue :', resultat);
-
+        
+        // Après la soumission, on revient au dashboard et on le recharge
+        this.isTestMode = false;
+        this.loadDashboard();
+        
+        // On navigue vers la recommandation (si nécessaire)
         const params = { 
           score: resultat.scoreObtenu, 
           total: resultat.totalPointsPossible, 
-          chapitreId: this.chapitreId,
-          matiereId: this.matiereId 
+          chapitreId: this.chapitreSelectionne!.id,
+          matiereId: this.matiereSelectionnee!.id 
         };
-
-        console.log('[TestsList] validerTest: Navigation vers /recommendation avec les paramètres :', params);
         
         this.router.navigate(['/app/student/recommendation'], { queryParams: params });
       },
