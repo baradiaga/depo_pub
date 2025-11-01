@@ -92,5 +92,24 @@ public class EtudiantController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
+
+    /**
+     * Récupère les données structurées pour le tableau de bord des tests de l'étudiant.
+     * Pour l'instant, on utilise un ID d'étudiant fixe (1L) pour le test.
+     */
+    @GetMapping("/dashboard/tests")
+    @Operation(summary = "Récupérer le tableau de bord des tests pour l'étudiant")
+    public ResponseEntity<EtudiantTestsDashboardDto> getEtudiantTestsDashboard() {
+        // NOTE: En production, l'ID de l'étudiant devrait être récupéré via le contexte de sécurité (Spring Security).
+        // Pour le développement, on utilise un ID fixe (1L) ou on le passe en paramètre.
+        // Ici, on suppose que l'étudiant connecté a l'ID 1.
+        Long etudiantId = 1L; 
+        try {
+            EtudiantTestsDashboardDto dashboard = etudiantService.getEtudiantTestsDashboard(etudiantId);
+            return new ResponseEntity<>(dashboard, HttpStatus.OK);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
 }
 

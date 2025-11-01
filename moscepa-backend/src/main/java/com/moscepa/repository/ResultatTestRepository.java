@@ -28,6 +28,12 @@ public interface ResultatTestRepository extends JpaRepository<ResultatTest, Long
     @Query("SELECT r FROM ResultatTest r WHERE r.etudiant.id = :etudiantId AND r.test.id = :testId ORDER BY r.score DESC")
     Optional<ResultatTest> findBestScoreByEtudiantIdAndTestId(@Param("etudiantId") Long etudiantId, @Param("testId") Long testId);
 
+    /**
+     * Récupère le meilleur score (le plus élevé) obtenu par un étudiant pour un test donné.
+     */
+    @Query("SELECT MAX(r.score) FROM ResultatTest r WHERE r.etudiant.id = :etudiantId AND r.test.id = :testId")
+    Optional<Double> findMaxScoreByEtudiantAndTest(@Param("etudiantId") Long etudiantId, @Param("testId") Long testId);
+
     @Query("SELECT AVG(r.score) FROM ResultatTest r WHERE r.test.id = :testId")
     Double findAverageScoreByTestId(@Param("testId") Long testId);
 

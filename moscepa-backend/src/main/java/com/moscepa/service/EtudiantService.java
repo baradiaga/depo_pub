@@ -1,8 +1,15 @@
 package com.moscepa.service;
 
 import com.moscepa.dto.EtudiantDto;
+import com.moscepa.dto.EtudiantTestsDashboardDto;
+import com.moscepa.dto.EtudiantTestsDashboardDto.MatiereDashboardDto;
+import com.moscepa.dto.EtudiantTestsDashboardDto.ChapitreDashboardDto;
+import com.moscepa.dto.EtudiantTestsDashboardDto.TestDashboardDto;
 import com.moscepa.entity.*;
 import com.moscepa.repository.*;
+import com.moscepa.entity.Test;
+import com.moscepa.entity.Chapitre;
+import com.moscepa.entity.ResultatTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,6 +28,8 @@ public class EtudiantService {
     @Autowired private EtudiantRepository etudiantRepository;
     @Autowired private UtilisateurRepository utilisateurRepository;
     @Autowired private PasswordEncoder passwordEncoder;
+    @Autowired private ResultatTestRepository resultatTestRepository;
+    @Autowired private ChapitreRepository chapitreRepository;
 
     public EtudiantDto inscrireEtudiant(EtudiantDto etudiantDto) {
         if (utilisateurRepository.existsByEmail(etudiantDto.getEmail())) {
@@ -83,6 +92,41 @@ public class EtudiantService {
     public Optional<EtudiantDto> getEtudiantById(Long id) {
         return etudiantRepository.findById(id)
                 .map(this::convertToDto);
+    }
+
+    /**
+     * Récupère les données structurées pour le tableau de bord des tests de l'étudiant.
+     */
+    @Transactional(readOnly = true)
+    public EtudiantTestsDashboardDto getEtudiantTestsDashboard(Long etudiantId) {
+        Etudiant etudiant = etudiantRepository.findById(etudiantId)
+                .orElseThrow(() -> new RuntimeException("Étudiant non trouvé avec l'ID: " + etudiantId));
+
+        String nomComplet = etudiant.getUtilisateur().getNomComplet();
+
+        List<MatiereDashboardDto> matieresDto = etudiant.getInscriptions().stream()
+                .map(inscription -> {
+                    Matiere matiere = inscription.getMatiere();
+                    List<ChapitreDashboardDto> chapitresDto = matiere.getChapitres().stream()
+                            .map(chapitre -> {
+                                List<TestDashboardDto> testsDto = chapitre.getTests().stream()
+                                        .map(test -> {
+                                            Double meilleurScore = resultatTestRepository.findMaxScoreByEtudiantAndTest(etudiantId, test.getId())
+                                                    .orElse(0.0); // 0.0 si aucun résultat
+
+                                            return new TestDashboardDto(test.getId(), test.getTitre(), meilleurScore);
+                                        })
+                                        .collect(Collectors.toList());
+
+                                return new ChapitreDashboardDto(chapitre.getId(), chapitre.getNom(), chapitre.getNiveau(), testsDto);
+                            })
+                            .collect(Collectors.toList());
+
+                    return new MatiereDashboardDto(matiere.getId(), matiere.getNom(), inscription.getStatut(), chapitresDto);
+                })
+                .collect(Collectors.toList());
+
+        return new EtudiantTestsDashboardDto(etudiantId, nomComplet, matieresDto);
     }
 
     // --- MÉTHODE MANQUANTE 2 ---
