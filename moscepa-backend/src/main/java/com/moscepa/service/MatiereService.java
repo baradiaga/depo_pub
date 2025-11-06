@@ -1,14 +1,16 @@
+// Fichier : com/moscepa/service/MatiereService.java (Version Temporaire)
+
 package com.moscepa.service;
 
-import com.moscepa.dto.ChapitreDto; // <-- Assurez-vous que cet import est présent
+import com.moscepa.dto.ChapitreDto;
 import com.moscepa.dto.MatiereDto;
 import com.moscepa.entity.Matiere;
 import com.moscepa.repository.MatiereRepository;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList; // <-- IMPORT AJOUTÉ
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -20,23 +22,15 @@ public class MatiereService {
     @Autowired
     private MatiereRepository matiereRepository;
 
-    // Supposons que vous n'utilisez pas ModelMapper pour l'instant,
-    // car la méthode convertToDto est manuelle.
-    // @Autowired
-    // private ModelMapper modelMapper;
-
+    // --- Les méthodes existantes restent inchangées ---
     @Transactional(readOnly = true)
     public List<MatiereDto> getMatieres() {
-        return matiereRepository.findAllOrderByNom()
-                .stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
+        return matiereRepository.findAllOrderByNom().stream().map(this::convertToDto).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public Optional<MatiereDto> getMatiereById(Long id) {
-        return matiereRepository.findById(id)
-                .map(this::convertToDto);
+        return matiereRepository.findById(id).map(this::convertToDto);
     }
 
     @Transactional(readOnly = true)
@@ -56,12 +50,9 @@ public class MatiereService {
     }
 
     public MatiereDto updateMatiere(Long id, MatiereDto matiereDto) {
-        Matiere matiere = matiereRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Matière non trouvée avec l'ID: " + id));
-        if (!matiere.getNom().equals(matiereDto.getNom())) {
-            if (matiereRepository.existsByNom(matiereDto.getNom())) {
-                throw new RuntimeException("Une matière avec ce nom existe déjà");
-            }
+        Matiere matiere = matiereRepository.findById(id).orElseThrow(() -> new RuntimeException("Matière non trouvée avec l'ID: " + id));
+        if (!matiere.getNom().equals(matiereDto.getNom()) && matiereRepository.existsByNom(matiereDto.getNom())) {
+            throw new RuntimeException("Une matière avec ce nom existe déjà");
         }
         matiere.setNom(matiereDto.getNom());
         matiere.setDescription(matiereDto.getDescription());
@@ -78,10 +69,7 @@ public class MatiereService {
 
     @Transactional(readOnly = true)
     public List<MatiereDto> searchMatieres(String nom) {
-        return matiereRepository.findByNomContainingIgnoreCase(nom)
-                .stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
+        return matiereRepository.findByNomContainingIgnoreCase(nom).stream().map(this::convertToDto).collect(Collectors.toList());
     }
 
     private MatiereDto convertToDto(Matiere matiere) {
@@ -92,32 +80,20 @@ public class MatiereService {
         return dto;
     }
 
-    // ====================================================================
-    // AJOUT : Les deux méthodes nécessaires pour le composant 'ListeMatieresComponent'
-    // ====================================================================
-
-    /**
-     * Récupère toutes les matières et les convertit en DTOs,
-     * en incluant pour chacune la liste détaillée de ses chapitres.
-     * C'est la méthode que le contrôleur va appeler.
-     */
     @Transactional(readOnly = true)
     public List<MatiereDto> getMatieresAvecDetails() {
         List<Matiere> matieres = matiereRepository.findAll();
-        return matieres.stream()
-                .map(this::convertirMatiereEnDtoAvecChapitres)
-                .collect(Collectors.toList());
+        return matieres.stream().map(this::convertirMatiereEnDtoAvecChapitres).collect(Collectors.toList());
     }
 
-    /**
-     * Méthode utilitaire privée pour convertir une entité Matiere en DTO
-     * en s'assurant que la liste des chapitres est également convertie et remplie.
-     */
     private MatiereDto convertirMatiereEnDtoAvecChapitres(Matiere matiere) {
-        // On commence par la conversion de base
         MatiereDto matiereDto = convertToDto(matiere);
 
-        // Puis, on convertit et on ajoute la liste des chapitres
+        // ====================================================================
+        // === CORRECTION TEMPORAIRE APPLIQUÉE ICI                          ===
+        // ====================================================================
+        // On commente l'ancien code qui ne compile plus.
+        /*
         List<ChapitreDto> chapitreDtos = matiere.getChapitres().stream()
             .map(chapitre -> {
                 ChapitreDto chapitreDto = new ChapitreDto();
@@ -128,8 +104,13 @@ public class MatiereService {
                 return chapitreDto;
             })
             .collect(Collectors.toList());
-        
         matiereDto.setChapitres(chapitreDtos);
+        */
+
+        // On affecte une liste vide pour que le DTO soit valide.
+        matiereDto.setChapitres(new ArrayList<>());
+        // ====================================================================
+
         return matiereDto;
     }
 }

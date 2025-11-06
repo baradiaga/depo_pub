@@ -1,29 +1,25 @@
+// Fichier : src/app/services/progression.service.ts (Version Simplifiée et Corrigée)
+
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-// Interface pour les données que nous allons recevoir
-export interface MatiereStatut {
-  matiereId: number;
-  ue: string;
-  ordre: number;
-  ec: string;
-  coefficient: number;
-  statut: string;
-}
+// On importe l'interface standard depuis le fichier central
+import { ElementConstitutifResponse } from './models';
 
 @Injectable({
   providedIn: 'root'
 } )
 export class ProgressionService {
-  private apiUrl = 'http://localhost:8080/api/progression';
+  // L'URL pointe vers l'endpoint qui renvoie les matières de l'utilisateur connecté
+  private apiUrl = 'http://localhost:8080/api/utilisateurs/mes-inscriptions';
 
   constructor(private http: HttpClient ) { }
 
   /**
-   * Récupère la liste des matières et leur statut pour l'étudiant connecté.
+   * Récupère la liste des matières (EC) auxquelles l'étudiant connecté est inscrit.
    */
-  getMesMatieres(): Observable<MatiereStatut[]> {
-    return this.http.get<MatiereStatut[]>(`${this.apiUrl}/mes-matieres` );
+  getMesMatieresInscrites(): Observable<ElementConstitutifResponse[]> {
+    return this.http.get<ElementConstitutifResponse[]>(this.apiUrl );
   }
 }

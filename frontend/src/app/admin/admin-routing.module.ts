@@ -18,6 +18,7 @@ import { GestionUnitesComponent } from './pages/gestion-unites/gestion-unites.co
 import { ParametrageChapitreComponent } from './pages/parametrage-chapitre/parametrage-chapitre.component';
 import { ListeMatieresComponent } from './pages/liste-matieres/liste-matieres.component';
 import { GestionDesInscriptionComponent } from './pages/gestiondesinscription/gestiondesinscription.component';
+import { FormulaireInscriptionComponent } from './pages/formulaire-inscription/formulaire-inscription.component';
 
 // --- 2. Définissez les routes internes à la section admin ---
 const routes: Routes = [
@@ -33,7 +34,8 @@ const routes: Routes = [
   { path: 'features', component: FonctionnalitesComponent },
   { path: 'feature-assignment', component: FeatureAssignmentComponent },
   { path: 'inscriptions', component: GestionDesInscriptionComponent },
-
+  { path: 'inscriptions/nouveau',component: FormulaireInscriptionComponent },
+  { path: 'inscriptions/modifier/:id', component: FormulaireInscriptionComponent},
   // Routes pour la gestion du curriculum et des contenus
   { path: 'parcours', component: GestionParcoursComponent },
   { path: 'unites-enseignement', component: GestionUnitesComponent },

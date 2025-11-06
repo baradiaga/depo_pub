@@ -1,72 +1,66 @@
+// Fichier : src/app/services/chapitre.service.ts (Corrigé avec notification)
+
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators'; // <-- IMPORT AJOUTÉ
 
-// --- Interfaces ---
-
-export interface ChapitrePayload {
-  matiere: string;
-  titre: string;
-  niveau: number;
-  objectif: string;
-  sections: { titre: string, contenu: string }[];
-}
-
-/**
- * Interface pour les détails complets d'un chapitre.
- * Inclut maintenant matiereId.
- */
-export interface ChapitreDetail {
-  id: number;
-  titre: string;
-  matiereId: number; // <-- Champ important
-  matiereNom: string;
-  niveau: number;
-  objectif: string;
-  sections: { id: number; titre: string; contenu?: string }[];
-}
-
-/**
- * Interface légère pour les listes de chapitres.
- */
-export interface ChapitreInfo {
-  id: number;
-  nom: string;
-  matiere: string;
-}
+// On importe les interfaces depuis le fichier central.
+import { Chapitre, ChapitrePayload } from './models';
+// On importe le service à notifier.
+import { ElementConstitutifService } from './element-constitutif.service'; // <-- IMPORT AJOUTÉ
 
 @Injectable({
   providedIn: 'root'
 } )
 export class ChapitreService {
-
   private apiUrl = 'http://localhost:8080/api/chapitres';
 
-  constructor(private http: HttpClient ) { }
+  // ====================================================================
+  // === CORRECTION APPLIQUÉE ICI                                     ===
+  // ====================================================================
+  // On injecte ElementConstitutifService pour pouvoir l'appeler.
+  constructor(
+    private http: HttpClient,
+    private ecService: ElementConstitutifService
+   ) { }
 
-  // --- Méthodes ---
-
-  creerChapitre(chapitre: ChapitrePayload): Observable<any> {
-    return this.http.post(this.apiUrl, chapitre );
+  /**
+   * Crée un nouveau chapitre et notifie les autres composants du changement.
+   */
+  creerChapitre(payload: ChapitrePayload): Observable<Chapitre> {
+    return this.http.post<Chapitre>(this.apiUrl, payload ).pipe(
+      // L'opérateur 'tap' permet d'exécuter une action sans modifier la réponse.
+      tap(() => {
+        // Après la création réussie d'un chapitre, on déclenche le rafraîchissement
+        // de la liste des matières, car un nouveau chapitre y a été ajouté.
+        console.log("Chapitre créé, envoi de la notification de rafraîchissement...");
+        this.ecService.refreshNeeded$.next();
+      })
+    );
   }
 
   /**
-   * Récupère les détails complets d'un chapitre par son ID.
+   * Récupère un chapitre par son ID.
    */
-  getChapitreById(id: number): Observable<ChapitreDetail> {
-    return this.http.get<ChapitreDetail>(`${this.apiUrl}/${id}` );
-  }
-
-  findChapitreByMatiereAndNiveau(matiere: string, niveau: number): Observable<ChapitreDetail> {
-    const params = { matiere: matiere, niveau: niveau.toString() };
-    return this.http.get<ChapitreDetail>(`${this.apiUrl}/search`, { params } );
+  findById(id: number): Observable<Chapitre> {
+    return this.http.get<Chapitre>(`${this.apiUrl}/${id}` );
   }
 
   /**
-   * Récupère la liste des chapitres pour une matière spécifique.
+   * Trouve un chapitre par le nom de sa matière et son niveau.
    */
-  getChapitresParMatiere(matiereId: number): Observable<ChapitreInfo[]> {
-    const params = { matiereId: matiereId.toString() };
-    return this.http.get<ChapitreInfo[]>(this.apiUrl, { params } );
+  findChapitreByMatiereAndNiveau(matiereNom: string, niveau: number): Observable<Chapitre> {
+    const params = new HttpParams()
+      .set('matiere', matiereNom)
+      .set('niveau', niveau.toString());
+    return this.http.get<Chapitre>(`${this.apiUrl}/search`, { params } );
+  }
+
+  /**
+   * Récupère tous les chapitres pour une matière donnée.
+   */
+  getChapitresParMatiere(matiereId: number): Observable<Chapitre[]> {
+    return this.http.get<Chapitre[]>(`http://localhost:8080/api/elements-constitutifs/${matiereId}/chapitres` );
   }
 }

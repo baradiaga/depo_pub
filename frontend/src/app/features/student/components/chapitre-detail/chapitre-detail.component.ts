@@ -1,67 +1,54 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-// On importe bien le service et l'interface
-import { ParcoursService, ParcoursItem, ParcoursData } from '../../../../services/parcours.service';
+import { ChapitreService } from '../../../../services/chapitre.service';
+import { Chapitre } from '../../../../services/models'; // <-- CORRECTION
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-chapitre-detail',
   templateUrl: './chapitre-detail.component.html',
   styleUrls: ['./chapitre-detail.component.css']
-  // CORRECTION 1 : On retire la ligne 'providers'
-  // Le service est déjà fourni globalement grâce à "providedIn: 'root'".
 })
 export class ChapitreDetailComponent implements OnInit {
-  
-  // La propriété 'chapitre' est de type ParcoursItem ou undefined.
-  chapitre?: ParcoursItem;
-  isLoading: boolean = true;
+  chapitre: Chapitre | null = null;
+  isLoading = true;
 
   constructor(
     private route: ActivatedRoute,
-    private parcoursService: ParcoursService
+    private chapitreService: ChapitreService,
+    private toastr: ToastrService
   ) {}
 
   ngOnInit(): void {
-    // On récupère l'ID du chapitre depuis l'URL.
-    const chapitreId = Number(this.route.snapshot.paramMap.get('id'));
-    const etudiantId = 1; // TODO: Remplacer par l'ID de l'utilisateur authentifié
-
-    if (chapitreId > 0) {
-      this.isLoading = true;
-      // On appelle le service pour récupérer tous les parcours de l'étudiant.
-      this.parcoursService.getParcoursEtudiant(etudiantId).subscribe({
-        next: (data: ParcoursData) => {
-          // On fusionne toutes les listes de parcours pour trouver le chapitre.
-          const allChapitres = [...data.recommandes, ...data.choisis, ...data.mixtes];
-          
-          // CORRECTION 2 : On utilise 'chapitreId' au lieu de 'id'.
-          this.chapitre = allChapitres.find(c => c.chapitreId === chapitreId);
-          
-          this.isLoading = false;
-        },
-        error: (err) => {
-          console.error("Erreur lors du chargement des données du parcours", err);
-          this.isLoading = false;
-          alert("Impossible de charger les détails de ce chapitre.");
-        }
-      });
+    const chapitreId = this.route.snapshot.paramMap.get('id');
+    if (chapitreId) {
+      this.loadChapitreDetails(+chapitreId);
     } else {
-      console.error("ID de chapitre invalide dans l'URL.");
       this.isLoading = false;
+      this.toastr.error("ID de chapitre manquant dans l'URL.");
     }
-    
   }
-  // ====================================================================
-  // ===> CORRECTION : Ajout de la méthode manquante <====
-  // ====================================================================
-  /**
-   * Retourne une classe CSS en fonction de la valeur du score.
-   * @param score Le score du chapitre (en pourcentage).
-   * @returns Une chaîne de caractères représentant la classe CSS.
-   */
-  getCouleurScore(score: number): string {
-    if (score < 50) return 'score-faible';
-    if (score < 70) return 'score-moyen';
-    return 'score-eleve';
+
+  loadChapitreDetails(id: number): void {
+    this.isLoading = true;
+    // On utilise la méthode corrigée 'findById'
+    this.chapitreService.findById(id).subscribe({
+      next: (data) => {
+        this.chapitre = data;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        this.isLoading = false;
+        this.toastr.error('Impossible de charger les détails du chapitre.');
+        console.error(err);
+      }
+    });
+  }
+
+  getCouleurScore(score: number | undefined): string {
+    if (score === undefined) return 'bg-secondary';
+    if (score >= 75) return 'bg-success';
+    if (score >= 50) return 'bg-warning text-dark';
+    return 'bg-danger';
   }
 }

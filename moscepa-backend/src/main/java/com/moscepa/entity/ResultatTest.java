@@ -1,3 +1,5 @@
+// Fichier : src/main/java/com/moscepa/entity/ResultatTest.java (Version Finale Corrigée)
+
 package com.moscepa.entity;
 
 import jakarta.persistence.*;
@@ -11,9 +13,13 @@ public class ResultatTest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // ====================================================================
+    // === CORRECTION APPLIQUÉE ICI                                     ===
+    // ====================================================================
+    // On remplace 'Etudiant' par 'Utilisateur'
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "etudiant_id", nullable = false)
-    private Etudiant etudiant;
+    private Utilisateur etudiant;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "test_id", nullable = false)
@@ -31,12 +37,8 @@ public class ResultatTest {
     @Column(name = "bonnes_reponses", nullable = false)
     private int bonnesReponses;
 
-    // =======================================================
-    // === 1. LE DERNIER CHAMP MANQUANT EST AJOUTÉ ICI ===
-    // =======================================================
     @Column(name = "total_questions", nullable = false)
     private int totalQuestions;
-
 
     // Constructeur
     public ResultatTest() {
@@ -47,8 +49,13 @@ public class ResultatTest {
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
-    public Etudiant getEtudiant() { return etudiant; }
-    public void setEtudiant(Etudiant etudiant) { this.etudiant = etudiant; }
+
+    // ====================================================================
+    // === CORRECTION APPLIQUÉE ICI                                     ===
+    // ====================================================================
+    public Utilisateur getEtudiant() { return etudiant; }
+    public void setEtudiant(Utilisateur etudiant) { this.etudiant = etudiant; }
+
     public Test getTest() { return test; }
     public void setTest(Test test) { this.test = test; }
     public Double getScore() { return score; }
@@ -57,22 +64,8 @@ public class ResultatTest {
     public void setScoreTotal(Double scoreTotal) { this.scoreTotal = scoreTotal; }
     public LocalDateTime getDateTest() { return dateTest; }
     public void setDateTest(LocalDateTime dateTest) { this.dateTest = dateTest; }
-
-    public int getBonnesReponses() {
-        return bonnesReponses;
-    }
-    public void setBonnesReponses(int bonnesReponses) {
-        this.bonnesReponses = bonnesReponses;
-    }
-
-    // =======================================================
-    // === 2. LES DERNIÈRES MÉTHODES MANQUANTES SONT AJOUTÉES ICI ===
-    // =======================================================
-    public int getTotalQuestions() {
-        return totalQuestions;
-    }
-
-    public void setTotalQuestions(int totalQuestions) {
-        this.totalQuestions = totalQuestions;
-    }
+    public int getBonnesReponses() { return bonnesReponses; }
+    public void setBonnesReponses(int bonnesReponses) { this.bonnesReponses = bonnesReponses; }
+    public int getTotalQuestions() { return totalQuestions; }
+    public void setTotalQuestions(int totalQuestions) { this.totalQuestions = totalQuestions; }
 }

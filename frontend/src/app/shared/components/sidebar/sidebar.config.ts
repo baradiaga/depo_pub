@@ -77,7 +77,7 @@ export const COMPLETE_SIDEBAR_CONFIG: MenuItem[] = [
     label: 'Gestion des maquettes',
     featureKey: 'gestion_maquettes',
     icon: 'layout',
-    defaultRoles: ['ADMIN', 'RESPONSABLE_FORMATION'],
+    defaultRoles: ['ADMIN', 'RESPONSABLE_FORMATION','ENSEIGNANT'],
     children: [
       { label: 'Unité d\'enseignement', route: '/app/admin/unites-enseignement', featureKey: 'gestion_unites' },
       { label: 'Éléments constitutifs', route: '/app/admin/elements-constitutifs', featureKey: 'gestion_elements' },
@@ -194,7 +194,7 @@ export const COMPLETE_SIDEBAR_CONFIG: MenuItem[] = [
     defaultRoles: ['ETUDIANT', 'TUTEUR', 'ENSEIGNANT'],
     children: [
       { label: 'Matières', route: '/app/curriculum/matieres', featureKey: 'matieres' },
-      { label: 'Test de connaissance', route: '/app/student/test-connaissance', featureKey: 'test_connaissance' },
+      { label: 'Test de connaissance', route: '/app/student/test-connaissance', featureKey: 'test-connaissance' },
       { label: 'Résultats', route: '/app/student/resultats', featureKey: 'resultats' }
     ]
   },
@@ -295,7 +295,8 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, string[]> = {
     'parametrage',
     'mes_parcours_etudiant',
     'gestion_remediation',
-    'apprentissage_asynchrone'
+    'apprentissage_asynchrone',
+    'test-connaissance'
   ],
 
   // L'ENSEIGNANT a accès à ses outils de création, de suivi et de contenu.
@@ -306,7 +307,9 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, string[]> = {
     'gestion_echelles_connaissances',
     'gestion_questionnaires',
     'gestion_remediation',
-    'apprentissage_asynchrone'
+    'apprentissage_asynchrone',
+    'gestion_maquettes',       // Pour voir le menu principal
+    'parametrage_chapitres'
   ],
 
   // Le TUTEUR a accès aux outils de suivi et de remédiation.

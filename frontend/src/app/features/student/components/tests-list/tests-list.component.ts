@@ -1,7 +1,12 @@
+// Fichier : src/app/features/student/components/tests-list/tests-list.component.ts (Corrigé et Finalisé)
+
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TestService, Question, ResultatTest } from '../../../../services/test.service';
-import { ChapitreService, ChapitreDetail } from '../../../../services/chapitre.service';
+import { ToastrService } from 'ngx-toastr';
+
+// --- IMPORTS CORRIGÉS ---
+import { TestService, Test, Question } from '../../../../services/test.service';
+import { ResultatTestService, ReponseUtilisateur, Resultat } from '../../../../services/resultat-test.service';
 
 @Component({
   selector: 'app-tests-list',
@@ -9,104 +14,143 @@ import { ChapitreService, ChapitreDetail } from '../../../../services/chapitre.s
   styleUrls: ['./tests-list.component.css']
 })
 export class TestsListComponent implements OnInit {
-  chapitreId!: number;
-  matiereId!: number;
-  // ... (autres propriétés)
+
   isLoading = true;
   isSubmitting = false;
-  reponsesUtilisateur: Map<number, any> = new Map();
+  
+  test: Test | null = null;
   questions: Question[] = [];
-  displayedQuestions: Question[] = [];
+  
   page = 1;
-  pageSize = 5;
-  totalPages = 1;
+  pageSize = 1;
+  totalPages = 0;
+  displayedQuestions: Question[] = [];
+
+  reponsesUtilisateur: Map<number, ReponseUtilisateur> = new Map();
+
+  private chapitreId!: number;
+  private testId!: number;
 
   constructor(
-    private route: ActivatedRoute, 
+    private route: ActivatedRoute,
     private router: Router,
     private testService: TestService,
-    private chapitreService: ChapitreService
+    private resultatTestService: ResultatTestService,
+    private toastr: ToastrService
   ) {}
 
-  ngOnInit() {
-    const idParam = this.route.snapshot.paramMap.get('chapitreId');
-    if (idParam) {
-      this.chapitreId = +idParam;
-      console.log(`[TestsList] ngOnInit: Chapitre ID récupéré de l'URL = ${this.chapitreId}`);
-      this.loadChapitreDetailsAndQuestions();
+  ngOnInit(): void {
+    this.chapitreId = Number(this.route.snapshot.paramMap.get('id'));
+    if (this.chapitreId) {
+      this.chargerTest();
     } else {
-      console.error("[TestsList] ngOnInit: Aucun ID de chapitre trouvé dans l'URL !");
+      this.toastr.error("ID de chapitre manquant. Impossible de charger le test.");
       this.isLoading = false;
     }
   }
 
-  loadChapitreDetailsAndQuestions(): void {
+  chargerTest(): void {
     this.isLoading = true;
-    console.log(`[TestsList] loadChapitreDetails: Appel du service pour récupérer les détails du chapitre ${this.chapitreId}`);
-    this.chapitreService.getChapitreById(this.chapitreId).subscribe({
-      next: (chapitreDetail) => {
-        this.matiereId = chapitreDetail.matiereId;
-        console.log(`[TestsList] loadChapitreDetails: Matière ID récupérée = ${this.matiereId}`);
-        this.loadQuestions(); // On charge les questions seulement après avoir eu le matiereId
+    this.testService.getTestsByChapitre(this.chapitreId).subscribe({
+      next: (tests: Test[]) => {
+        if (tests.length > 0) {
+          this.test = tests[0];
+          this.testId = this.test.id;
+          this.questions = this.test.questions || [];
+          this.totalPages = this.questions.length;
+          this.updateDisplayedQuestions();
+        } else {
+          this.toastr.info("Aucun test n'est disponible pour ce chapitre.");
+        }
+        this.isLoading = false;
       },
-      error: (err) => {
-        console.error("[TestsList] ERREUR lors du chargement des détails du chapitre", err);
+      error: (err: any) => {
+        this.toastr.error("Erreur lors du chargement du test.");
+        console.error(err);
         this.isLoading = false;
       }
     });
   }
 
-  loadQuestions(): void {
-    // ... (logique inchangée)
-    this.testService.getQuestionsPourChapitre(this.chapitreId).subscribe({
-        next: (data) => {
-            this.questions = data;
-            this.totalPages = Math.ceil(this.questions.length / this.pageSize);
-            this.updateDisplayedQuestions();
-            this.isLoading = false;
-        },
-        error: (err) => {
-            console.error("[TestsList] ERREUR lors du chargement des questions", err);
-            this.isLoading = false;
-        }
-    });
+  updateDisplayedQuestions(): void {
+    const startIndex = (this.page - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.displayedQuestions = this.questions.slice(startIndex, endIndex);
+  }
+
+  choisirReponse(questionId: number, reponseId: number): void {
+    this.reponsesUtilisateur.set(questionId, { questionId, reponseIds: [reponseId], texteReponse: null });
+  }
+
+  choisirReponseMultiple(questionId: number, reponseId: number, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const reponseActuelle = this.reponsesUtilisateur.get(questionId) || { questionId, reponseIds: [], texteReponse: null };
+    
+    if (input.checked) {
+      reponseActuelle.reponseIds.push(reponseId);
+    } else {
+      reponseActuelle.reponseIds = reponseActuelle.reponseIds.filter(id => id !== reponseId);
+    }
+    this.reponsesUtilisateur.set(questionId, reponseActuelle);
+  }
+
+  choisirReponseVraiFaux(questionId: number, reponseBool: boolean): void {
+    const question = this.questions.find(q => q.id === questionId);
+    if (!question) return;
+    
+    const reponseCorrecte = question.reponses.find(r => r.texte.toLowerCase() === String(reponseBool));
+    if (reponseCorrecte) {
+      this.choisirReponse(questionId, reponseCorrecte.id);
+    }
+  }
+
+  saisirReponseTexte(questionId: number, event: Event): void {
+    const texte = (event.target as HTMLTextAreaElement).value;
+    this.reponsesUtilisateur.set(questionId, { questionId, reponseIds: [], texteReponse: texte });
+  }
+
+  precedent(): void {
+    if (this.page > 1) {
+      this.page--;
+      this.updateDisplayedQuestions();
+    }
+  }
+
+  suivant(): void {
+    if (this.page < this.totalPages) {
+      this.page++;
+      this.updateDisplayedQuestions();
+    }
   }
 
   validerTest(): void {
     this.isSubmitting = true;
-    const reponsesAEnvoyer = Object.fromEntries(this.reponsesUtilisateur);
-    const testId = this.chapitreId; 
+    const payload = Array.from(this.reponsesUtilisateur.values());
 
-    console.log(`[TestsList] validerTest: Soumission du test pour chapitre ID ${testId}`);
-    this.testService.soumettreReponses(testId, reponsesAEnvoyer).subscribe({
-      next: (resultat: ResultatTest) => {
+    this.resultatTestService.soumettreResultat(this.testId, payload).subscribe({
+      next: (resultat: Resultat) => {
+        this.toastr.success("Test soumis avec succès !");
         this.isSubmitting = false;
-        console.log('[TestsList] validerTest: Réponse du back-end reçue :', resultat);
-
-        const params = { 
-          score: resultat.scoreObtenu, 
-          total: resultat.totalPointsPossible, 
-          chapitreId: this.chapitreId,
-          matiereId: this.matiereId 
-        };
-
-        console.log('[TestsList] validerTest: Navigation vers /recommendation avec les paramètres :', params);
         
-        this.router.navigate(['/app/student/recommendation'], { queryParams: params });
+        // La propriété 'chapitre' n'existe pas sur Test, nous utilisons l'ID que nous avons déjà.
+        const elementConstitutifId = 0; // Remarque: Cette info n'est pas disponible ici.
+                                        // Il faudrait que l'API de test la renvoie.
+                                        // Pour l'instant, on met 0.
+
+        this.router.navigate(['/app/student/recommendation'], {
+          queryParams: {
+            score: resultat.score,
+            total: resultat.scoreTotal,
+            chapitreId: this.chapitreId,
+            matiereId: elementConstitutifId 
+          }
+        });
       },
       error: (err: any) => {
+        this.toastr.error("Erreur lors de la soumission du test.");
+        console.error(err);
         this.isSubmitting = false;
-        console.error("[TestsList] ERREUR lors de la soumission du test", err);
       }
     });
   }
-
-  // --- Le reste des méthodes (pagination, sélection des réponses) est inchangé ---
-  updateDisplayedQuestions(): void { const startIndex = (this.page - 1) * this.pageSize; this.displayedQuestions = this.questions.slice(startIndex, startIndex + this.pageSize); }
-  choisirReponse(questionId: number, reponseId: number): void { this.reponsesUtilisateur.set(questionId, reponseId); }
-  choisirReponseVraiFaux(questionId: number, reponse: boolean): void { this.reponsesUtilisateur.set(questionId, reponse); }
-  choisirReponseMultiple(questionId: number, reponseId: number, event: any): void { let reponsesActuelles = this.reponsesUtilisateur.get(questionId) as number[] | undefined; if (!reponsesActuelles || !Array.isArray(reponsesActuelles)) { reponsesActuelles = []; } if (event.target.checked) { reponsesActuelles.push(reponseId); } else { const index = reponsesActuelles.indexOf(reponseId); if (index > -1) { reponsesActuelles.splice(index, 1); } } this.reponsesUtilisateur.set(questionId, reponsesActuelles); }
-  saisirReponseTexte(questionId: number, event: any): void { this.reponsesUtilisateur.set(questionId, event.target.value); }
-  suivant(): void { if (this.page < this.totalPages) { this.page++; this.updateDisplayedQuestions(); } }
-  precedent(): void { if (this.page > 1) { this.page--; this.updateDisplayedQuestions(); } }
 }

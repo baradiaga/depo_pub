@@ -1,59 +1,89 @@
-// Fichier : src/app/services/element-constitutif.service.ts
+// Fichier : src/app/services/element-constitutif.service.ts (Corrigé avec notifications)
 
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
+import { tap } from 'rxjs/operators';
 
-// L'import de 'environment' est supprimé
-
-export interface EnseignantDto {
-  id: number;
-  nom: string;
-  prenom: string;
-}
-
-export interface ElementConstitutifRequest {
-  id?: number;
-  nom: string;
-  code: string;
-  description: string;
-  credit: number;
-  enseignantId: number | null;
-}
-
-export interface ElementConstitutifResponse {
-  id?: number;
-  nom: string;
-  code: string;
-  description: string;
-  credit: number;
-  enseignant: EnseignantDto | null;
-}
+// On importe les interfaces depuis le fichier central
+import { ElementConstitutifRequest, ElementConstitutifResponse } from './models';
 
 @Injectable({
   providedIn: 'root'
 } )
 export class ElementConstitutifService {
-  // =======================================================
-  // === URL DE L'API MISE EN DUR ICI ===
-  // =======================================================
-  private baseUrl = 'http://localhost:8080/api'; // Adaptez si votre port ou base est différent
+  private apiUrl = 'http://localhost:8080/api/elements-constitutifs';
+
+  // ====================================================================
+  // === SYSTÈME DE NOTIFICATION AJOUTÉ ICI                            ===
+  // ====================================================================
+  private _refreshNeeded$ = new Subject<void>( );
+
+  get refreshNeeded$() {
+    return this._refreshNeeded$;
+  }
+  // ====================================================================
 
   constructor(private http: HttpClient ) { }
 
-  getElementsForUnite(ueId: number): Observable<ElementConstitutifResponse[]> {
-    return this.http.get<ElementConstitutifResponse[]>(`${this.baseUrl}/unites-enseignement/${ueId}/elements-constitutifs` );
+  /**
+   * Récupère la liste de base des EC.
+   */
+  findAll(): Observable<ElementConstitutifResponse[]> {
+    return this.http.get<ElementConstitutifResponse[]>(this.apiUrl );
   }
 
-  create(ueId: number, element: ElementConstitutifRequest): Observable<ElementConstitutifResponse> {
-    return this.http.post<ElementConstitutifResponse>(`${this.baseUrl}/unites-enseignement/${ueId}/elements-constitutifs`, element );
+  /**
+   * Récupère la liste des EC avec leurs chapitres.
+   */
+  getElementsConstitutifsAvecDetails(): Observable<ElementConstitutifResponse[]> {
+    return this.http.get<ElementConstitutifResponse[]>(`${this.apiUrl}/details` );
   }
 
-  update(id: number, element: ElementConstitutifRequest): Observable<ElementConstitutifResponse> {
-    return this.http.put<ElementConstitutifResponse>(`${this.baseUrl}/elements-constitutifs/${id}`, element );
+  /**
+   * Récupère uniquement la liste des noms de tous les EC.
+   */
+  findAllNoms(): Observable<string[]> {
+    return this.http.get<string[]>(`${this.apiUrl}/noms` );
   }
 
+  /**
+   * Récupère les matières d'un enseignant.
+   */
+  getMesMatieres(): Observable<ElementConstitutifResponse[]> {
+    return this.http.get<ElementConstitutifResponse[]>(`${this.apiUrl}/mes-matieres` );
+  }
+
+  /**
+   * Crée un nouvel EC et notifie les composants.
+   */
+  create(ueId: number, payload: ElementConstitutifRequest): Observable<ElementConstitutifResponse> {
+    return this.http.post<ElementConstitutifResponse>(`http://localhost:8080/api/unites-enseignement/${ueId}/elements-constitutifs`, payload ).pipe(
+      tap(() => {
+        this._refreshNeeded$.next();
+      })
+    );
+  }
+
+  /**
+   * Met à jour un EC et notifie les composants.
+   */
+  update(id: number, payload: ElementConstitutifRequest): Observable<ElementConstitutifResponse> {
+    return this.http.put<ElementConstitutifResponse>(`${this.apiUrl}/${id}`, payload ).pipe(
+      tap(() => {
+        this._refreshNeeded$.next();
+      })
+    );
+  }
+
+  /**
+   * Supprime un EC et notifie les composants.
+   */
   delete(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/elements-constitutifs/${id}` );
+    return this.http.delete<void>(`${this.apiUrl}/${id}` ).pipe(
+      tap(() => {
+        this._refreshNeeded$.next();
+      })
+    );
   }
 }

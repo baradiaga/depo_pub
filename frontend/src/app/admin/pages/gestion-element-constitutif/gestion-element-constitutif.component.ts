@@ -6,8 +6,12 @@ import { ToastrService } from 'ngx-toastr';
 import { Observable } from 'rxjs';
 
 import { UniteEnseignement, UniteEnseignementService } from '../../../services/unite-enseignement.service';
-import { ElementConstitutifService, ElementConstitutifResponse, ElementConstitutifRequest } from '../../../services/element-constitutif.service';
-import { Utilisateur, UtilisateurService } from '../../../services/utilisateur.service';
+// On importe SEULEMENT le service depuis le fichier du service
+import { ElementConstitutifService } from '../../../services/element-constitutif.service';
+
+// On importe les INTERFACES depuis le fichier central 'models.ts'
+import { ElementConstitutifResponse, ElementConstitutifRequest } from '../../../services/models';
+import { UtilisateurService, UserResponseDto } from '../../../services/utilisateur.service';
 
 @Component({
   selector: 'app-gestion-element-constitutif',
@@ -16,9 +20,8 @@ import { Utilisateur, UtilisateurService } from '../../../services/utilisateur.s
 })
 export class GestionElementConstitutifComponent implements OnInit {
 
-  // --- Observables avec assertion de non-nullité ---
   unites$!: Observable<UniteEnseignement[]>;
-  enseignants$!: Observable<Utilisateur[]>;
+  enseignants$!: Observable<UserResponseDto[]>;
 
   elements: ElementConstitutifResponse[] = [];
   selectedUniteId: number | null = null;
@@ -39,9 +42,6 @@ export class GestionElementConstitutifComponent implements OnInit {
       id: [null],
       nom: ['', [Validators.required, Validators.minLength(3)]],
       code: ['', Validators.required],
-      // =======================================================
-      // === CORRECTION : On utilise 'credit' pour le formulaire ===
-      // =======================================================
       credit: [0, [Validators.required, Validators.min(0)]],
       description: [''],
       enseignantId: [null, Validators.required]
@@ -51,38 +51,34 @@ export class GestionElementConstitutifComponent implements OnInit {
   ngOnInit(): void {
     this.unites$ = this.ueService.getAll();
     this.enseignants$ = this.utilisateurService.getEnseignants();
+    this.loadAllElements();
   }
 
-  onSelectUnite(ueId: string): void {
-    const id = Number(ueId);
-    this.selectedUniteId = id;
-    this.isFormVisible = false;
-
-    if (id) {
-      this.loadElementsForUnite(id);
-    } else {
-      this.elements = [];
-    }
-  }
-
-  loadElementsForUnite(ueId: number): void {
+  loadAllElements(): void {
     this.isLoadingElements = true;
-    this.ecService.getElementsForUnite(ueId).subscribe({
+    this.ecService.findAll().subscribe({
       next: data => {
         this.elements = data;
         this.isLoadingElements = false;
       },
-      error: () => {
-        this.toastr.error("Erreur lors du chargement des éléments.");
+      error: (err) => {
+        this.toastr.error("Erreur lors du chargement des matières.");
+        console.error(err);
         this.isLoadingElements = false;
       }
     });
+  }
+
+  onSelectUnite(ueId: string): void {
+    this.selectedUniteId = Number(ueId);
   }
 
   showNewForm(): void {
     this.isEditing = false;
     this.isFormVisible = true;
     this.elementForm.reset();
+    // On peut pré-sélectionner l'UE si une est déjà choisie
+    // this.elementForm.patchValue({ uniteEnseignementId: this.selectedUniteId });
   }
 
   showEditForm(element: ElementConstitutifResponse): void {
@@ -92,9 +88,6 @@ export class GestionElementConstitutifComponent implements OnInit {
       id: element.id,
       nom: element.nom,
       code: element.code,
-      // =======================================================
-      // === CORRECTION : On patch 'credit' et non 'credits' ===
-      // =======================================================
       credit: element.credit,
       description: element.description,
       enseignantId: element.enseignant ? element.enseignant.id : null
@@ -110,39 +103,62 @@ export class GestionElementConstitutifComponent implements OnInit {
       this.toastr.warning('Veuillez remplir tous les champs obligatoires.');
       return;
     }
-    if (!this.selectedUniteId) return;
 
     const formData: ElementConstitutifRequest = this.elementForm.value;
-    console.log('Données envoyées au back-end :', formData);
-
-    const action$ = this.isEditing
-      ? this.ecService.update(formData.id, formData)
-      : this.ecService.create(this.selectedUniteId, formData);
-
-    action$.subscribe({
-      next: () => {
-        const message = this.isEditing ? 'Élément mis à jour avec succès !' : 'Élément créé avec succès !';
-        this.toastr.success(message);
-        this.isFormVisible = false;
-        this.loadElementsForUnite(this.selectedUniteId!);
-      },
-      error: err => {
-        console.error(err);
-        this.toastr.error("Une erreur est survenue. Détails dans la console.");
+    
+    if (this.isEditing) {
+      const id = this.elementForm.get('id')?.value;
+      if (id) {
+        this.ecService.update(id, formData).subscribe({
+          next: () => {
+            this.toastr.success('Matière mise à jour avec succès !');
+            this.isFormVisible = false;
+            this.loadAllElements();
+          },
+          error: err => {
+            this.toastr.error("Une erreur est survenue lors de la mise à jour.");
+            console.error(err);
+          }
+        });
+      } else {
+        this.toastr.error("Erreur critique : ID manquant pour la mise à jour.");
       }
-    });
+    } else {
+      if (!this.selectedUniteId) {
+        this.toastr.error("Veuillez d'abord sélectionner une Unité d'Enseignement pour y associer cette nouvelle matière.");
+        return;
+      }
+      this.ecService.create(this.selectedUniteId, formData).subscribe({
+        next: () => {
+          this.toastr.success('Matière créée avec succès !');
+          this.isFormVisible = false;
+          this.loadAllElements();
+        },
+        error: err => {
+          this.toastr.error("Une erreur est survenue lors de la création.");
+          console.error(err);
+        }
+      });
+    }
   }
 
   onDelete(ecId: number | undefined): void {
-    if (!ecId || !this.selectedUniteId) return;
+    if (!ecId) return;
 
-    if (confirm('Êtes-vous sûr de vouloir supprimer cet élément ?')) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette matière ?')) {
       this.ecService.delete(ecId).subscribe({
         next: () => {
-          this.toastr.info('Élément supprimé.');
-          this.loadElementsForUnite(this.selectedUniteId!);
+          this.toastr.info('Matière supprimée.');
+          this.loadAllElements();
         },
-        error: () => this.toastr.error("Erreur lors de la suppression.")
+        error: (err) => {
+          if (err.status === 409) { // Gère le cas où la matière est utilisée ailleurs
+            this.toastr.error("Impossible de supprimer cette matière car elle est déjà utilisée (par des chapitres, etc.).");
+          } else {
+            this.toastr.error("Une erreur est survenue lors de la suppression.");
+          }
+          console.error(err);
+        }
       });
     }
   }

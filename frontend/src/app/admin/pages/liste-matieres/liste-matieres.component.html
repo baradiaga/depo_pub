@@ -1,65 +1,91 @@
+<!-- Fichier : liste-matieres.component.html (Version Corrigée) -->
+
 <div class="container mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2 class="mb-0">Liste des Chapitres par Matière</h2>
-    <!-- Optionnel : Bouton pour rafraîchir les données -->
-    <button class="btn btn-sm btn-outline-primary" (click)="chargerDonneesDepuisBackend()">
-      <i class="bi bi-arrow-clockwise"></i> Rafraîchir
-    </button>
-  </div>
-  <hr>
+  <h3 class="mb-4 text-primary text-center">Liste des Matières et Chapitres</h3>
 
-  <!-- 
-    CORRECTION : La boucle principale itère maintenant sur 'matieresAvecDetails', 
-    qui est la variable remplie par l'appel API.
-  -->
-  <div *ngFor="let matiere of matieresAvecDetails" class="card mb-3 shadow-sm">
-    
-    <!-- En-tête cliquable pour chaque matière -->
-    <div class="card-header bg-light" (click)="toggleContenu(matiere.nom)" style="cursor: pointer;">
-      <h4 class="mb-0 d-flex justify-content-between align-items-center">
-        {{ matiere.nom }}
-        <span *ngIf="matiere.chapitres.length > 0" class="badge bg-primary rounded-pill">
-          {{ matiere.chapitres.length }} chapitre(s)
-        </span>
-      </h4>
+  <div *ngIf="isLoading" class="text-center">Chargement...</div>
+
+  <ng-container *ngIf="!isLoading">
+    <!-- Sélecteur de matière -->
+    <div class="mb-3 text-center">
+      <label for="matiereSelect" class="form-label fw-bold">Sélectionner une matière :</label>   
+
+      <select id="matiereSelect" class="form-select w-auto d-inline-block"
+              [(ngModel)]="matiereSelectionnee">
+        <option value="" disabled selected>-- Choisir --</option>
+        <!-- On appelle la méthode getMatieres() du composant -->
+        <option *ngFor="let matiere of getMatieres()" [value]="matiere">
+          {{ matiere }}
+        </option>
+      </select>
     </div>
 
-    <!-- Contenu affiché/masqué conditionnellement avec une petite animation -->
-    <div *ngIf="isContenuVisible(matiere.nom)" class="card-body">
-      <ul class="list-group list-group-flush">
-        
-        <!-- Boucle sur les chapitres de la matière actuelle -->
-        <li *ngFor="let chapitre of matiere.chapitres" class="list-group-item">
-          
-          <!-- 
-            CORRECTION : On utilise 'chapitre.nom' au lieu de 'chapitre.titre' 
-            pour correspondre à l'interface 'ChapitrePourListe'.
-          -->
-          <h5>{{ chapitre.nom }} (Niveau {{ chapitre.niveau }})</h5>
-          
-          <p class="mb-2 text-muted">
-            <strong>Objectif :</strong> {{ chapitre.objectif || 'Non défini' }}
-          </p>
-          
-          <!-- Lien pour aller vers le composant de construction/remplissage du chapitre -->
-          <a [routerLink]="['/admin/gestion-chapitre']" [queryParams]="{ matiere: matiere.nom, niveau: chapitre.niveau }" class="btn btn-sm btn-outline-secondary">
-            <i class="bi bi-pencil-square"></i> Modifier le contenu
-          </a>
-        </li>
+    <!-- Tableau des chapitres -->
+    <table class="table table-bordered table-striped align-middle text-center" *ngIf="matiereSelectionnee">
+      <thead class="table-dark">
+        <tr>
+          <th>Matière</th>
+          <th>Chapitre</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- On vérifie que la matière sélectionnée a bien des chapitres -->
+        <ng-container *ngIf="chapitresParMatiere[matiereSelectionnee] && chapitresParMatiere[matiereSelectionnee].length > 0">
+          <ng-container *ngFor="let chapitre of chapitresParMatiere[matiereSelectionnee]; let i = index">
+            <tr>
+              <!-- Matière affichée une seule fois -->
+              <td *ngIf="i === 0" [attr.rowspan]="chapitresParMatiere[matiereSelectionnee].length"
+                  class="align-middle fw-bold">
+                {{ matiereSelectionnee }}
+              </td>
 
-        <!-- Message si une matière n'a pas encore de chapitres -->
-        <li *ngIf="matiere.chapitres.length === 0" class="list-group-item text-muted fst-italic">
-          Aucun chapitre défini pour cette matière.
-        </li>
-      </ul>
-    </div>
-  </div>
+              <!-- Titre du chapitre -->
+              <!-- Correction : utiliser 'chapitre.nom' au lieu de 'chapitre.titre' -->
+              <td class="align-middle">{{ chapitre.nom }}</td>
 
-  <!-- 
-    Message affiché si aucune matière n'est retournée par le backend.
-    J'ai ajouté une condition pour ne pas l'afficher pendant le chargement.
-  -->
-  <div *ngIf="matieresAvecDetails.length === 0" class="alert alert-info mt-4">
-    Aucune matière avec des chapitres n'a été trouvée dans la base de données.
-  </div>
+              <!-- Bouton unique -->
+              <td *ngIf="i === 0" [attr.rowspan]="chapitresParMatiere[matiereSelectionnee].length" class="align-middle">
+                <button class="btn btn-sm btn-outline-primary" (click)="toggleContenu(matiereSelectionnee)">
+                  {{ isContenuVisible(matiereSelectionnee) ? 'Masquer structure' : 'Détail structure' }}
+                </button>
+              </td>
+            </tr>
+          </ng-container>
+        </ng-container>
+
+        <!-- Cas où il n'y a aucun chapitre pour la matière sélectionnée -->
+        <tr *ngIf="!chapitresParMatiere[matiereSelectionnee] || chapitresParMatiere[matiereSelectionnee].length === 0">
+          <td class="align-middle fw-bold">{{ matiereSelectionnee }}</td>
+          <td colspan="2">Aucun chapitre trouvé pour cette matière.</td>
+        </tr>
+
+        <!-- Structure détaillée (s'affiche sous le tableau principal) -->
+        <tr *ngIf="isContenuVisible(matiereSelectionnee)">
+          <td colspan="3">
+            <h5 class="structure-title">Structure complète de {{ matiereSelectionnee }}</h5>
+            
+            <div *ngIf="!chapitresParMatiere[matiereSelectionnee] || chapitresParMatiere[matiereSelectionnee].length === 0">
+              Pas de structure à afficher.
+            </div>
+
+            <div class="chapitre-card" *ngFor="let chapitre of chapitresParMatiere[matiereSelectionnee]">
+              <div class="chapitre-header">
+                📘 Chapitre : <span class="chapitre-title">{{ chapitre.nom }}</span>
+              </div>
+              <!-- NOTE: La donnée 'sections' n'est pas chargée pour l'instant, donc cette partie sera vide -->
+              <ul class="section-list">
+                <li *ngFor="let section of getSectionsUniques(chapitre.sections)">
+                  Section : <strong>{{ section.titre || section.name || section.label || 'Sans titre' }}</strong>
+                </li>
+                <li *ngIf="!chapitre.sections || chapitre.sections.length === 0">
+                  (Aucune section pour ce chapitre)
+                </li>
+              </ul>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </ng-container>
 </div>

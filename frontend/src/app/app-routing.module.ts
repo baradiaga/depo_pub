@@ -27,7 +27,7 @@ const routes: Routes = [
         path: 'admin',
         loadChildren: () => import('./admin/admin.module').then(m => m.AdminModule),
         canActivate: [AuthGuard], // Double sécurité pour la section admin
-        data: { roles: ['ADMIN', 'RESPONSABLE_FORMATION'] }
+        data: { roles: ['ADMIN', 'RESPONSABLE_FORMATION','ENSEIGNANT'] }
       },
       // Dans app-routing.module.ts, dans les children de la route '/app'
 {

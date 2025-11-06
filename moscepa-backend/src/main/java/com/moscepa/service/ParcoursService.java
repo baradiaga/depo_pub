@@ -1,3 +1,5 @@
+// Fichier : src/main/java/com/moscepa/service/ParcoursService.java (Version Finale Corrigée)
+
 package com.moscepa.service;
 
 import com.moscepa.dto.ParcoursDto;
@@ -11,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -23,20 +24,27 @@ public class ParcoursService {
     private final UtilisateurRepository utilisateurRepository;
     private final ChapitreRepository chapitreRepository;
     private final ResultatTestRepository resultatTestRepository;
-    private final EtudiantRepository etudiantRepository;
+    // ====================================================================
+    // === CORRECTION APPLIQUÉE ICI : On supprime EtudiantRepository    ===
+    // ====================================================================
 
-    public ParcoursService(ParcoursRepository parcoursRepository, UtilisateurRepository utilisateurRepository, ChapitreRepository chapitreRepository, ResultatTestRepository resultatTestRepository, EtudiantRepository etudiantRepository) {
+    // On met à jour le constructeur pour ne plus injecter EtudiantRepository
+    public ParcoursService(ParcoursRepository parcoursRepository, UtilisateurRepository utilisateurRepository, ChapitreRepository chapitreRepository, ResultatTestRepository resultatTestRepository) {
         this.parcoursRepository = parcoursRepository;
         this.utilisateurRepository = utilisateurRepository;
         this.chapitreRepository = chapitreRepository;
         this.resultatTestRepository = resultatTestRepository;
-        this.etudiantRepository = etudiantRepository;
     }
 
     public ParcoursDto getParcoursPourEtudiant(Long utilisateurId) {
-        Etudiant etudiant = etudiantRepository.findByUtilisateurId(utilisateurId)
-                .orElseThrow(() -> new EntityNotFoundException("Aucun profil étudiant trouvé pour l'utilisateur ID: " + utilisateurId));
-        Long etudiantId = etudiant.getId();
+        // ====================================================================
+        // === CORRECTION APPLIQUÉE ICI : Logique simplifiée                ===
+        // ====================================================================
+        // On n'a plus besoin de chercher un "profil étudiant" séparé.
+        // L'ID de l'utilisateur EST l'ID de l'étudiant.
+        if (!utilisateurRepository.existsById(utilisateurId)) {
+            throw new EntityNotFoundException("Aucun étudiant trouvé pour l'utilisateur ID: " + utilisateurId);
+        }
 
         List<Parcours> parcoursList = parcoursRepository.findByUtilisateurIdOrderByDateAjoutDesc(utilisateurId);
         List<ParcoursItemDto> recommandes = new ArrayList<>();
@@ -44,16 +52,12 @@ public class ParcoursService {
 
         for (Parcours parcours : parcoursList) {
             
-            // ====================================================================
-            // ===> ADAPTATION À LA NOUVELLE MÉTHODE DU REPOSITORY <===
-            // ====================================================================
-            // 1. On appelle la nouvelle méthode avec @Query
-            List<ResultatTest> resultats = resultatTestRepository.findLatestByEtudiantAndChapitre(etudiantId, parcours.getChapitre().getId());
+            // On utilise directement l'ID de l'utilisateur
+            List<ResultatTest> resultats = resultatTestRepository.findLatestByEtudiantAndChapitre(utilisateurId, parcours.getChapitre().getId());
 
             double scoreEnPourcentage = 0.0;
-            // 2. On prend le premier résultat de la liste (le plus récent)
             if (!resultats.isEmpty()) {
-                ResultatTest dernierResultat = resultats.get(0); // Le premier est le plus récent grâce au "ORDER BY DESC"
+                ResultatTest dernierResultat = resultats.get(0);
                 if (dernierResultat.getScoreTotal() != null && dernierResultat.getScoreTotal() > 0) {
                     scoreEnPourcentage = (dernierResultat.getScore() / dernierResultat.getScoreTotal()) * 100;
                 }
@@ -62,7 +66,7 @@ public class ParcoursService {
             ParcoursItemDto dto = new ParcoursItemDto(
                 parcours.getChapitre().getId(),
                 parcours.getChapitre().getNom(),
-                parcours.getChapitre().getMatiere().getNom(),
+                parcours.getChapitre().getElementConstitutif().getNom(),
                 scoreEnPourcentage
             );
 

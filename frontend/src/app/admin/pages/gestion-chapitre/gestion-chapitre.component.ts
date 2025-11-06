@@ -1,9 +1,15 @@
+// Fichier : src/app/admin/pages/gestion-chapitre/gestion-chapitre.component.ts (Corrigé et Final)
+
 import { Component, OnInit } from '@angular/core';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
-import { ChapitreService, ChapitreDetail } from '../../../services/chapitre.service';
+import { forkJoin, Observable } from 'rxjs';
+import { ToastrService } from 'ngx-toastr';
+
+// --- IMPORTS CORRIGÉS ET CENTRALISÉS ---
+import { ChapitreService } from '../../../services/chapitre.service';
 import { SectionService } from '../../../services/section.service';
-import { MatiereService } from '../../../services/matiere.service';
-import { forkJoin } from 'rxjs';
+import { ElementConstitutifService } from '../../../services/element-constitutif.service';
+import { Chapitre, Section, ElementConstitutifResponse } from '../../../services/models'; // On utilise le fichier central
 
 @Component({
   selector: 'app-gestion-chapitre',
@@ -11,61 +17,56 @@ import { forkJoin } from 'rxjs';
   styleUrls: ['./gestion-chapitre.component.css']
 })
 export class GestionChapitreComponent implements OnInit {
-  matieres: string[] = [];
+  
+  matieres$!: Observable<ElementConstitutifResponse[]>;
   niveaux: number[] = [1, 2, 3, 4, 5];
-  matiereSelectionnee: string = '';
-  niveauSelectionne: number | null = null;
-  chapitreCharge: ChapitreDetail | null = null;
-  editorConfig: AngularEditorConfig = {   editable: true,
+
+  selectedMatiereNom: string = '';
+  selectedNiveau: number | null = null;
+  chapitreCharge: Chapitre | null = null;
+
+  isLoading = false;
+
+  editorConfig: AngularEditorConfig = {
+    editable: true,
     spellcheck: true,
-    
-    // --- Paramètres pour agrandir l'éditeur ---
-    height: '350px',        // Hauteur par défaut
-    minHeight: '200px',       // Hauteur minimale
-    maxHeight: '600px',       // Hauteur maximale avant d'afficher une barre de défilement
-    
+    height: '350px',
+    minHeight: '200px',
+    maxHeight: '600px',
     placeholder: 'Saisissez le contenu détaillé de la section ici...',
-    
-    // --- Autres options utiles ---
-    translate: 'no', // 'yes' peut causer des problèmes, 'no' est plus sûr
-    enableToolbar: true,
-    showToolbar: true,
+    translate: 'no',
     defaultParagraphSeparator: 'p',
-    defaultFontName: 'Arial',
-    toolbarHiddenButtons: [
-      // Vous pouvez masquer certains boutons si la barre d'outils est trop chargée
-      // Par exemple : ['insertImage', 'insertVideo', 'toggleEditorMode']
-    ]};
+  };
 
   constructor(
-    private matiereService: MatiereService,
+    private ecService: ElementConstitutifService,
     private chapitreService: ChapitreService,
-    private sectionService: SectionService
+    private sectionService: SectionService,
+    private toastr: ToastrService
   ) {}
 
   ngOnInit(): void {
-    this.matiereService.getNomsMatieres().subscribe((data: string[]) => this.matieres = data);
+    this.matieres$ = this.ecService.findAll();
   }
 
   chargerStructure(): void {
-    if (!this.matiereSelectionnee || this.niveauSelectionne === null) {
+    if (!this.selectedMatiereNom || this.selectedNiveau === null) {
       this.chapitreCharge = null;
       return;
     }
 
-    this.chapitreService.findChapitreByMatiereAndNiveau(this.matiereSelectionnee, this.niveauSelectionne)
+    this.isLoading = true;
+    this.chapitreService.findChapitreByMatiereAndNiveau(this.selectedMatiereNom, this.selectedNiveau)
       .subscribe({
-        // CORRECTION : Ajout du type 'ChapitreDetail'
-        next: (chapitre: ChapitreDetail) => {
+        next: (chapitre: Chapitre) => {
           this.chapitreCharge = chapitre;
-          // CORRECTION : Ajout du type pour 's'
           this.chapitreCharge.sections.forEach(s => s.contenu = s.contenu || '');
-          console.log('Structure chargée depuis le backend :', this.chapitreCharge);
+          this.isLoading = false;
         },
-        // CORRECTION : Ajout du type 'any' pour l'erreur
         error: (err: any) => {
           this.chapitreCharge = null;
-          alert(`Aucune structure de chapitre trouvée pour ${this.matiereSelectionnee} - Niveau ${this.niveauSelectionne}.`);
+          this.isLoading = false;
+          this.toastr.error(`Aucune structure de chapitre trouvée pour ${this.selectedMatiereNom} - Niveau ${this.selectedNiveau}.`);
           console.error(err);
         }
       });
@@ -73,29 +74,27 @@ export class GestionChapitreComponent implements OnInit {
 
   enregistrerChapitreComplet(): void {
     if (!this.chapitreCharge) {
-      alert("Aucun chapitre n'est chargé.");
+      this.toastr.warning("Aucun chapitre n'est chargé.");
       return;
     }
 
-    // CORRECTION : Ajout du type pour 'section'
-    const updateObservables = this.chapitreCharge.sections.map(section => 
-      this.sectionService.updateContenu(section.id, section.contenu || '') // Ajout de '|| ''' pour garantir une string
+    // L'appel est maintenant correct car tout le monde utilise la même interface 'Section'.
+    const updateObservables = this.chapitreCharge.sections.map((section: Section) => 
+      this.sectionService.updateContenu(section)
     );
 
     forkJoin(updateObservables).subscribe({
       next: () => {
-        alert('Toutes les sections du chapitre ont été sauvegardées avec succès !');
-        console.log('Chapitre complet sauvegardé :', this.chapitreCharge);
+        this.toastr.success('Toutes les sections du chapitre ont été sauvegardées !');
       },
-      // CORRECTION : Ajout du type 'any' pour l'erreur
       error: (err: any) => {
-        alert('Une erreur est survenue lors de la sauvegarde d\'une ou plusieurs sections.');
+        this.toastr.error('Une erreur est survenue lors de la sauvegarde.');
         console.error('Erreur lors de la sauvegarde groupée :', err);
       }
     });
   }
 
-  onFileSelected(event: any, sectionId: number) {
+  onFileSelected(event: any, sectionId: number): void {
     const file = event.target.files[0];
     if (file) {
       console.log(`Fichier '${file.name}' sélectionné pour la section ${sectionId}. La logique d'upload est à implémenter.`);

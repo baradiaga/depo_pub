@@ -1,3 +1,5 @@
+// Fichier : TestRepository.java (Version Corrigée et Complète)
+
 package com.moscepa.repository;
 
 import com.moscepa.entity.Chapitre;
@@ -25,11 +27,18 @@ public interface TestRepository extends JpaRepository<Test, Long> {
 
     Optional<Test> findTopByChapitreId(Long chapitreId);
 
-    List<Test> findByChapitreMatiereId(@Param("matiereId") Long matiereId);
+    // ====================================================================
+    // === CORRECTION APPLIQUÉE ICI                                     ===
+    // ====================================================================
+    /**
+     * Trouve une liste de Tests en se basant sur l'ID de l'Élément Constitutif
+     * auquel leur chapitre est rattaché.
+     * 
+     * L'ancien nom était "findByChapitreMatiereId", ce qui était incorrect.
+     * Le nouveau nom suit la hiérarchie : Chapitre -> ElementConstitutif -> Id
+     */
+    List<Test> findByChapitreElementConstitutifId(@Param("elementConstitutifId") Long elementConstitutifId);
 
-    // ====================================================================
-    // ===> NOUVELLE MÉTHODE AJOUTÉE POUR LE SERVICE <===
-    // ====================================================================
     /**
      * Vérifie rapidement si un test existe pour un chapitre donné,
      * sans avoir besoin de charger l'entité complète. C'est très performant.

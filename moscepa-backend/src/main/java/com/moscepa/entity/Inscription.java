@@ -2,8 +2,7 @@ package com.moscepa.entity;
 
 import jakarta.persistence.*;
 
-@Entity
-@Table(name = "moscepa_inscriptions")
+
 public class Inscription {
 
     @Id
@@ -18,8 +17,7 @@ public class Inscription {
     @JoinColumn(name = "matiere_id", nullable = false)
     private Matiere matiere;
 
-    @Column(name = "statut", nullable = false)
-    private String statut; // "À reprendre", "Terminé", etc.
+     
 
     // Getters et Setters...
     public Long getId() { return id; }
@@ -28,6 +26,5 @@ public class Inscription {
     public void setEtudiant(Etudiant etudiant) { this.etudiant = etudiant; }
     public Matiere getMatiere() { return matiere; }
     public void setMatiere(Matiere matiere) { this.matiere = matiere; }
-    public String getStatut() { return statut; }
-    public void setStatut(String statut) { this.statut = statut; }
+
 }

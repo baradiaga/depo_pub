@@ -1,3 +1,5 @@
+// Fichier : src/main/java/com/moscepa/entity/Utilisateur.java (Version Finale et Propre)
+
 package com.moscepa.entity;
 
 import jakarta.persistence.*;
@@ -11,9 +13,6 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * Entité représentant un utilisateur du système MOSCEPA
- */
 @Entity
 @Table(name = "moscepa_utilisateurs")
 public class Utilisateur {
@@ -22,42 +21,69 @@ public class Utilisateur {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "Le nom est obligatoire")
-    @Size(max = 100)
-    @Column(name = "nom", nullable = false, length = 100)
+    // --- Informations de base ---
+    @NotBlank @Size(max = 100)
+    @Column(nullable = false, length = 100)
     private String nom;
 
-    @NotBlank(message = "Le prénom est obligatoire")
-    @Size(max = 100)
-    @Column(name = "prenom", nullable = false, length = 100)
+    @NotBlank @Size(max = 100)
+    @Column(nullable = false, length = 100)
     private String prenom;
 
-    @NotBlank(message = "L'email est obligatoire")
-    @Email(message = "Format d'email invalide")
-    @Size(max = 255)
-    @Column(name = "email", nullable = false, unique = true, length = 255)
+    @NotBlank @Email @Size(max = 255)
+    @Column(nullable = false, unique = true, length = 255)
     private String email;
 
-    @NotBlank(message = "Le mot de passe est obligatoire")
-    @Size(min = 6, message = "Le mot de passe doit contenir au moins 6 caractères")
-    @Column(name = "mot_de_passe", nullable = false)
+    @NotBlank
+    @Column(nullable = false)
     private String motDePasse;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false)
+    @Column(nullable = false)
     private Role role;
 
-    @Column(name = "actif", nullable = false)
+    @Column(nullable = false)
     private Boolean actif = true;
 
+    // --- Informations Personnelles Détaillées ---
+    @Column(name = "date_de_naissance")
+    private String dateDeNaissance;
+
+    @Column(name = "lieu_de_naissance")
+    private String lieuDeNaissance;
+
+    private String nationalite;
+    private String sexe;
+    private String adresse;
+    private String telephone;
+
+    // --- Informations Académiques ---
+    @Column(name = "annee_academique")
+    private String anneeAcademique;
+
+    private String filiere;
+    
+    // --- Relation pour les inscriptions aux matières ---
+    @ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+    @JoinTable(
+        name = "moscepa_inscriptions",
+        joinColumns = @JoinColumn(name = "etudiant_id"),
+        inverseJoinColumns = @JoinColumn(name = "ec_id")
+    )
+    // ====================================================================
+    // === LE NOM EST MAINTENANT COHÉRENT PARTOUT                       ===
+    // ====================================================================
+    private Set<ElementConstitutif> matieresInscrites = new HashSet<>();
+
+    // --- Timestamps ---
     @CreationTimestamp
-    @Column(name = "date_creation", nullable = false, updatable = false)
+    @Column(updatable = false)
     private LocalDateTime dateCreation;
 
     @UpdateTimestamp
-    @Column(name = "date_modification")
     private LocalDateTime dateModification;
-
+    
+    // --- Permissions (si vous les utilisez) ---
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "moscepa_utilisateur_permissions",
@@ -66,113 +92,56 @@ public class Utilisateur {
     )
     private Set<Permission> permissions = new HashSet<>();
 
-    // Constructeurs
+    // --- Constructeurs ---
     public Utilisateur() {}
 
-    public Utilisateur(String nom, String prenom, String email, String motDePasse, Role role) {
-        this.nom = nom;
-        this.prenom = prenom;
-        this.email = email;
-        this.motDePasse = motDePasse;
-        this.role = role;
+    // --- Getters et Setters ---
+    
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public String getNom() { return nom; }
+    public void setNom(String nom) { this.nom = nom; }
+    public String getPrenom() { return prenom; }
+    public void setPrenom(String prenom) { this.prenom = prenom; }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+    public String getMotDePasse() { return motDePasse; }
+    public void setMotDePasse(String motDePasse) { this.motDePasse = motDePasse; }
+    public Role getRole() { return role; }
+    public void setRole(Role role) { this.role = role; }
+    public Boolean getActif() { return actif; }
+    public void setActif(Boolean actif) { this.actif = actif; }
+    public String getDateDeNaissance() { return dateDeNaissance; }
+    public void setDateDeNaissance(String dateDeNaissance) { this.dateDeNaissance = dateDeNaissance; }
+    public String getLieuDeNaissance() { return lieuDeNaissance; }
+    public void setLieuDeNaissance(String lieuDeNaissance) { this.lieuDeNaissance = lieuDeNaissance; }
+    public String getNationalite() { return nationalite; }
+    public void setNationalite(String nationalite) { this.nationalite = nationalite; }
+    public String getSexe() { return sexe; }
+    public void setSexe(String sexe) { this.sexe = sexe; }
+    public String getAdresse() { return adresse; }
+    public void setAdresse(String adresse) { this.adresse = adresse; }
+    public String getTelephone() { return telephone; }
+    public void setTelephone(String telephone) { this.telephone = telephone; }
+    public String getAnneeAcademique() { return anneeAcademique; }
+    public void setAnneeAcademique(String anneeAcademique) { this.anneeAcademique = anneeAcademique; }
+    public String getFiliere() { return filiere; }
+    public void setFiliere(String filiere) { this.filiere = filiere; }
+    public LocalDateTime getDateCreation() { return dateCreation; }
+    public void setDateCreation(LocalDateTime dateCreation) { this.dateCreation = dateCreation; }
+    public LocalDateTime getDateModification() { return dateModification; }
+    public void setDateModification(LocalDateTime dateModification) { this.dateModification = dateModification; }
+    public Set<Permission> getPermissions() { return permissions; }
+    public void setPermissions(Set<Permission> permissions) { this.permissions = permissions; }
+
+    // ====================================================================
+    // === GETTER ET SETTER COHÉRENTS                                   ===
+    // ====================================================================
+    public Set<ElementConstitutif> getMatieresInscrites() { 
+        return this.matieresInscrites;
     }
 
-    // Getters et Setters
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getNom() {
-        return nom;
-    }
-
-    public void setNom(String nom) {
-        this.nom = nom;
-    }
-
-    public String getPrenom() {
-        return prenom;
-    }
-
-    public void setPrenom(String prenom) {
-        this.prenom = prenom;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getMotDePasse() {
-        return motDePasse;
-    }
-
-    public void setMotDePasse(String motDePasse) {
-        this.motDePasse = motDePasse;
-    }
-
-    public Role getRole() {
-        return role;
-    }
-
-    public void setRole(Role role) {
-        this.role = role;
-    }
-
-    public Boolean getActif() {
-        return actif;
-    }
-
-    public void setActif(Boolean actif) {
-        this.actif = actif;
-    }
-
-    public LocalDateTime getDateCreation() {
-        return dateCreation;
-    }
-
-    public void setDateCreation(LocalDateTime dateCreation) {
-        this.dateCreation = dateCreation;
-    }
-
-    public LocalDateTime getDateModification() {
-        return dateModification;
-    }
-
-    public void setDateModification(LocalDateTime dateModification) {
-        this.dateModification = dateModification;
-    }
-
-    public Set<Permission> getPermissions() {
-        return permissions;
-    }
-
-    public void setPermissions(Set<Permission> permissions) {
-        this.permissions = permissions;
-    }
-
-    // Méthodes utilitaires
-    public String getNomComplet() {
-        return prenom + " " + nom;
-    }
-
-    @Override
-    public String toString() {
-        return "Utilisateur{" +
-                "id=" + id +
-                ", nom='" + nom + '\'' +
-                ", prenom='" + prenom + '\'' +
-                ", email='" + email + '\'' +
-                ", role=" + role +
-                ", actif=" + actif +
-                '}';
+    public void setMatieresInscrites(Set<ElementConstitutif> matieresInscrites) { 
+        this.matieresInscrites = matieresInscrites;
     }
 }
-

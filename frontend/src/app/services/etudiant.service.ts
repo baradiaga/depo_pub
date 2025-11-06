@@ -1,13 +1,15 @@
+// Fichier : src/app/services/etudiant.service.ts (Version Complète et Corrigée)
+
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-export interface EtudiantDto {
-  id?: number;
+// Interface pour le payload d'inscription complet
+export interface EtudiantRegistrationPayload {
   nom: string;
   prenom: string;
   email: string;
-  numeroMatricule?: string;
+  motDePasse: string;
   dateDeNaissance: string;
   lieuDeNaissance: string;
   nationalite: string;
@@ -17,32 +19,47 @@ export interface EtudiantDto {
   anneeAcademique: string;
   filiere: string;
   matiereIds: number[];
-  enseignantId?: number | null;
-  dateInscription?: Date;
-  enseignantNom?: string;
+}
+
+// Interface simplifiée pour afficher une liste d'étudiants
+export interface EtudiantDto {
+  id: number;
+  nom: string;
+  prenom: string;
+  email: string;
 }
 
 @Injectable({
   providedIn: 'root'
 } )
 export class EtudiantService {
-  private apiUrl = 'http://localhost:8080/api/etudiants';
+  private usersApiUrl = 'http://localhost:8080/api/users';
+  private etudiantsApiUrl = 'http://localhost:8080/api/etudiants';
 
   constructor(private http: HttpClient ) { }
 
+  /**
+   * Récupère la liste de tous les utilisateurs ayant le rôle ETUDIANT.
+   */
   getEtudiants(): Observable<EtudiantDto[]> {
-    return this.http.get<EtudiantDto[]>(this.apiUrl );
+    return this.http.get<EtudiantDto[]>(`${this.usersApiUrl}/etudiants` );
   }
 
-  inscrireEtudiant(etudiantDto: EtudiantDto): Observable<EtudiantDto> {
-    return this.http.post<EtudiantDto>(this.apiUrl, etudiantDto );
+  /**
+   * Envoie les données du formulaire d'inscription complet au backend.
+   */
+  inscrireNouvelEtudiant(payload: EtudiantRegistrationPayload): Observable<any> {
+    return this.http.post(`${this.etudiantsApiUrl}/inscrire`, payload );
   }
 
-  updateEtudiant(id: number, etudiantDto: EtudiantDto): Observable<EtudiantDto> {
-    return this.http.put<EtudiantDto>(`${this.apiUrl}/${id}`, etudiantDto );
-  }
-
+  /**
+   * Supprime un étudiant par son ID.
+   * NOTE : Cette méthode supprime l'UTILISATEUR, pas juste une inscription.
+   * Elle devrait appeler l'API des utilisateurs.
+   */
   deleteEtudiant(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}` );
+    return this.http.delete<void>(`${this.usersApiUrl}/${id}` );
   }
+
+  // --- Les autres méthodes peuvent être ajoutées ici au besoin ---
 }

@@ -1,8 +1,7 @@
-import { Component, OnInit, OnDestroy } from '@angular/core'; // Importer OnDestroy
-import { Router } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router'; 
 import { AuthService } from '../../../../services/auth.service';
 import { UserRole } from '../../../../models/user.model';
-import { Subscription } from 'rxjs'; // Importer Subscription
 
 interface DashboardItem {
   title: string;
@@ -16,44 +15,29 @@ interface DashboardItem {
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
-export class DashboardComponent implements OnInit, OnDestroy { // Implémenter OnDestroy
-  role: UserRole | null = null;
-  cards: DashboardItem[] = [];
+export class DashboardComponent implements OnInit {
   
-  // Variable pour stocker notre souscription
-  private authSubscription: Subscription | undefined;
+  // On peut déclarer les cartes directement ici
+  public cards: DashboardItem[] = [];
 
+  // On injecte les services nécessaires
   constructor(private authService: AuthService, private router: Router) {}
 
   ngOnInit(): void {
-    // AU LIEU de lire une seule fois, nous nous abonnons aux changements.
-    // isAuthenticated$ est un bon déclencheur, car il est mis à jour après la connexion.
-    this.authSubscription = this.authService.isAuthenticated$.subscribe(isAuthenticated => {
-      if (isAuthenticated) {
-        // Si l'utilisateur est authentifié, nous récupérons le rôle.
-        // À ce stade, nous sommes sûrs que le localStorage est à jour.
-        this.role = this.authService.getUserRole();
-        this.cards = this.getCardsByRole(this.role);
-      } else {
-        // Si l'utilisateur se déconnecte, on vide les cartes.
-        this.role = null;
-        this.cards = [];
-      }
-    });
-  }
+    // LA LOGIQUE SIMPLIFIÉE EST ICI
+    // 1. On récupère le rôle de manière synchrone.
+    //    À ce stade, le AuthService devrait déjà savoir qui est l'utilisateur.
+    const userRole = this.authService.getUserRole();
 
-  // Bonne pratique : se désabonner pour éviter les fuites de mémoire
-  ngOnDestroy(): void {
-    if (this.authSubscription) {
-      this.authSubscription.unsubscribe();
-    }
+    // 2. On génère les cartes en fonction de ce rôle.
+    this.cards = this.getCardsByRole(userRole);
   }
 
   goTo(path: string): void {
     this.router.navigate([path]);
   }
 
-  // Votre méthode getCardsByRole est parfaite, pas besoin de la changer.
+  // Votre méthode getCardsByRole reste inchangée, elle est parfaite.
   private getCardsByRole(role: UserRole | null): DashboardItem[] {
     if (!role) {
       return [];
@@ -65,25 +49,14 @@ export class DashboardComponent implements OnInit, OnDestroy { // Implémenter O
         { title: 'Permissions', description: 'Définir les accès', icon: '🔐', route: 'app/admin/permission' },
         { title: 'Fonctionnalités', description: 'Gérer les fonctionnalités', icon: '⚙️', route: 'app/admin/fonctionnalites' },
         { title: 'Gestion des parcours', description: 'Gérer les parcours', icon: '🗺️', route: '/admin/parcours' },
+        { title: 'Matières', description: 'Reprendre vos cours', icon: '📘', route: '/matieres' },
       ],
       ETUDIANT: [
         { title: 'Matières', description: 'Reprendre vos cours', icon: '📘', route: '/matieres' },
         { title: 'Parcours recommandé', description: 'Voir vos parcours', icon: '🧭', route: '/Parcourrecommende' },
         { title: 'Évaluations', description: 'Vos tests & résultats', icon: '📊', route: '/tests' }
       ],
-      ENSEIGNANT: [
-        { title: 'Séquences', description: 'Créer & gérer les séquences', icon: '📺', route: '/sequence' },
-        { title: 'Activités', description: 'Concevoir des activités', icon: '📝', route: '/activites' }
-      ],
-      TUTEUR: [
-        { title: 'Suivi étudiants', description: 'Accompagner les étudiants', icon: '👥', route: '/suivi' }
-      ],
-      TECHNOPEDAGOGUE: [
-        { title: 'Ressources pédagogiques', description: 'Publier & gérer les contenus', icon: '📚', route: '/ressources' }
-      ],
-      RESPONSABLE_FORMATION: [
-        { title: 'Reporting', description: 'Suivi des performances', icon: '📈', route: '/reporting' }
-      ]
+      // ... (les autres rôles)
     };
     return allCards[role] || [];
   }

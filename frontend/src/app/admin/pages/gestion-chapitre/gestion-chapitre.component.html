@@ -1,3 +1,5 @@
+<!-- Fichier : src/app/admin/pages/gestion-chapitre/gestion-chapitre.component.html (Corrigé) -->
+
 <div class="container mt-4">
   <h2>Construction des Chapitres</h2>
   <hr>
@@ -11,14 +13,15 @@
       <div class="row">
         <div class="col-md-6">
           <label for="matiere" class="form-label">Matière</label>
-          <select id="matiere" class="form-select" [(ngModel)]="matiereSelectionnee" (ngModelChange)="chargerStructure()">
+          <!-- On utilise l'observable matieres$ et on stocke le nom -->
+          <select id="matiere" class="form-select" [(ngModel)]="selectedMatiereNom" (ngModelChange)="chargerStructure()">
             <option value="">-- Choisissez une matière --</option>
-            <option *ngFor="let m of matieres" [value]="m">{{ m }}</option>
+            <option *ngFor="let m of (matieres$ | async)" [value]="m.nom">{{ m.nom }}</option>
           </select>
         </div>
         <div class="col-md-6">
           <label for="niveau" class="form-label">Niveau</label>
-          <select id="niveau" class="form-select" [(ngModel)]="niveauSelectionne" (ngModelChange)="chargerStructure()" [disabled]="!matiereSelectionnee">
+          <select id="niveau" class="form-select" [(ngModel)]="selectedNiveau" (ngModelChange)="chargerStructure()" [disabled]="!selectedMatiereNom">
             <option [ngValue]="null">-- Choisissez un niveau --</option>
             <option *ngFor="let n of niveaux" [value]="n">{{ n }}</option>
           </select>
@@ -27,19 +30,26 @@
     </div>
   </div>
 
+  <!-- Indicateur de chargement pour la structure -->
+  <div *ngIf="isLoading" class="text-center my-4">
+    <div class="spinner-border text-secondary" role="status"></div>
+    <p class="mt-2">Chargement de la structure...</p>
+  </div>
+
   <!-- Étape 2: Remplissage du contenu (affiché seulement si une structure est chargée) -->
-  <div *ngIf="chapitreCharge; else noStructure">
+  <div *ngIf="!isLoading && chapitreCharge; else noStructure">
     <div class="card">
       <div class="card-header">
-        <h3>Étape 2 : Remplir le contenu pour "{{ chapitreCharge.titre }}"</h3>
+        <!-- ========================================================== -->
+        <!-- === CORRECTION APPLIQUÉE ICI : 'titre' -> 'nom'          === -->
+        <!-- ========================================================== -->
+        <h3>Étape 2 : Remplir le contenu pour "{{ chapitreCharge.nom }}"</h3>
       </div>
       <div class="card-body">
-        <!-- Boucle sur chaque section pour afficher un éditeur -->
         <div *ngFor="let section of chapitreCharge.sections" class="mb-4 border p-3">
           <h4>Section : {{ section.titre }}</h4>
           <angular-editor [placeholder]="'Saisissez le contenu...'" [(ngModel)]="section.contenu"></angular-editor>
           
-          <!-- Gestion des ressources (UI seulement pour l'instant) -->
           <div class="mt-2">
             <label class="form-label">Ajouter une ressource (fichier)</label>
             <input type="file" class="form-control" (change)="onFileSelected($event, section.id)">
@@ -48,7 +58,7 @@
       </div>
       <div class="card-footer text-end">
         <button class="btn btn-success" (click)="enregistrerChapitreComplet()">
-          Enregistrer tout le chapitre
+          <i class="fas fa-save me-1"></i> Enregistrer tout le chapitre
         </button>
       </div>
     </div>
@@ -56,7 +66,7 @@
 
   <!-- Message si aucune structure n'est chargée -->
   <ng-template #noStructure>
-    <div class="alert alert-info">
+    <div *ngIf="!isLoading" class="alert alert-info">
       Veuillez sélectionner une matière et un niveau pour charger la structure d'un chapitre.
     </div>
   </ng-template>

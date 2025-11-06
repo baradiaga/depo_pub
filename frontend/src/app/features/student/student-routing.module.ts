@@ -4,12 +4,13 @@ import { TestsListComponent } from './components/tests-list/tests-list.component
 import { RecommendationComponent } from './components/recommendation/recommendation.component';
 import { ParcoursComponent } from './components/parcours/parcours.component';
 import { ChapitreDetailComponent } from './components/chapitre-detail/chapitre-detail.component';
-
+import { TestdeconnaissanceComponent } from './components/testdeconnaissance/testdeconnaissance.component';
 const routes: Routes = [
   { path: 'test/passer/:chapitreId', component: TestsListComponent },
   { path: 'recommendation', component: RecommendationComponent },
   { path: 'parcours', component: ParcoursComponent },
   { path: 'chapitre/:id', component: ChapitreDetailComponent },
+  {path : 'test-connaissance',component: TestdeconnaissanceComponent},
   { path: '', redirectTo: 'parcours', pathMatch: 'full' }
 ];
 

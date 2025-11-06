@@ -1,3 +1,5 @@
+<!-- Fichier : src/app/features/admin/pages/gestion-questionnaire/gestion-questionnaire.component.html (Corrigé) -->
+
 <div class="container mt-4">
   <!-- ============================================= -->
   <!-- CARTE 1 : CRÉATION D'UN QUESTIONNAIRE         -->
@@ -31,15 +33,19 @@
         <div class="row">
           <div class="col-md-6 mb-3">
             <label for="matiere" class="form-label">Matière</label>
-            <select id="matiere" class="form-select" [(ngModel)]="questionnaire.matiere" (change)="onMatiereChangeManuel()">
-              <option value="" disabled>-- Choisissez une matière --</option>
-              <option *ngFor="let matiere of matieres" [value]="matiere.id">{{ matiere.nom }}</option>
+            <select id="matiere" class="form-select" [(ngModel)]="questionnaire.matiereId" (change)="onMatiereChange()">
+              <option [ngValue]="null" disabled>-- Choisissez une matière --</option>
+              <option *ngFor="let matiere of mesMatieres" [value]="matiere.id">{{ matiere.nom }}</option>
             </select>
           </div>
           <div class="col-md-6 mb-3">
             <label for="chapitre" class="form-label">Chapitre</label>
-            <select id="chapitre" class="form-select" [(ngModel)]="questionnaire.chapitre" [disabled]="!questionnaire.matiere">
-              <option value="" disabled>-- Choisissez un chapitre --</option>
+            <select id="chapitre" class="form-select" [(ngModel)]="questionnaire.chapitreId" [disabled]="!questionnaire.matiereId || isLoadingChapitres">
+              <option [ngValue]="null" disabled>-- Choisissez un chapitre --</option>
+              <option *ngIf="isLoadingChapitres">Chargement des chapitres...</option>
+              <!-- ========================================================== -->
+              <!-- === CORRECTION APPLIQUÉE ICI : 'titre' -> 'nom'          === -->
+              <!-- ========================================================== -->
               <option *ngFor="let chapitre of chapitresDisponibles" [value]="chapitre.id">{{ chapitre.nom }}</option>
             </select>
           </div>
@@ -51,7 +57,7 @@
 
         <hr>
 
-        <!-- Section des questions -->
+        <!-- Section des questions (INCHANGÉE) -->
         <h4 class="mt-4">Questions</h4>
         <div *ngFor="let question of questionnaire.questions; let i = index" class="card my-3">
           <div class="card-body">
@@ -88,7 +94,6 @@
               </div>
             </div>
 
-            <!-- Options de réponse -->
             <div class="mt-3">
               <h6>Options de réponse</h6>
               <div *ngIf="question.reponses">
@@ -152,9 +157,9 @@
         <div class="row">
           <div class="col-md-6 mb-3">
             <label for="matiereAuto" class="form-label">Matière (pour filtrer les chapitres) <span class="text-danger">*</span></label>
-            <select id="matiereAuto" class="form-select" [(ngModel)]="matiereAutoId" (change)="onMatiereChangeAuto()">
-              <option value="" disabled>-- Choisissez une matière --</option>
-              <option *ngFor="let matiere of matieres" [value]="matiere.id">{{ matiere.nom }}</option>
+            <select id="matiereAuto" class="form-select" [(ngModel)]="matiereAutoId" (change)="onMatiereChange()">
+              <option [ngValue]="null" disabled>-- Choisissez une matière --</option>
+              <option *ngFor="let matiere of mesMatieres" [value]="matiere.id">{{ matiere.nom }}</option>
             </select>
           </div>
           <div class="col-md-6 mb-3">
@@ -165,11 +170,15 @@
         <div class="mb-3" [hidden]="!matiereAutoId">
           <label class="form-label">Chapitres à inclure <span class="text-danger">*</span></label>
           <div class="border p-3 rounded">
+            <div *ngIf="isLoadingChapitres" class="text-muted">Chargement...</div>
+            <!-- ========================================================== -->
+            <!-- === CORRECTION APPLIQUÉE ICI : 'titre' -> 'nom'          === -->
+            <!-- ========================================================== -->
             <div *ngFor="let chapitre of chapitresDisponibles" class="form-check">
               <input class="form-check-input" type="checkbox" [id]="'chap-' + chapitre.id" (change)="toggleChapitre(chapitre.id)">
               <label class="form-check-label" [for]="'chap-' + chapitre.id">{{ chapitre.nom }}</label>
             </div>
-            <div *ngIf="chapitresDisponibles.length === 0" class="text-muted">
+            <div *ngIf="!isLoadingChapitres && chapitresDisponibles.length === 0" class="text-muted">
               Aucun chapitre disponible pour cette matière.
             </div>
           </div>
@@ -188,7 +197,7 @@
   </div>
 
   <!-- ============================================= -->
-  <!-- CARTE 2 : LISTE DES QUESTIONNAIRES (NOUVEAU)  -->
+  <!-- CARTE 2 : LISTE DES QUESTIONNAIRES (INCHANGÉ) -->
   <!-- ============================================= -->
   <div class="card shadow-sm mt-5">
     <div class="card-header d-flex justify-content-between align-items-center">

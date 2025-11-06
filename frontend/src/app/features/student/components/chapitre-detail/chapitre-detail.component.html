@@ -1,3 +1,5 @@
+<!-- Fichier : src/app/features/student/components/chapitre-detail/chapitre-detail.component.html (Final) -->
+
 <!-- État de chargement -->
 <div *ngIf="isLoading" class="text-center mt-5">
   <div class="spinner-border text-primary" role="status">
@@ -6,38 +8,40 @@
   <p>Chargement des détails du chapitre...</p>
 </div>
 
-<!-- Contenu principal (affiché une fois le chargement terminé) -->
+<!-- Contenu principal -->
 <div *ngIf="!isLoading">
 
   <!-- Cas 1 : Le chapitre a été trouvé -->
   <div *ngIf="chapitre" class="container mt-4">
     <div class="card shadow-sm">
       <div class="card-header d-flex justify-content-between align-items-center">
-        <!-- CORRECTION : On utilise 'chapitreNom' -->
-        <h2 class="mb-0">{{ chapitre.chapitreNom }}</h2>
-        <!-- CORRECTION : On utilise 'dernierScore' -->
-        <span class="badge rounded-pill" [ngClass]="getCouleurScore(chapitre.dernierScore)">
-          Dernier score : {{ chapitre.dernierScore | number:'1.0-0' }}%
+        <h2 class="mb-0">{{ chapitre.nom }}</h2>
+        <span *ngIf="chapitre.score !== undefined" class="badge rounded-pill" [ngClass]="getCouleurScore(chapitre.score)">
+          Dernier score : {{ chapitre.score | number:'1.0-0' }}%
         </span>
       </div>
       <div class="card-body">
-        <!-- CORRECTION : On utilise 'matiereNom' -->
-        <h5 class="card-subtitle mb-3 text-muted">Matière : {{ chapitre.matiereNom }}</h5>
+        <!-- ========================================================== -->
+        <!-- === CORRECTION FINALE APPLIQUÉE ICI                      === -->
+        <!-- ========================================================== -->
+        <h5 class="card-subtitle mb-3 text-muted">Matière : {{ chapitre.elementConstitutifNom }}</h5>
         
         <hr>
 
         <div class="contenu mt-3">
           <h4>Contenu du chapitre</h4>
-          <p>
-            <em>
-              (Ici, vous pourrez afficher le contenu détaillé du chapitre, comme les sections, les vidéos, les documents, etc.,
-              en faisant un autre appel API si nécessaire pour récupérer le contenu complet du chapitre.)
-            </em>
+          <div *ngFor="let section of chapitre.sections">
+            <h5>{{ section.titre }}</h5>
+            <div [innerHTML]="section.contenu"></div>
+            <hr>
+          </div>
+          <p *ngIf="!chapitre.sections || chapitre.sections.length === 0">
+            <em>Le contenu détaillé de ce chapitre n'est pas encore disponible.</em>
           </p>
         </div>
       </div>
       <div class="card-footer text-end">
-        <a routerLink="/student/parcours" class="btn btn-outline-secondary">← Retour aux parcours</a>
+        <a routerLink="/app/student/parcours" class="btn btn-outline-secondary">← Retour aux parcours</a>
       </div>
     </div>
   </div>
@@ -46,8 +50,8 @@
   <div *ngIf="!chapitre" class="container mt-4 text-center">
     <div class="alert alert-danger">
       <h3>Chapitre Introuvable ❌</h3>
-      <p>Le chapitre que vous essayez de consulter n'a pas été trouvé dans vos parcours.</p>
-      <a routerLink="/student/parcours" class="btn btn-danger">Retourner à la liste des parcours</a>
+      <p>Le chapitre que vous essayez de consulter n'a pas été trouvé.</p>
+      <a routerLink="/app/student/parcours" class="btn btn-danger">Retourner à la liste des parcours</a>
     </div>
   </div>
 

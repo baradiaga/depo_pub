@@ -37,8 +37,6 @@ public class Matiere {
     @Column(name = "description", length = 500)
     private String description;
 
-    @OneToMany(mappedBy = "matiere", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Chapitre> chapitres = new ArrayList<>();
 
     // Constructeurs
     public Matiere() {}
@@ -89,10 +87,5 @@ public class Matiere {
         this.description = description; 
     }
 
-    public List<Chapitre> getChapitres() { 
-        return chapitres; 
-    }
-    public void setChapitres(List<Chapitre> chapitres) { 
-        this.chapitres = chapitres; 
-    }
+
 }

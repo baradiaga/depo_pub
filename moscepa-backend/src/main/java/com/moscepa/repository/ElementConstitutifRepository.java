@@ -1,25 +1,26 @@
+// Fichier : ElementConstitutifRepository.java (Version Finale et Complète)
+
 package com.moscepa.repository;
 
 import com.moscepa.entity.ElementConstitutif;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query; // <-- NOUVEL IMPORT
-import org.springframework.stereotype.Repository;
-
 import java.util.List;
+import java.util.Optional;
 
-@Repository
 public interface ElementConstitutifRepository extends JpaRepository<ElementConstitutif, Long> {
+    
+    List<ElementConstitutif> findByEnseignantId(Long enseignantId);
 
-    /**
-     * MODIFIÉ : Trouve tous les Éléments Constitutifs pour une UE donnée,
-     * en forçant le chargement des relations 'uniteEnseignement' et 'enseignant'.
-     * 
-     * 'LEFT JOIN FETCH' est la clé : il dit à Hibernate de charger ces relations
-     * dans la même requête SQL, évitant ainsi les LazyInitializationException.
-     */
-    @Query("SELECT ec FROM ElementConstitutif ec " +
-           "LEFT JOIN FETCH ec.uniteEnseignement " +
-           "LEFT JOIN FETCH ec.enseignant " +
-           "WHERE ec.uniteEnseignement.id = :ueId")
     List<ElementConstitutif> findByUniteEnseignementId(Long ueId);
+
+    Optional<ElementConstitutif> findByNom(String nom);
+
+    // ====================================================================
+    // === MÉTHODE MANQUANTE AJOUTÉE ICI                                ===
+    // ====================================================================
+    /**
+     * Compte le nombre d'Éléments Constitutifs liés à une Unité d'Enseignement.
+     * Utilisé pour empêcher la suppression d'une UE si elle n'est pas vide.
+     */
+    long countByUniteEnseignementId(Long uniteEnseignementId);
 }

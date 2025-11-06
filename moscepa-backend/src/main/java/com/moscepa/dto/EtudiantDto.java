@@ -1,10 +1,11 @@
+// Fichier : src/main/java/com/moscepa/dto/EtudiantDto.java (Corrigé)
+
 package com.moscepa.dto;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-// Utilisez les annotations @Getter, @Setter de Lombok si vous le souhaitez pour alléger le code.
 public class EtudiantDto {
     private Long id;
     private String nom;
@@ -22,6 +23,7 @@ public class EtudiantDto {
     private List<Long> matiereIds;
     private Long enseignantId;
     private LocalDateTime dateInscription;
+    private String statut;
     private String enseignantNom;
 
     // Getters et Setters pour tous les champs
@@ -59,4 +61,6 @@ public class EtudiantDto {
     public void setDateInscription(LocalDateTime dateInscription) { this.dateInscription = dateInscription; }
     public String getEnseignantNom() { return enseignantNom; }
     public void setEnseignantNom(String enseignantNom) { this.enseignantNom = enseignantNom; }
+    public String getStatut() { return statut; }
+    public void setStatut(String statut) { this.statut = statut; }
 }

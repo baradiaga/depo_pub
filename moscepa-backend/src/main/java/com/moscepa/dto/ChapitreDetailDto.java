@@ -7,30 +7,32 @@ import java.util.stream.Collectors;
 
 /**
  * DTO pour afficher les détails complets d'un chapitre.
+ * Cette version est mise à jour pour utiliser ElementConstitutif.
  */
 public class ChapitreDetailDto {
 
     private Long id;
-    private String titre;
-    private String matiereNom;
+    private String nom; // On utilise 'nom' pour être cohérent avec l'entité
+    private String elementConstitutifNom;
+    private Long elementConstitutifId;
     private Integer niveau;
     private String objectif;
     private List<SectionDto> sections;
-
-    // ==========================================================
-    // ===> CHAMP AJOUTÉ POUR RÉSOUDRE LE PROBLÈME <====
-    // ==========================================================
-    private Long matiereId;
 
     /**
      * DTO interne pour représenter une section.
      */
     public static class SectionDto {
-        // ... (votre code de SectionDto reste inchangé)
         private Long id;
         private String titre;
         private String contenu;
-        public SectionDto(Section section) { this.id = section.getId(); this.titre = section.getTitre(); this.contenu = section.getContenu(); }
+
+        public SectionDto(Section section) {
+            this.id = section.getId();
+            this.titre = section.getTitre();
+            this.contenu = section.getContenu();
+        }
+        // Getters
         public Long getId() { return id; }
         public String getTitre() { return titre; }
         public String getContenu() { return contenu; }
@@ -41,15 +43,17 @@ public class ChapitreDetailDto {
      */
     public ChapitreDetailDto(Chapitre chapitre) {
         this.id = chapitre.getId();
-        this.titre = chapitre.getNom();
+        this.nom = chapitre.getNom();
         this.niveau = chapitre.getNiveau();
         this.objectif = chapitre.getObjectif();
         
-        // On vérifie que la matière n'est pas nulle avant d'y accéder
-        if (chapitre.getMatiere() != null) {
-            this.matiereNom = chapitre.getMatiere().getNom();
-            // On récupère l'ID de la matière ici
-            this.matiereId = chapitre.getMatiere().getId(); 
+        // ====================================================================
+        // === CORRECTION APPLIQUÉE ICI                                     ===
+        // ====================================================================
+        // On utilise la nouvelle relation avec ElementConstitutif
+        if (chapitre.getElementConstitutif() != null) {
+            this.elementConstitutifNom = chapitre.getElementConstitutif().getNom();
+            this.elementConstitutifId = chapitre.getElementConstitutif().getId();
         }
 
         this.sections = chapitre.getSections().stream()
@@ -57,18 +61,12 @@ public class ChapitreDetailDto {
                 .collect(Collectors.toList());
     }
 
-    // --- Getters et Setters ---
+    // --- Getters ---
     public Long getId() { return id; }
-    public String getTitre() { return titre; }
-    public String getMatiereNom() { return matiereNom; }
+    public String getNom() { return nom; }
+    public String getElementConstitutifNom() { return elementConstitutifNom; }
+    public Long getElementConstitutifId() { return elementConstitutifId; }
     public Integer getNiveau() { return niveau; }
     public String getObjectif() { return objectif; }
     public List<SectionDto> getSections() { return sections; }
-
-    // ==========================================================
-    // ===> GETTER AJOUTÉ POUR LE NOUVEAU CHAMP <====
-    // ==========================================================
-    public Long getMatiereId() {
-        return matiereId;
-    }
 }

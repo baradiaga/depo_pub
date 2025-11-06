@@ -6,44 +6,53 @@ import {
   HttpInterceptor
 } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { AuthService } from '../services/auth.service'; // Assurez-vous que le chemin vers votre AuthService est correct
+import { AuthService } from '../services/auth.service';
 
-/**
- * Intercepteur HTTP qui ajoute automatiquement le token JWT (Bearer Token )
- * à l'en-tête 'Authorization' de toutes les requêtes sortantes,
- * si un token est disponible dans l'AuthService.
- */
-@Injectable()
+@Injectable( )
 export class AuthInterceptor implements HttpInterceptor {
 
-  // On injecte l'AuthService pour avoir accès à la méthode getToken()
   constructor(private authService: AuthService) {}
 
-  /**
-   * La méthode principale de l'intercepteur, appelée pour chaque requête HTTP.
-   * @param request La requête sortante originale.
-   * @param next Le prochain gestionnaire dans la chaîne d'intercepteurs.
-   * @returns Un Observable de l'événement HTTP.
-   */
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     
-    // 1. On récupère le token en utilisant la méthode centralisée de l'AuthService.
-    const authToken = this.authService.getToken();
+    console.log(`[INTERCEPTEUR - DÉBUT] Requête interceptée pour ${request.url}`);
 
-    // 2. On vérifie si le token existe.
-    if (authToken) {
-      // 3. Si un token existe, on clone la requête originale pour y ajouter
-      //    l'en-tête 'Authorization' avec le format "Bearer [token]".
-      const authReq = request.clone({
-        headers: request.headers.set('Authorization', 'Bearer ' + authToken)
-      });
+    try {
+      // --- BLOC TRY N°1 : Récupération du token ---
+      console.log('[INTERCEPTEUR] Étape 1: Tentative de récupération du token via authService.getToken()');
+      const authToken = this.authService.getToken();
+      console.log('[INTERCEPTEUR] Étape 2: Résultat de getToken() :', authToken ? 'Token trouvé' : 'Token NON trouvé (null/undefined)');
 
-      // 4. On passe la nouvelle requête (avec l'en-tête) au prochain gestionnaire.
-      return next.handle(authReq);
+      if (authToken) {
+        // --- BLOC TRY N°2 : Clonage de la requête ---
+        try {
+          console.log('[INTERCEPTEUR] Étape 3: Token trouvé. Tentative de clonage de la requête et ajout de l\'en-tête.');
+          const authReq = request.clone({
+            headers: request.headers.set('Authorization', 'Bearer ' + authToken)
+          });
+          console.log('[INTERCEPTEUR] Étape 4: Clonage réussi. La requête part avec l\'en-tête d\'autorisation.');
+          
+          // On passe la requête modifiée
+          return next.handle(authReq);
+
+        } catch (cloneError) {
+          console.error('[INTERCEPTEUR] ❌ ERREUR FATALE lors du clonage de la requête :', cloneError);
+          // Si le clonage échoue, on laisse passer la requête originale pour ne pas tout bloquer,
+          // mais on saura que le problème est ici.
+          return next.handle(request);
+        }
+
+      } else {
+        console.warn('[INTERCEPTEUR] Étape 3: Aucun token trouvé. La requête part sans en-tête d\'autorisation.');
+        // Si aucun token, on laisse passer la requête originale
+        return next.handle(request);
+      }
+
+    } catch (globalError) {
+      // Ce bloc attrapera toute erreur synchrone qui pourrait se produire dans la logique ci-dessus.
+      console.error('[INTERCEPTEUR] ❌ ERREUR FATALE SYNCHRONE dans l\'intercepteur :', globalError);
+      // On laisse passer la requête originale pour ne pas bloquer l'application.
+      return next.handle(request);
     }
-
-    // 5. Si aucun token n'est trouvé, on laisse passer la requête originale sans la modifier.
-    //    Ceci est important pour les requêtes publiques comme le login.
-    return next.handle(request);
   }
 }

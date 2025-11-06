@@ -1,3 +1,5 @@
+// Fichier : src/main/java/com/moscepa/service/TestService.java (Version Finale Corrigée)
+
 package com.moscepa.service;
 
 import com.moscepa.dto.QuestionDto;
@@ -21,14 +23,18 @@ public class TestService {
     private final QuestionRepository questionRepository;
     private final ParcoursService parcoursService;
     private final ResultatTestRepository resultatTestRepository;
-    private final EtudiantRepository etudiantRepository;
+    // ====================================================================
+    // === CORRECTION APPLIQUÉE ICI : On injecte UtilisateurRepository  ===
+    // ====================================================================
+    private final UtilisateurRepository utilisateurRepository;
     
-    public TestService(TestRepository testRepository, QuestionRepository questionRepository, ParcoursService parcoursService, ResultatTestRepository resultatTestRepository, EtudiantRepository etudiantRepository) {
+    // On met à jour le constructeur
+    public TestService(TestRepository testRepository, QuestionRepository questionRepository, ParcoursService parcoursService, ResultatTestRepository resultatTestRepository, UtilisateurRepository utilisateurRepository) {
         this.testRepository = testRepository;
         this.questionRepository = questionRepository;
         this.parcoursService = parcoursService;
         this.resultatTestRepository = resultatTestRepository;
-        this.etudiantRepository = etudiantRepository;
+        this.utilisateurRepository = utilisateurRepository; // <-- On l'assigne
     }
 
     @Transactional
@@ -43,7 +49,6 @@ public class TestService {
             throw new EntityNotFoundException("Aucune question trouvée pour le chapitre ID : " + chapitreId);
         }
 
-        // Le calcul est correct.
         double scoreObtenu = 0.0;
         double totalPointsPossible = 0.0;
         int nombreDeBonnesReponses = 0;
@@ -58,34 +63,26 @@ public class TestService {
         }
 
         // ====================================================================
-        // ===> SAUVEGARDE DU VRAI RÉSULTAT DANS LA BASE DE DONNÉES <===
+        // === CORRECTION APPLIQUÉE ICI : On utilise UtilisateurRepository  ===
         // ====================================================================
-        Etudiant etudiant = etudiantRepository.findByUtilisateurId(utilisateurId)
-                .orElseThrow(() -> new EntityNotFoundException("Aucun profil étudiant trouvé pour l'utilisateur ID: " + utilisateurId));
+        Utilisateur etudiant = utilisateurRepository.findById(utilisateurId)
+                .orElseThrow(() -> new EntityNotFoundException("Aucun utilisateur (étudiant) trouvé pour l'ID: " + utilisateurId));
         
         Test test = testRepository.findTopByChapitreId(chapitreId)
                 .orElseThrow(() -> new EntityNotFoundException("Aucun test trouvé pour le chapitre ID: " + chapitreId));
 
-        // Création de l'entité ResultatTest avec TOUS les champs requis
         ResultatTest nouveauResultat = new ResultatTest();
-        nouveauResultat.setEtudiant(etudiant);
+        nouveauResultat.setEtudiant(etudiant); // <-- C'est maintenant un Utilisateur, c'est correct
         nouveauResultat.setTest(test);
         nouveauResultat.setScore(scoreObtenu);
         nouveauResultat.setScoreTotal(totalPointsPossible);
         nouveauResultat.setDateTest(LocalDateTime.now());
         nouveauResultat.setBonnesReponses(nombreDeBonnesReponses);
-        
-        // ====================================================================
-        // ===> LA DERNIÈRE CORRECTION EST ICI <===
-        // ====================================================================
-        // On fournit la valeur pour le champ 'total_questions' qui posait problème.
         nouveauResultat.setTotalQuestions(questionsDuTest.size());
 
         resultatTestRepository.save(nouveauResultat);
         System.out.println("[TestService] Le résultat du test (" + scoreObtenu + "/" + totalPointsPossible + ") a été sauvegardé pour l'étudiant ID " + etudiant.getId());
 
-
-        // La logique de recommandation ne change pas et est correcte.
         double pourcentage = (totalPointsPossible > 0) ? (scoreObtenu / totalPointsPossible) * 100 : 0;
         System.out.println("[TestService] VÉRIFICATION DU POURCENTAGE: " + pourcentage + " < 33.0 ?");
         if (pourcentage < 33.0) {
@@ -93,7 +90,6 @@ public class TestService {
             parcoursService.enregistrerParcoursRecommande(utilisateurId, List.of(chapitreId));
         }
 
-        // Le retour du DTO est correct.
         ResultatTestDto resultatDto = new ResultatTestDto();
         resultatDto.setChapitreId(chapitreId);
         resultatDto.setScoreObtenu(scoreObtenu);
@@ -103,7 +99,6 @@ public class TestService {
     }
 
     private boolean verifierReponse(Question question, Object reponseDonnee) {
-        // Cette méthode est correcte et gère bien tous les cas.
         switch (question.getTypeQuestion()) {
             case QCU:
                 Long reponseIdQCU = ((Number) reponseDonnee).longValue();

@@ -1,3 +1,5 @@
+// Fichier : QuestionnaireService.java (Version Corrigée)
+
 package com.moscepa.service;
 
 import com.moscepa.dto.GenerateurPayloadDTO;
@@ -138,8 +140,13 @@ public class QuestionnaireService {
 
         if (questionnaire.getChapitre() != null) {
             dto.setNomChapitre(questionnaire.getChapitre().getNom());
-            if (questionnaire.getChapitre().getMatiere() != null) {
-                dto.setNomMatiere(questionnaire.getChapitre().getMatiere().getNom());
+            
+            // ====================================================================
+            // === CORRECTION APPLIQUÉE ICI                                     ===
+            // ====================================================================
+            // On utilise getElementConstitutif() au lieu de getMatiere()
+            if (questionnaire.getChapitre().getElementConstitutif() != null) {
+                dto.setNomMatiere(questionnaire.getChapitre().getElementConstitutif().getNom());
             }
         }
         return dto;

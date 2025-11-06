@@ -1,7 +1,7 @@
 com\moscepa\repository\FonctionnaliteRepository.class
+com\moscepa\dto\SectionDto.class
 com\moscepa\repository\QuestionnaireRepository.class
 com\moscepa\service\TestService$1.class
-com\moscepa\repository\InscriptionRepository.class
 com\moscepa\repository\ParcoursRepository.class
 com\moscepa\dto\EtudiantDto.class
 com\moscepa\repository\TestRepository.class
@@ -11,23 +11,24 @@ com\moscepa\service\FonctionnaliteService.class
 com\moscepa\entity\Test.class
 com\moscepa\entity\Inscription.class
 com\moscepa\controller\AdminController.class
+com\moscepa\service\InscriptionService.class
 com\moscepa\controller\PermissionController.class
 com\moscepa\dto\LoginRequest.class
 com\moscepa\dto\FonctionnaliteDTO.class
 com\moscepa\controller\AuthController.class
 com\moscepa\config\CorsConfig.class
 com\moscepa\service\AuthService.class
-com\moscepa\controller\ElementConstitutifController.class
 com\moscepa\controller\UtilisateurController.class
 com\moscepa\dto\UserResponseDto.class
 com\moscepa\controller\QuestionController.class
 com\moscepa\dto\ParcoursRequestDto.class
-com\moscepa\dto\ChapitreCreateDto$SectionDto.class
 com\moscepa\dto\QuestionnairePayloadDTO.class
 com\moscepa\controller\MatiereDetailDto.class
 com\moscepa\controller\ProgressionController.class
+com\moscepa\dto\ChapitrePayload.class
 com\moscepa\exception\GlobalExceptionHandler.class
 com\moscepa\dto\ElementConstitutifResponseDto.class
+com\moscepa\controller\AllElementsConstitutifsController.class
 com\moscepa\dto\MatiereStatutDto.class
 com\moscepa\entity\Utilisateur.class
 com\moscepa\controller\ChapitreController.class
@@ -53,6 +54,8 @@ com\moscepa\security\JwtUtils.class
 com\moscepa\dto\QuestionnaireDetailDto.class
 com\moscepa\service\ParcoursService.class
 com\moscepa\controller\UniteEnseignementController.class
+com\moscepa\dto\SectionPayload.class
+com\moscepa\dto\EtudiantRegistrationDto.class
 com\moscepa\entity\UniteEnseignement.class
 com\moscepa\security\UserDetailsServiceImpl.class
 com\moscepa\controller\QuestionnaireController.class
@@ -60,6 +63,7 @@ com\moscepa\entity\TypeQuestion.class
 com\moscepa\dto\ChapitreDetailDto.class
 com\moscepa\MoscepaBackendApplication.class
 com\moscepa\security\AuthEntryPointJwt.class
+com\moscepa\dto\InscriptionRequest.class
 com\moscepa\dto\QuestionCreationDTO.class
 com\moscepa\service\ProgressionService.class
 com\moscepa\dto\GenerateurPayloadDTO.class
@@ -72,8 +76,10 @@ com\moscepa\service\ChapitreService.class
 com\moscepa\dto\ChapitreDetailDto$SectionDto.class
 com\moscepa\repository\ElementConstitutifRepository.class
 com\moscepa\service\PermissionService.class
+com\moscepa\service\InscriptionRequest.class
 com\moscepa\config\DataInitializer.class
 com\moscepa\service\QuestionnaireService.class
+com\moscepa\service\SectionService.class
 com\moscepa\repository\SectionRepository.class
 com\moscepa\entity\TypeRessource.class
 com\moscepa\entity\Question.class
@@ -88,7 +94,6 @@ com\moscepa\entity\Chapitre.class
 com\moscepa\entity\SousFonctionnalite.class
 com\moscepa\dto\ElementConstitutifRequestDto.class
 com\moscepa\entity\Fonctionnalite.class
-com\moscepa\repository\EtudiantRepository.class
 com\moscepa\repository\MatiereRepository.class
 com\moscepa\dto\QuestionBanqueDto$ReponseDto.class
 com\moscepa\dto\ResponsableDto.class
@@ -97,6 +102,7 @@ com\moscepa\service\MatiereService.class
 com\moscepa\dto\TestDto.class
 com\moscepa\controller\SectionController.class
 com\moscepa\service\UserManagementService.class
+com\moscepa\dto\SectionUpdateRequest.class
 com\moscepa\entity\ResultatTest.class
 com\moscepa\security\AuthTokenFilter.class
 com\moscepa\entity\Permission.class
@@ -113,7 +119,6 @@ com\moscepa\service\BanqueQuestionService.class
 com\moscepa\entity\Questionnaire.class
 com\moscepa\entity\Role.class
 com\moscepa\dto\ChapitreCreateDto.class
-com\moscepa\controller\ChapitreListDto.class
 com\moscepa\entity\ElementConstitutif.class
 com\moscepa\dto\ParcoursItemDto.class
 com\moscepa\repository\ChapitreRepository.class

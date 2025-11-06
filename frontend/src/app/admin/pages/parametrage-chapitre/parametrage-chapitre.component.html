@@ -36,20 +36,14 @@
       <div class="mb-3">
         <h5>Sections du chapitre</h5>
         <!-- Boucle sur le tableau 'sections' pour afficher un champ par section -->
-        <div *ngFor="let section of sections; let i = index; trackBy: trackByIndex" class="mb-3 border p-2 rounded">
-          <div class="input-group mb-2">
+        <div *ngFor="let section of sections; let i = index; trackBy: trackByIndex" class="input-group mb-2">
           <span class="input-group-text">Section {{ i + 1 }}</span>
           <input type="text" class="form-control" [(ngModel)]="section.titre" placeholder="Titre de la section {{ i + 1 }}">
-        </div>
-        <div class="input-group mb-2">
-          <span class="input-group-text">Contenu {{ i + 1 }}</span>
-          <textarea class="form-control" [(ngModel)]="section.contenu" placeholder="Contenu de la section {{ i + 1 }}" rows="3"></textarea>
           <!-- Le bouton de suppression n'est affiché que s'il y a plus d'une section -->
           <button class="btn btn-outline-danger" type="button" (click)="supprimerSection(i)" [disabled]="sections.length <= 1">
             &times; <!-- Symbole de croix pour supprimer -->
           </button>
         </div>
-      </div>
         <!-- Bouton pour ajouter dynamiquement une nouvelle section -->
         <button class="btn btn-outline-secondary btn-sm mt-2" (click)="ajouterSection()">
           + Ajouter une section

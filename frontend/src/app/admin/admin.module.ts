@@ -24,7 +24,8 @@ import { GestionUnitesComponent } from './pages/gestion-unites/gestion-unites.co
 import { ParametrageChapitreComponent } from './pages/parametrage-chapitre/parametrage-chapitre.component';
 import { ListeMatieresComponent } from './pages/liste-matieres/liste-matieres.component';
 import { GestionDesInscriptionComponent } from './pages/gestiondesinscription/gestiondesinscription.component';
-import { EnseignantModule } from '../features/enseignant/enseignant.module'; // <-- Importer le module
+import { EnseignantModule } from '../features/enseignant/enseignant.module';
+import { FormulaireInscriptionComponent } from './pages/formulaire-inscription/formulaire-inscription.component'; // <-- Importer le module
 
 @NgModule({
   declarations: [
@@ -45,6 +46,7 @@ import { EnseignantModule } from '../features/enseignant/enseignant.module'; // 
     ParametrageChapitreComponent,
     ListeMatieresComponent,
     GestionDesInscriptionComponent,
+    FormulaireInscriptionComponent,
   ],
   imports: [
     // --- 5. La liste d'imports est maintenant simple et propre ---

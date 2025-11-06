@@ -1,124 +1,111 @@
 <!-- Fichier : src/app/features/admin/pages/gestion-element-constitutif/gestion-element-constitutif.component.html -->
 
-<div class="container mt-4">
-  <div class="card shadow-sm">
-    <div class="card-header">
-      <h2>Gestion des Éléments Constitutifs</h2>
-    </div>
-    <div class="card-body">
+<div class="container-fluid py-4">
+  <h1 class="h3 mb-2 text-gray-800">Gestion des Matières (Éléments Constitutifs)</h1>
+  <p class="mb-4">Cette page vous permet de gérer les matières de votre curriculum et de les assigner à des enseignants.</p>
 
-      <!-- ÉTAPE 1 : SÉLECTION DE L'UNITÉ D'ENSEIGNEMENT -->
-      <div class="form-group mb-4">
-        <label for="unite-select" class="form-label">Sélectionnez une Unité d'Enseignement</label>
-        <select id="unite-select" class="form-select" (change)="onSelectUnite($any($event.target).value)">
-          <option [value]="null">-- Choisissez une UE --</option>
-          <option *ngFor="let ue of unites$ | async" [value]="ue.id">
-            {{ ue.nom }} ({{ ue.code }})
-          </option>
+  <!-- Section de sélection de l'UE et bouton d'ajout -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-body d-flex justify-content-between align-items-center">
+      <div>
+        <label for="unite" class="form-label">Filtrer par Unité d'Enseignement (pour la création)</label>
+        <select id="unite" class="form-select" (change)="onSelectUnite($any($event.target).value)">
+          <option [value]="null">-- Toutes les Unités --</option>
+          <option *ngFor="let ue of unites$ | async" [value]="ue.id">{{ ue.nom }}</option>
         </select>
       </div>
+      <button class="btn btn-primary align-self-end" (click)="showNewForm()">
+        <i class="fas fa-plus me-1"></i> Ajouter une Matière
+      </button>
+    </div>
+  </div>
 
-      <!-- CETTE SECTION S'AFFICHE SI UNE UE EST SÉLECTIONNÉE -->
-      <div *ngIf="selectedUniteId">
-        <hr>
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h4>Éléments de l'UE sélectionnée</h4>
-          <button *ngIf="!isFormVisible" (click)="showNewForm()" class="btn btn-primary">
-            <i class="fas fa-plus"></i> Ajouter un Élément
+  <!-- Formulaire de création/modification (conditionnellement affiché) -->
+  <div *ngIf="isFormVisible" class="card shadow-sm mb-4">
+    <div class="card-header">
+      <h5 class="m-0">{{ isEditing ? 'Modifier la matière' : 'Ajouter une nouvelle matière' }}</h5>
+    </div>
+    <div class="card-body">
+      <form [formGroup]="elementForm" (ngSubmit)="onSubmit()">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="nom" class="form-label">Nom de la matière</label>
+            <input type="text" id="nom" class="form-control" formControlName="nom">
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="code" class="form-label">Code</label>
+            <input type="text" id="code" class="form-control" formControlName="code">
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="credit" class="form-label">Crédits</label>
+            <input type="number" id="credit" class="form-control" formControlName="credit">
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="enseignant" class="form-label">Enseignant Responsable</label>
+            <select id="enseignant" class="form-select" formControlName="enseignantId">
+              <option [ngValue]="null">-- Aucun enseignant --</option>
+              <option *ngFor="let enseignant of enseignants$ | async" [value]="enseignant.id">
+                {{ enseignant.prenom }} {{ enseignant.nom }}
+              </option>
+            </select>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label for="description" class="form-label">Description</label>
+          <textarea id="description" class="form-control" formControlName="description" rows="3"></textarea>
+        </div>
+        <div class="d-flex justify-content-end">
+          <button type="button" class="btn btn-secondary me-2" (click)="onCancel()">Annuler</button>
+          <button type="submit" class="btn btn-success" [disabled]="elementForm.invalid">
+            {{ isEditing ? 'Enregistrer les modifications' : 'Créer la matière' }}
           </button>
         </div>
+      </form>
+    </div>
+  </div>
 
-        <!-- BLOC 1 : FORMULAIRE (Création / Modification) -->
-        <div *ngIf="isFormVisible" class="card bg-light p-4 mb-4">
-          <h5>{{ isEditing ? 'Modifier l\'Élément' : 'Nouvel Élément' }}</h5>
-          <form [formGroup]="elementForm" (ngSubmit)="onSubmit()">
-
-            <div class="row">
-              <!-- Champ NOM -->
-              <div class="col-md-6 mb-3">
-                <label for="nom" class="form-label">Nom de l'élément <span class="text-danger">*</span></label>
-                <input type="text" id="nom" class="form-control" formControlName="nom">
-              </div>
-
-              <!-- Champ CODE -->
-              <div class="col-md-6 mb-3">
-                <label for="code" class="form-label">Code <span class="text-danger">*</span></label>
-                <input type="text" id="code" class="form-control" formControlName="code">
-              </div>
-            </div>
-
-            <div class="row">
-              <!-- Champ CRÉDITS -->
-              <div class="col-md-6 mb-3">
-                <label for="credit" class="form-label">Crédits ECTS <span class="text-danger">*</span></label>
-                <input type="number" id="credit" class="form-control" formControlName="credit">
-              </div>
-
-              <!-- Champ ENSEIGNANT -->
-              <div class="col-md-6 mb-3">
-                <label for="enseignantId" class="form-label">Enseignant Responsable <span class="text-danger">*</span></label>
-                <select id="enseignantId" class="form-select" formControlName="enseignantId">
-                  <option [ngValue]="null" disabled>-- Choisissez un enseignant --</option>
-                  <option *ngFor="let ens of enseignants$ | async" [value]="ens.id">
-                    {{ ens.prenom }} {{ ens.nom }}
-                  </option>
-                </select>
-              </div>
-            </div>
-
-            <!-- Champ DESCRIPTION -->
-            <div class="mb-3">
-              <label for="description" class="form-label">Description</label>
-              <textarea id="description" class="form-control" formControlName="description" rows="3"></textarea>
-            </div>
-
-            <!-- Boutons d'action -->
-            <div class="d-flex justify-content-end gap-2">
-              <button type="button" (click)="onCancel()" class="btn btn-secondary">Annuler</button>
-              <button type="submit" class="btn btn-success" [disabled]="elementForm.invalid">
-                {{ isEditing ? 'Mettre à jour' : 'Créer' }}
-              </button>
-            </div>
-          </form>
-        </div>
-
-        <!-- BLOC 2 : TABLEAU DES ÉLÉMENTS -->
-        <div *ngIf="!isFormVisible">
-          <div *ngIf="isLoadingElements" class="text-center">
-            <div class="spinner-border" role="status"><span class="visually-hidden">Chargement...</span></div>
-          </div>
-
-          <div *ngIf="!isLoadingElements && elements.length > 0" class="table-responsive">
-            <table class="table table-hover align-middle">
-              <thead>
-                <tr>
-                  <th>Nom</th>
-                  <th>Code</th>
-                  <th>Crédits</th>
-                  <th>Responsable</th>
-                  <th class="text-end">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let el of elements">
-                  <td>{{ el.nom }}</td>
-                  <td>{{ el.code }}</td>
-                  <td>{{ el.credit }}</td>
-	                  <td>{{ el.enseignant ? el.enseignant.prenom + ' ' + el.enseignant.nom : 'Non assigné' }}</td>
-                  <td class="text-end">
-                    <button (click)="showEditForm(el)" class="btn btn-sm btn-outline-warning me-2" title="Modifier"><i class="fas fa-edit"></i></button>
-                    <button (click)="onDelete(el.id)" class="btn btn-sm btn-outline-danger" title="Supprimer"><i class="fas fa-trash"></i></button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div *ngIf="!isLoadingElements && elements.length === 0" class="alert alert-info">
-            Aucun élément constitutif trouvé pour cette unité. Cliquez sur "Ajouter un Élément" pour commencer.
-          </div>
-        </div>
-
+  <!-- Tableau listant les matières -->
+  <div class="card shadow-sm">
+    <div class="card-header">
+      <h5 class="m-0">Liste des Matières Existantes</h5>
+    </div>
+    <div class="card-body">
+      <div *ngIf="isLoadingElements" class="text-center">
+        <div class="spinner-border text-primary" role="status"></div>
+      </div>
+      <div *ngIf="!isLoadingElements" class="table-responsive">
+        <table class="table table-bordered table-hover" width="100%" cellspacing="0">
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>Nom</th>
+              <th>Crédits</th>
+              <th>Enseignant</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let element of elements">
+              <td>{{ element.code }}</td>
+              <td>{{ element.nom }}</td>
+              <td>{{ element.credit }}</td>
+              <td>{{ element.enseignant ? element.enseignant.prenom + ' ' + element.enseignant.nom : 'Non assigné' }}</td>
+              <td>
+                <button class="btn btn-secondary btn-sm me-2" (click)="showEditForm(element)" title="Modifier">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-danger btn-sm" (click)="onDelete(element.id)" title="Supprimer">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="elements.length === 0">
+              <td colspan="5" class="text-center">Aucune matière trouvée.</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>

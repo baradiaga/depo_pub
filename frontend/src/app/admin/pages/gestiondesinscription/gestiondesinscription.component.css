@@ -167,3 +167,109 @@ table button.btn-sm.btn-danger {
     color: #495057;
   }
 }
+/* ======================================= */
+/*          Styles Généraux du Formulaire  */
+/* ======================================= */
+
+/* Conteneur principal pour un peu d'espace autour */
+.container-fluid {
+    padding: 2rem;
+}
+
+/* Style pour les titres de section (h5) pour une meilleure séparation visuelle */
+h5 {
+    color: #0d6efd; /* Bleu primaire de Bootstrap */
+    border-bottom: 2px solid #f0f2f5;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.5rem !important; /* Forcer la marge basse */
+}
+
+/* Ajoute un astérisque rouge pour les champs obligatoires */
+.form-label .text-danger {
+    margin-left: 2px;
+}
+
+/* Style pour les séparateurs <hr> pour qu'ils soient plus subtils */
+hr {
+    border-color: #e9ecef;
+}
+
+/* Conteneur des boutons d'action pour s'assurer qu'ils sont bien à droite */
+.d-flex.justify-content-end {
+    gap: 0.5rem; /* Ajoute un petit espace entre les boutons */
+}
+
+
+/* ======================================= */
+/*          Section des Matières           */
+/* ======================================= */
+
+/* Conteneur des checkboxes pour les matières */
+.border.rounded {
+    background-color: #f8f9fa; /* Fond légèrement gris pour le distinguer */
+    padding: 1rem !important;
+}
+
+/* Style pour chaque case à cocher pour un meilleur alignement et espacement */
+.form-check {
+    padding-left: 2.5rem; /* Espace pour la checkbox et le label */
+    margin-bottom: 0.5rem;
+}
+
+.form-check .form-check-input {
+    margin-left: -2.5rem; /* Aligne la checkbox avec le début du conteneur */
+    cursor: pointer;
+}
+
+.form-check .form-check-label {
+    cursor: pointer;
+}
+
+
+/* ======================================= */
+/*          Styles pour la Modale          */
+/* ======================================= */
+
+/* Assure que la modale s'affiche correctement */
+.modal.d-block {
+    display: block;
+    background-color: rgba(0, 0, 0, 0.5); /* Fond semi-transparent */
+}
+
+/* Pour éviter le double scroll si la page et la modale ont des barres de défilement */
+body.modal-open {
+    overflow: hidden;
+}
+
+/* Style pour le conteneur du message d'erreur dans la modale */
+.alert-danger {
+    font-size: 0.9rem;
+}
+
+/* Alignement des boutons dans le pied de page de la modale */
+.modal-footer {
+    border-top: none; /* Supprime la ligne de séparation supérieure */
+    padding-top: 0;
+}
+
+
+/* ======================================= */
+/*       Améliorations responsives         */
+/* ======================================= */
+
+/* Sur les petits écrans, réduit le padding du conteneur principal */
+@media (max-width: 768px) {
+    .container-fluid {
+        padding: 1rem;
+    }
+
+    /* Empile les boutons d'action sur les petits écrans */
+    .d-flex.justify-content-end {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .d-flex.justify-content-end .btn {
+        width: 100%;
+    }
+}

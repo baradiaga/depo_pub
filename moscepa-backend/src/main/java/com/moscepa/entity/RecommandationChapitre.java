@@ -1,3 +1,5 @@
+// Fichier : src/main/java/com/moscepa/entity/RecommandationChapitre.java (Corrigé)
+
 package com.moscepa.entity;
 
 import jakarta.persistence.*;
@@ -10,9 +12,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Entité représentant une recommandation de chapitre dans le système MOSCEPA
- */
 @Entity
 @Table(name = "moscepa_recommandations_chapitres")
 public class RecommandationChapitre {
@@ -21,14 +20,19 @@ public class RecommandationChapitre {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // ====================================================================
+    // === CORRECTION APPLIQUÉE ICI                                     ===
+    // ====================================================================
+    // On remplace 'Etudiant' par 'Utilisateur'
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "etudiant_id", nullable = false)
-    private Etudiant etudiant;
+    private Utilisateur etudiant;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chapitre_id", nullable = false)
     private Chapitre chapitre;
 
+    // ... (le reste des champs reste identique)
     @NotBlank(message = "Le nom du chapitre est obligatoire")
     @Size(max = 150)
     @Column(name = "nom_chapitre", nullable = false, length = 150)
@@ -73,7 +77,10 @@ public class RecommandationChapitre {
     // Constructeurs
     public RecommandationChapitre() {}
 
-    public RecommandationChapitre(Etudiant etudiant, Chapitre chapitre, String nomChapitre, 
+    // ====================================================================
+    // === CORRECTION APPLIQUÉE ICI                                     ===
+    // ====================================================================
+    public RecommandationChapitre(Utilisateur etudiant, Chapitre chapitre, String nomChapitre, 
                                  String matiere, Double score, String raison, NiveauDifficulte niveau) {
         this.etudiant = etudiant;
         this.chapitre = chapitre;
@@ -85,109 +92,39 @@ public class RecommandationChapitre {
     }
 
     // Getters et Setters
-    public Long getId() {
-        return id;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    // ====================================================================
+    // === CORRECTION APPLIQUÉE ICI                                     ===
+    // ====================================================================
+    public Utilisateur getEtudiant() { return etudiant; }
+    public void setEtudiant(Utilisateur etudiant) { this.etudiant = etudiant; }
 
-    public Etudiant getEtudiant() {
-        return etudiant;
-    }
+    public Chapitre getChapitre() { return chapitre; }
+    public void setChapitre(Chapitre chapitre) { this.chapitre = chapitre; }
 
-    public void setEtudiant(Etudiant etudiant) {
-        this.etudiant = etudiant;
-    }
-
-    public Chapitre getChapitre() {
-        return chapitre;
-    }
-
-    public void setChapitre(Chapitre chapitre) {
-        this.chapitre = chapitre;
-    }
-
-    public String getNomChapitre() {
-        return nomChapitre;
-    }
-
-    public void setNomChapitre(String nomChapitre) {
-        this.nomChapitre = nomChapitre;
-    }
-
-    public String getMatiere() {
-        return matiere;
-    }
-
-    public void setMatiere(String matiere) {
-        this.matiere = matiere;
-    }
-
-    public Double getScore() {
-        return score;
-    }
-
-    public void setScore(Double score) {
-        this.score = score;
-    }
-
-    public String getRaison() {
-        return raison;
-    }
-
-    public void setRaison(String raison) {
-        this.raison = raison;
-    }
-
-    public NiveauDifficulte getNiveau() {
-        return niveau;
-    }
-
-    public void setNiveau(NiveauDifficulte niveau) {
-        this.niveau = niveau;
-    }
-
-    public Integer getProgression() {
-        return progression;
-    }
-
-    public void setProgression(Integer progression) {
-        this.progression = progression;
-    }
-
-    public String getDureeEstimee() {
-        return dureeEstimee;
-    }
-
-    public void setDureeEstimee(String dureeEstimee) {
-        this.dureeEstimee = dureeEstimee;
-    }
-
-    public StatutRecommandation getStatut() {
-        return statut;
-    }
-
-    public void setStatut(StatutRecommandation statut) {
-        this.statut = statut;
-    }
-
-    public LocalDateTime getDateRecommandation() {
-        return dateRecommandation;
-    }
-
-    public void setDateRecommandation(LocalDateTime dateRecommandation) {
-        this.dateRecommandation = dateRecommandation;
-    }
-
-    public List<Ressource> getRessources() {
-        return ressources;
-    }
-
-    public void setRessources(List<Ressource> ressources) {
-        this.ressources = ressources;
-    }
+    // ... (le reste des getters et setters est identique)
+    public String getNomChapitre() { return nomChapitre; }
+    public void setNomChapitre(String nomChapitre) { this.nomChapitre = nomChapitre; }
+    public String getMatiere() { return matiere; }
+    public void setMatiere(String matiere) { this.matiere = matiere; }
+    public Double getScore() { return score; }
+    public void setScore(Double score) { this.score = score; }
+    public String getRaison() { return raison; }
+    public void setRaison(String raison) { this.raison = raison; }
+    public NiveauDifficulte getNiveau() { return niveau; }
+    public void setNiveau(NiveauDifficulte niveau) { this.niveau = niveau; }
+    public Integer getProgression() { return progression; }
+    public void setProgression(Integer progression) { this.progression = progression; }
+    public String getDureeEstimee() { return dureeEstimee; }
+    public void setDureeEstimee(String dureeEstimee) { this.dureeEstimee = dureeEstimee; }
+    public StatutRecommandation getStatut() { return statut; }
+    public void setStatut(StatutRecommandation statut) { this.statut = statut; }
+    public LocalDateTime getDateRecommandation() { return dateRecommandation; }
+    public void setDateRecommandation(LocalDateTime dateRecommandation) { this.dateRecommandation = dateRecommandation; }
+    public List<Ressource> getRessources() { return ressources; }
+    public void setRessources(List<Ressource> ressources) { this.ressources = ressources; }
 
     @Override
     public String toString() {
@@ -201,4 +138,3 @@ public class RecommandationChapitre {
                 '}';
     }
 }
-

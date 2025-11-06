@@ -31,16 +31,16 @@ public class UserManagementService {
     @Autowired
     private ModelMapper modelMapper;
 
+    // ... (Toutes vos méthodes existantes : createUser, getAllUsers, etc. restent inchangées)
+    // ...
+    
     /**
      * Crée un nouvel utilisateur (réservé aux administrateurs)
      */
     public UserResponseDto createUser(UserRegistrationDto userRegistrationDto) {
-        // Vérifier si l'email existe déjà
         if (utilisateurRepository.existsByEmail(userRegistrationDto.getEmail())) {
             throw new RuntimeException("Un utilisateur avec cet email existe déjà");
         }
-
-        // Créer le nouvel utilisateur
         Utilisateur utilisateur = new Utilisateur();
         utilisateur.setNom(userRegistrationDto.getNom());
         utilisateur.setPrenom(userRegistrationDto.getPrenom());
@@ -48,11 +48,7 @@ public class UserManagementService {
         utilisateur.setMotDePasse(passwordEncoder.encode(userRegistrationDto.getMotDePasse()));
         utilisateur.setRole(userRegistrationDto.getRole());
         utilisateur.setActif(userRegistrationDto.getActif() != null ? userRegistrationDto.getActif() : true);
-
-        // Sauvegarder l'utilisateur
         Utilisateur savedUser = utilisateurRepository.save(utilisateur);
-
-        // Convertir en DTO de réponse
         return convertToUserResponseDto(savedUser);
     }
 
@@ -90,25 +86,18 @@ public class UserManagementService {
     public UserResponseDto updateUser(Long id, UserRegistrationDto userRegistrationDto) {
         Utilisateur utilisateur = utilisateurRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec l'ID: " + id));
-
-        // Vérifier si l'email existe déjà pour un autre utilisateur
         if (!utilisateur.getEmail().equals(userRegistrationDto.getEmail()) && 
             utilisateurRepository.existsByEmail(userRegistrationDto.getEmail())) {
             throw new RuntimeException("Un utilisateur avec cet email existe déjà");
         }
-
-        // Mettre à jour les informations
         utilisateur.setNom(userRegistrationDto.getNom());
         utilisateur.setPrenom(userRegistrationDto.getPrenom());
         utilisateur.setEmail(userRegistrationDto.getEmail());
         utilisateur.setRole(userRegistrationDto.getRole());
         utilisateur.setActif(userRegistrationDto.getActif() != null ? userRegistrationDto.getActif() : true);
-
-        // Mettre à jour le mot de passe seulement s'il est fourni
         if (userRegistrationDto.getMotDePasse() != null && !userRegistrationDto.getMotDePasse().isEmpty()) {
             utilisateur.setMotDePasse(passwordEncoder.encode(userRegistrationDto.getMotDePasse()));
         }
-
         Utilisateur updatedUser = utilisateurRepository.save(utilisateur);
         return convertToUserResponseDto(updatedUser);
     }
@@ -119,7 +108,6 @@ public class UserManagementService {
     public void deactivateUser(Long id) {
         Utilisateur utilisateur = utilisateurRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec l'ID: " + id));
-        
         utilisateur.setActif(false);
         utilisateurRepository.save(utilisateur);
     }
@@ -130,7 +118,6 @@ public class UserManagementService {
     public void activateUser(Long id) {
         Utilisateur utilisateur = utilisateurRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec l'ID: " + id));
-        
         utilisateur.setActif(true);
         utilisateurRepository.save(utilisateur);
     }
@@ -169,6 +156,25 @@ public class UserManagementService {
         return utilisateurRepository.existsByEmail(email);
     }
 
+    // =================================================================
+    // === NOUVELLE MÉTHODE AJOUTÉE                                  ===
+    // =================================================================
+    /**
+     * Récupère la liste de tous les utilisateurs qui sont des enseignants actifs.
+     * Cette méthode est utilisée pour peupler les menus déroulants dans les formulaires
+     * d'assignation de matières.
+     * @return Une liste de DTOs représentant les enseignants actifs.
+     */
+    public List<UserResponseDto> getAllEnseignantsActifs() {
+        // On appelle la méthode que nous avons identifiée dans le repository
+        List<Utilisateur> enseignants = utilisateurRepository.findAllEnseignantsActifs();
+        
+        // On réutilise la méthode de conversion existante pour transformer la liste
+        return enseignants.stream()
+                          .map(this::convertToUserResponseDto)
+                          .collect(Collectors.toList());
+    }
+
     /**
      * Convertit une entité Utilisateur en UserResponseDto
      */
@@ -176,4 +182,3 @@ public class UserManagementService {
         return modelMapper.map(utilisateur, UserResponseDto.class);
     }
 }
-

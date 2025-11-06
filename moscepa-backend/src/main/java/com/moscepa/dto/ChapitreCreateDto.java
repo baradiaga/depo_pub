@@ -1,56 +1,28 @@
+// Fichier : com/moscepa/dto/ChapitreCreateDto.java (Version Finale et Complète)
+
 package com.moscepa.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import java.util.List;
+import jakarta.validation.constraints.Size;
 
 /**
- * DTO spécifique pour la création d'un chapitre depuis le formulaire Angular.
- * Il correspond exactement à la structure des données envoyées par le frontend.
+ * Data Transfer Object pour la création d'un nouveau Chapitre.
+ * Contient les données envoyées par le client (Angular).
  */
 public class ChapitreCreateDto {
 
-    @NotBlank(message = "La matière est obligatoire")
-    private String matiere; // <-- C'est le nom de la matière (String)
-
-    @NotBlank(message = "Le titre est obligatoire")
-    private String titre;
-
-    @NotNull(message = "Le niveau est obligatoire")
-    private Integer niveau;
-
-    private String objectif;
-
-    private List<SectionDto> sections;
-
-    // --- Getters et Setters ---
-
-    public String getMatiere() { return matiere; }
-    public void setMatiere(String matiere) { this.matiere = matiere; }
-
-    public String getTitre() { return titre; }
-    public void setTitre(String titre) { this.titre = titre; }
-
-    public Integer getNiveau() { return niveau; }
-    public void setNiveau(Integer niveau) { this.niveau = niveau; }
-
-    public String getObjectif() { return objectif; }
-    public void setObjectif(String objectif) { this.objectif = objectif; }
-
-    public List<SectionDto> getSections() { return sections; }
-    public void setSections(List<SectionDto> sections) { this.sections = sections; }
+    /**
+     * Le nom du chapitre. Ne doit pas être vide.
+     */
+    @NotBlank(message = "Le nom du chapitre est obligatoire.")
+    @Size(max = 255, message = "Le nom du chapitre ne doit pas dépasser 255 caractères.")
+    public String nom;
 
     /**
-     * DTO imbriqué pour représenter une section.
+     * L'objectif pédagogique du chapitre. Peut être vide.
      */
-        public static class SectionDto {
-            private String titre;
-            private String contenu; // Ajout du contenu
-    
-            public String getTitre() { return titre; }
-            public void setTitre(String titre) { this.titre = titre; }
-    
-            public String getContenu() { return contenu; }
-            public void setContenu(String contenu) { this.contenu = contenu; }
-        }
+    public String objectif;
+
+    // NOTE : Nous n'avons pas besoin de l'ID de la matière ici,
+    // car il est déjà passé dans l'URL de la requête (ex: /api/matieres/6/chapitres).
 }

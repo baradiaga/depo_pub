@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { ChapitreService, ChapitrePayload } from '../../../services/chapitre.service';
-import { MatiereService } from '../../../services/matiere.service'; // <-- 1. IMPORTER LE NOUVEAU SERVICE
+import { ChapitreService } from '../../../services/chapitre.service'; // On importe seulement le service
+import { ChapitrePayload } from '../../../services/models'; // On importe le payload depuis models.ts
+import { ElementConstitutifService } from '../../../services/element-constitutif.service';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-parametrage-chapitre',
@@ -10,50 +12,41 @@ import { MatiereService } from '../../../services/matiere.service'; // <-- 1. IM
 export class ParametrageChapitreComponent implements OnInit {
   niveau: number = 1;
   matiereSelectionnee: string = '';
-  matieres: string[] = []; // <-- Initialisé comme un tableau vide
+  matieres: string[] = [];
   titre: string = '';
   objectif: string = '';
-  sections: { titre: string, contenu: string }[] = [{ titre: '', contenu: '' }];
+  sections: { titre: string }[] = [{ titre: '' }];
   afficherTableau: boolean = false;
+  isLoading: boolean = false;
 
-  // 2. INJECTER MatiereService dans le constructeur
   constructor(
     private chapitreService: ChapitreService,
-    private matiereService: MatiereService
+    private ecService: ElementConstitutifService,
+    private toastr: ToastrService
   ) {}
 
-  // 3. UTILISER le service dans ngOnInit pour charger les données
   ngOnInit(): void {
     this.chargerMatieres();
   }
 
-  /**
-   * Appelle le service pour récupérer la liste des noms de matières
-   * et met à jour la variable locale 'matieres'.
-   */
   chargerMatieres(): void {
-    this.matiereService.getNomsMatieres().subscribe({
+    this.ecService.findAllNoms().subscribe({
       next: (nomsMatieres) => {
         this.matieres = nomsMatieres;
-        console.log('Matières chargées depuis le backend :', this.matieres);
       },
       error: (err) => {
         console.error('Erreur lors du chargement des matières :', err);
-        // En cas d'erreur, on peut mettre une liste par défaut pour ne pas bloquer l'utilisateur
-        this.matieres = ['Mathématiques (défaut)', 'Physique (défaut)'];
-        alert('Impossible de charger la liste des matières depuis le serveur.');
+        this.toastr.error('Impossible de charger la liste des matières depuis le serveur.');
       }
     });
   }
 
-  // ... toutes les autres méthodes (majStructure, enregistrerChapitre, etc.) restent inchangées ...
-
   majStructure() {
-    this.sections = Array(this.niveau).fill(null).map(() => ({ titre: '', contenu: '' }));
+    this.sections = Array(this.niveau).fill(null).map(() => ({ titre: '' }));
   }
 
   ajouterSection() {
-    this.sections.push({ titre: '', contenu: '' });
+    this.sections.push({ titre: '' });
   }
 
   supprimerSection(index: number) {
@@ -63,29 +56,40 @@ export class ParametrageChapitreComponent implements OnInit {
   }
 
   enregistrerChapitre() {
+    if (!this.matiereSelectionnee || !this.titre.trim()) {
+      this.toastr.warning('Veuillez sélectionner une matière et saisir un titre pour le chapitre.');
+      return;
+    }
+    this.isLoading = true;
+
     const chapitrePayload: ChapitrePayload = {
       matiere: this.matiereSelectionnee,
       titre: this.titre,
       niveau: this.niveau,
       objectif: this.objectif,
-      sections: this.sections
+      sections: this.sections.filter(s => s.titre && s.titre.trim() !== '')
     };
 
     this.chapitreService.creerChapitre(chapitrePayload).subscribe({
       next: (response) => {
-        console.log('Chapitre enregistré avec succès via l\'API:', response);
-        alert('Chapitre enregistré avec succès !');
-        this.titre = '';
-        this.objectif = '';
-        this.sections = [{ titre: '' }];
-        this.matiereSelectionnee = '';
-        this.niveau = 1;
+        this.toastr.success('Chapitre enregistré avec succès !');
+        this.isLoading = false;
+        this.reinitialiserFormulaire();
       },
       error: (err) => {
+        this.isLoading = false;
+        this.toastr.error(err.error?.message || 'Une erreur est survenue lors de l\'enregistrement.');
         console.error('Erreur lors de l\'enregistrement du chapitre:', err);
-        alert('Une erreur est survenue. Vérifiez la console pour plus de détails.');
       }
     });
+  }
+
+  reinitialiserFormulaire(): void {
+    this.titre = '';
+    this.objectif = '';
+    this.sections = [{ titre: '' }];
+    this.matiereSelectionnee = '';
+    this.niveau = 1;
   }
 
   toggleTableau() {

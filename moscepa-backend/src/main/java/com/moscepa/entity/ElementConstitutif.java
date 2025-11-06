@@ -1,6 +1,13 @@
+// Fichier : ElementConstitutif.java (Version Finale et Corrigée)
+
 package com.moscepa.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.Set; 
+import java.util.HashSet;
+import java.util.List;
 
 @Entity
 @Table(name = "moscepa_elements_constitutifs")
@@ -16,27 +23,61 @@ public class ElementConstitutif {
     @Column(unique = true, nullable = false)
     private String code;
 
-    @Column(columnDefinition = "TEXT")
+    @Lob
     private String description;
 
-    // Le nom de la colonne est 'credit' (singulier)
     @Column(name = "credits", nullable = false)
     private Integer credit;
 
-    // Le nom de la colonne est 'unite_enseignement_id'
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "unite_enseignement_id", nullable = false)
     private UniteEnseignement uniteEnseignement;
 
-    // Le nom de la colonne est 'enseignant_id'
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "enseignant_id")
     private Utilisateur enseignant;
 
+    // ====================================================================
+    // === CORRECTION DE LA RELATION BIDIRECTIONNELLE                   ===
+    // ====================================================================
+    /**
+     * Relation vers les chapitres.
+     * 'mappedBy' doit pointer vers la propriété dans l'entité Chapitre.
+     * Cette propriété s'appelle maintenant 'elementConstitutif'.
+     */
+    @OneToMany(
+        mappedBy = "elementConstitutif", // <-- LA CORRECTION EST ICI
+        cascade = CascadeType.ALL,
+        orphanRemoval = true,
+        fetch = FetchType.LAZY
+    )
+    @JsonManagedReference // Pour éviter les boucles de sérialisation
+    private List<Chapitre> chapitres = new ArrayList<>();
+    @ManyToMany(mappedBy = "matieresInscrites", fetch = FetchType.LAZY)
+    private Set<Utilisateur> etudiantsInscrits = new HashSet<>();
+
     // --- Constructeurs ---
     public ElementConstitutif() {}
 
+    // --- Méthodes utilitaires pour la synchronisation ---
+    public void addChapitre(Chapitre chapitre) {
+        this.chapitres.add(chapitre);
+        chapitre.setElementConstitutif(this);
+    }
+
+    public void removeChapitre(Chapitre chapitre) {
+        this.chapitres.remove(chapitre);
+        chapitre.setElementConstitutif(null);
+    }
+
     // --- Getters et Setters ---
+     public Set<Utilisateur> getEtudiantsInscrits() {
+        return etudiantsInscrits;
+    }
+
+    public void setEtudiantsInscrits(Set<Utilisateur> etudiantsInscrits) {
+        this.etudiantsInscrits = etudiantsInscrits;
+    }
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getNom() { return nom; }
@@ -51,4 +92,6 @@ public class ElementConstitutif {
     public void setUniteEnseignement(UniteEnseignement uniteEnseignement) { this.uniteEnseignement = uniteEnseignement; }
     public Utilisateur getEnseignant() { return enseignant; }
     public void setEnseignant(Utilisateur enseignant) { this.enseignant = enseignant; }
+    public List<Chapitre> getChapitres() { return chapitres; }
+    public void setChapitres(List<Chapitre> chapitres) { this.chapitres = chapitres; }
 }

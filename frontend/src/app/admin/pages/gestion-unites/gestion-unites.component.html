@@ -4,10 +4,10 @@
   <!-- Bouton pour afficher le formulaire de création, visible seulement si le formulaire n'est pas déjà affiché -->
   <div class="header-actions" *ngIf="!afficherFormulaire">
     <!-- Ce bouton ne s'affiche que pour les rôles autorisés à créer -->
-    <button *ngIf="authService.getUserRole() === 'ADMIN' || authService.getUserRole() === 'RESPONSABLE_FORMATION'" 
-            (click)="nouvelleUe()" class="btn btn-primary">
-      Ajouter une UE
-    </button>
+    <button *ngIf="authService.getUserRole() === 'ADMIN' || authService.getUserRole() === 'RESPONSABLE_FORMATION' || authService.getUserRole() === 'ENSEIGNANT'" 
+        (click)="nouvelleUe()" class="btn btn-primary">
+  Ajouter une UE
+</button>
     <br>
   </div>
 
@@ -90,7 +90,7 @@
           <td>{{ ue.responsable ? ue.responsable.prenom + ' ' + ue.responsable.nom : 'Non assigné' }}</td>
           <td class="actions-cell">
             <!-- Bouton Modifier (conditionnel) -->
-            <button *ngIf="authService.getUserRole() === 'ADMIN' || authService.getUserRole() === 'RESPONSABLE_FORMATION'" 
+            <button *ngIf="authService.getUserRole() === 'ADMIN' || authService.getUserRole() === 'RESPONSABLE_FORMATION'|| authService.getUserRole() === 'ENSEIGNANT'" 
                     (click)="modifierUnite(ue)" class="btn btn-warning">
               Modifier
             </button>
