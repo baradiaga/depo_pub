@@ -7,6 +7,7 @@ C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\mo
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\repository\SectionRepository.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\service\MatiereService.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\service\UserManagementService.java
+C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\dto\ChapitreSyllabusDto.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\entity\Fonctionnalite.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\dto\SousFonctionnaliteDTO.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\exception\GlobalExceptionHandler.java
@@ -30,6 +31,7 @@ C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\mo
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\dto\QuestionnaireDetailDto.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\dto\SectionDto.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\service\FonctionnaliteService.java
+C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\service\SyllabusService.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\service\ElementConstitutifService.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\service\EtudiantService.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\service\InscriptionService.java
@@ -44,6 +46,7 @@ C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\mo
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\entity\Reponse.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\controller\AdminController.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\dto\ResultatTestDto.java
+C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\controller\SyllabusController.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\entity\Inscription.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\repository\ChapitreRepository.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\dto\ParcoursDto.java
@@ -70,6 +73,7 @@ C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\mo
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\entity\Permission.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\dto\ChapitreDto.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\entity\Parcours.java
+C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\dto\MatiereSyllabusDto.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\dto\LoginResponse.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\dto\ParcoursRequestDto.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\controller\ProgressionController.java
@@ -86,6 +90,7 @@ C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\mo
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\entity\Section.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\dto\ChapitrePayload.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\entity\Etudiant.java
+C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\dto\MatiereInscriteDto.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\repository\ResultatTestRepository.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\controller\AllElementsConstitutifsController.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\repository\UniteEnseignementRepository.java

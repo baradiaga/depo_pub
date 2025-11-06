@@ -8,7 +8,7 @@ import { AdminRoutingModule } from './admin-routing.module'; // <-- 2. Notre nou
 import { AngularEditorModule } from '@kolkov/angular-editor';
 
 // --- 3. Importez TOUS les composants qui appartiennent à ce module ---
-import { DashboardComponent } from '../features/admin/components/dashboard/dashboard.component';
+
 import { UserListComponent } from '../features/admin/components/user-list/user-list.component';
 import { GestionRolesComponent } from './pages/gestion-roles/gestion-roles.component';
 import { PermissionsComponent } from './pages/permissions/permissions.component';
@@ -30,7 +30,7 @@ import { FormulaireInscriptionComponent } from './pages/formulaire-inscription/f
 @NgModule({
   declarations: [
     // --- 4. Déclarez TOUS ces composants ici ---
-    DashboardComponent,
+    
     UserListComponent,
     GestionRolesComponent,
     PermissionsComponent,

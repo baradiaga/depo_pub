@@ -5,6 +5,7 @@ import { RouterModule } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 // Composants partagés
+import { DashboardComponent } from '../features/admin/components/dashboard/dashboard.component';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { FooterComponent } from './components/footer/footer.component';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
@@ -18,6 +19,7 @@ import { DashboardDirective } from './directives/dashboard.directive';
 
 @NgModule({
   declarations: [
+    DashboardComponent,
     NavbarComponent,
     FooterComponent,
     SidebarComponent,
@@ -34,6 +36,7 @@ import { DashboardDirective } from './directives/dashboard.directive';
     ReactiveFormsModule
   ],
   exports: [
+    DashboardComponent,
     NavbarComponent,
     FooterComponent,
     SidebarComponent,

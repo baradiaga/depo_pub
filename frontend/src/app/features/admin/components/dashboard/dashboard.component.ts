@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router'; 
+import { Router } from '@angular/router';
 import { AuthService } from '../../../../services/auth.service';
-import { UserRole } from '../../../../models/user.model';
 
 interface DashboardItem {
   title: string;
@@ -16,48 +15,49 @@ interface DashboardItem {
   styleUrls: ['./dashboard.component.css']
 })
 export class DashboardComponent implements OnInit {
-  
-  // On peut déclarer les cartes directement ici
-  public cards: DashboardItem[] = [];
 
-  // On injecte les services nécessaires
+  public cards: DashboardItem[] = [];
+  public isNotEtudiant: boolean = false;
+
   constructor(private authService: AuthService, private router: Router) {}
 
   ngOnInit(): void {
-    // LA LOGIQUE SIMPLIFIÉE EST ICI
-    // 1. On récupère le rôle de manière synchrone.
-    //    À ce stade, le AuthService devrait déjà savoir qui est l'utilisateur.
-    const userRole = this.authService.getUserRole();
+    const role = this.authService.getUserRole();
 
-    // 2. On génère les cartes en fonction de ce rôle.
-    this.cards = this.getCardsByRole(userRole);
+    if (!role) {
+      // Redirection si pas connecté
+      this.router.navigate(['/auth/login']);
+      return;
+    }
+
+    this.isNotEtudiant = role !== 'ETUDIANT';
+    this.cards = this.getCardsByRole(role);
+
+    // Redirection pour étudiants vers la page de matières
+    if (role === 'ETUDIANT') {
+      this.router.navigate(['/app/curriculum/matieres']);
+    }
   }
 
   goTo(path: string): void {
     this.router.navigate([path]);
   }
 
-  // Votre méthode getCardsByRole reste inchangée, elle est parfaite.
-  private getCardsByRole(role: UserRole | null): DashboardItem[] {
-    if (!role) {
-      return [];
-    }
-    const allCards: Partial<{ [key in NonNullable<UserRole>]: DashboardItem[] }> = {
+  private getCardsByRole(role: string): DashboardItem[] {
+    const allCards: Record<string, DashboardItem[]> = {
       ADMIN: [
-        { title: 'Utilisateurs', description: 'Gérer les utilisateurs', icon: '👤', route: 'app/admin/utilisateur' },
-        { title: 'Rôles', description: 'Gérer les rôles', icon: '🛡️', route: '/admin/roles' },
-        { title: 'Permissions', description: 'Définir les accès', icon: '🔐', route: 'app/admin/permission' },
-        { title: 'Fonctionnalités', description: 'Gérer les fonctionnalités', icon: '⚙️', route: 'app/admin/fonctionnalites' },
-        { title: 'Gestion des parcours', description: 'Gérer les parcours', icon: '🗺️', route: '/admin/parcours' },
-        { title: 'Matières', description: 'Reprendre vos cours', icon: '📘', route: '/matieres' },
+        { title: 'Utilisateurs', description: 'Gérer les utilisateurs', icon: '👤', route: '/app/admin/dashboard' },
+        { title: 'Rôles', description: 'Gérer les rôles', icon: '🛡️', route: '/app/admin/roles' },
+        { title: 'Permissions', description: 'Définir les accès', icon: '🔐', route: '/app/admin/permissions' },
       ],
-      ETUDIANT: [
-        { title: 'Matières', description: 'Reprendre vos cours', icon: '📘', route: '/matieres' },
-        { title: 'Parcours recommandé', description: 'Voir vos parcours', icon: '🧭', route: '/Parcourrecommende' },
-        { title: 'Évaluations', description: 'Vos tests & résultats', icon: '📊', route: '/tests' }
+      ENSEIGNANT: [
+        { title: 'Cours', description: 'Gérer vos cours', icon: '📘', route: '/enseignant/dashboard' },
+        { title: 'Parcours', description: 'Organiser les parcours', icon: '🗺️', route: '/enseignant/parcours' },
+        { title: 'Évaluations', description: 'Gérer les tests et notes', icon: '📊', route: '/enseignant/tests' },
       ],
-      // ... (les autres rôles)
+      ETUDIANT: [] // pas de cartes
     };
+
     return allCards[role] || [];
   }
 }

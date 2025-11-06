@@ -1,8 +1,8 @@
-// Fichier : src/app/pages/matieres-reprendre/matieres-reprendre.component.ts (Version Corrigée)
+// Fichier : src/app/pages/matieres-reprendre/matieres-reprendre.component.ts
 
 import { Component, OnInit } from '@angular/core';
-import { ProgressionService } from '../../../../services/progression.service';
-import { ElementConstitutifResponse } from '../../../../services/models'; // On utilise l'interface standard
+import { ProgressionService, MatiereInscrite } from '../../../../services/progression.service';
+import { AuthService } from '../../../../services/auth.service'; // Pour le nom de l'étudiant
 
 @Component({
   selector: 'app-matieres-reprendre',
@@ -11,39 +11,47 @@ import { ElementConstitutifResponse } from '../../../../services/models'; // On 
 })
 export class MatieresReprendreComponent implements OnInit {
 
-  matieres: ElementConstitutifResponse[] = [];
-  filteredMatieres: ElementConstitutifResponse[] = [];
-  searchTerm: string = '';
-  isLoading = true; // On ajoute un indicateur de chargement
+  toutesLesMatieres: MatiereInscrite[] = [];
+  matieresFiltrees: MatiereInscrite[] = [];
+  
+  isLoading = true;
+  errorMessage: string | null = null;
+  
+  etudiantNom: string | null = null; // Pour le titre
 
-  constructor(private progressionService: ProgressionService) {}
+  constructor(
+    private progressionService: ProgressionService,
+    private authService: AuthService // Injecter AuthService
+  ) {}
 
   ngOnInit(): void {
     this.isLoading = true;
-    this.progressionService.getMesMatieresInscrites().subscribe({
+    this.etudiantNom = this.authService.getUserFullName(); // Récupérer le nom complet
+
+    this.progressionService.getMesMatieres().subscribe({
       next: (data) => {
-        this.matieres = data;
-        this.filteredMatieres = data;
+        this.toutesLesMatieres = data;
+        this.matieresFiltrees = data; // Au début, on affiche tout
         this.isLoading = false;
       },
       error: (err) => {
-        console.error("Erreur lors du chargement des matières de l'étudiant", err);
+        this.errorMessage = "Une erreur est survenue lors du chargement.";
         this.isLoading = false;
       }
     });
   }
 
-  filterMatieres(): void {
-    const term = this.searchTerm ? this.searchTerm.toLowerCase() : '';
-    if (!term) {
-      this.filteredMatieres = this.matieres;
+  // Fonction de recherche
+  onSearch(event: Event): void {
+    const searchTerm = (event.target as HTMLInputElement).value.toLowerCase();
+    if (!searchTerm) {
+      this.matieresFiltrees = this.toutesLesMatieres;
       return;
     }
-    
-    // On filtre sur les champs qui existent vraiment
-    this.filteredMatieres = this.matieres.filter(m =>
-      m.nom.toLowerCase().includes(term) ||
-      m.code.toLowerCase().includes(term)
+    this.matieresFiltrees = this.toutesLesMatieres.filter(matiere =>
+      matiere.nomEc.toLowerCase().includes(searchTerm) ||
+      matiere.codeEc.toLowerCase().includes(searchTerm) ||
+      matiere.nomUe.toLowerCase().includes(searchTerm)
     );
   }
 }

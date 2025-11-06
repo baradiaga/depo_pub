@@ -1,3 +1,5 @@
+// Fichier : src/app/services/auth.service.ts (Version Complète et Finale)
+
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
@@ -6,21 +8,27 @@ import { Router } from '@angular/router';
 import { jwtDecode } from 'jwt-decode';
 import { UserRole } from '../models/user.model';
 
-// Interface pour le token décodé
+// --- INTERFACE MISE À JOUR POUR LE TOKEN DÉCODÉ ---
+// Le backend doit inclure 'nom' et 'prenom' dans le token JWT.
 interface DecodedToken {
-  sub: string;
+  sub: string; // L'email
   authorities: string[];
   permissions: string[];
+  nom: string;
+  prenom: string;
   iat: number;
   exp: number;
 }
 
-// Interface pour la réponse de l'API de connexion
+// --- INTERFACE MISE À JOUR POUR LA RÉPONSE DU LOGIN ---
+// Le backend doit renvoyer ces champs lors du login.
 export interface LoginResponse {
   token: string;
   id: number;
   email: string;
   role: string;
+  nom: string;
+  prenom: string;
 }
 
 @Injectable({
@@ -40,22 +48,28 @@ export class AuthService {
    ) {}
 
   /**
-   * Gère la connexion de l'utilisateur, le stockage des données et la redirection.
+   * Gère la connexion de l'utilisateur.
+   * Nettoie l'ancienne session, stocke la nouvelle et redirige.
    */
   login(credentials: any): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.apiUrl}/login`, credentials ).pipe(
       tap(response => {
-        // 1. Stocker les informations de la session dans le localStorage
+        // 1. Nettoyer toute session précédente pour éviter les conflits.
+        localStorage.clear();
+
+        // 2. Stocker les informations de la nouvelle session.
         localStorage.setItem('auth_token', response.token);
         localStorage.setItem('user_id', response.id.toString());
         localStorage.setItem('user_email', response.email);
         localStorage.setItem('user_role', response.role);
+        localStorage.setItem('user_nom', response.nom);
+        localStorage.setItem('user_prenom', response.prenom);
 
-        // 2. Notifier le reste de l'application que l'utilisateur est connecté
+        // 3. Notifier le reste de l'application que l'état a changé.
         this.isAuthenticatedSubject.next(true);
         this.permissionsSubject.next();
 
-        // 3. Rediriger l'utilisateur vers la page appropriée
+        // 4. Rediriger l'utilisateur vers la page appropriée.
         const userRole = response.role as UserRole;
         const destination = this.getRedirectPathByRole(userRole);
         this.router.navigate([destination]);
@@ -64,12 +78,13 @@ export class AuthService {
   }
 
   /**
-   * Gère la déconnexion de l'utilisateur côté serveur et client.
+   * Gère la déconnexion de l'utilisateur.
    */
   logout(): void {
+    // On peut appeler l'endpoint de logout du backend, mais on nettoie le client dans tous les cas.
     this.http.post(`${this.apiUrl}/logout`, {} ).subscribe({
       next: () => this.performClientLogout(),
-      error: () => this.performClientLogout() // Déconnecte côté client même si le serveur ne répond pas
+      error: () => this.performClientLogout() // On déconnecte le client même si le serveur a une erreur.
     });
   }
 
@@ -77,17 +92,11 @@ export class AuthService {
    * Logique de nettoyage côté client lors de la déconnexion.
    */
   private performClientLogout(): void {
-    // Nettoyer le localStorage
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('user_id');
-    localStorage.removeItem('user_email');
-    localStorage.removeItem('user_role');
+    // Utiliser clear() est la méthode la plus sûre pour une déconnexion totale.
+    localStorage.clear();
 
-    // Mettre à jour l'état de l'application
     this.isAuthenticatedSubject.next(false);
     this.permissionsSubject.next();
-
-    // Rediriger vers la page de connexion
     this.router.navigate(['/auth/login']);
   }
 
@@ -96,30 +105,46 @@ export class AuthService {
    */
   private getRedirectPathByRole(role: UserRole | null): string {
     if (!role) {
-      return '/auth/login'; // Sécurité
+      return '/auth/login';
     }
-
-    // Règle n°1 : Cas spécifique pour l'étudiant
     if (role === 'ETUDIANT') {
-      // Assurez-vous que ce chemin correspond à votre routing pour MatieresReprendreComponent
       return '/app/curriculum/matieres';
     }
-
-    // Règle n°2 : Cas général pour tous les autres rôles (leur dashboard/page d'accueil)
+    // Ajoutez ici vos autres cas de redirection
     switch (role) {
       case 'ADMIN':
-        return '/app/admin'; // Sera redirigé vers /app/admin/dashboard
-      case 'ENSEIGNANT':
-        return '/app/enseignant'; // Sera redirigé vers sa page par défaut
-      case 'TUTEUR':
-        return '/app/tuteur';
-      case 'TECHNOPEDAGOGUE':
-        return '/app/technopedagogue';
       case 'RESPONSABLE_FORMATION':
-        return '/app/admin'; // Pour l'instant, vers le dashboard admin
+        return '/app/admin';
+      case 'ENSEIGNANT':
+        return '/app/enseignant/dashboard';
       default:
         return '/auth/login'; // Sécurité pour les rôles inconnus
     }
+  }
+
+  // ====================================================================
+  // === NOUVELLE MÉTHODE POUR RÉCUPÉRER LE NOM COMPLET                ===
+  // ====================================================================
+  /**
+   * Récupère le nom complet de l'utilisateur connecté.
+   * Privilégie les données du localStorage pour la rapidité.
+   * @returns Le nom complet (ex: "Abdoulaye Thiaw") ou null si non trouvé.
+   */
+  getUserFullName(): string | null {
+    const prenom = localStorage.getItem('user_prenom');
+    const nom = localStorage.getItem('user_nom');
+
+    if (prenom && nom) {
+      return `${prenom} ${nom}`;
+    }
+    
+    // Solution de secours si le localStorage est vide mais qu'un token existe
+    const decodedToken = this.getDecodedToken();
+    if (decodedToken && decodedToken.prenom && decodedToken.nom) {
+      return `${decodedToken.prenom} ${decodedToken.nom}`;
+    }
+
+    return null;
   }
 
   // --- Méthodes utilitaires pour accéder aux données de session ---
@@ -133,7 +158,7 @@ export class AuthService {
     return role as UserRole | null;
   }
 
-   hasToken(): boolean {
+  hasToken(): boolean {
     return !!this.getToken();
   }
 
@@ -161,9 +186,5 @@ export class AuthService {
 
   getPermissions$(): Observable<void> {
     return this.permissionsSubject.asObservable();
-  }
-
-  hasCustomPermissions(): boolean {
-    return this.getUserPermissions().length > 0;
   }
 }

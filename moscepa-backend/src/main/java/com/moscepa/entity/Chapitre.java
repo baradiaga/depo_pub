@@ -21,6 +21,8 @@ public class Chapitre {
     private Integer niveau;
     @Lob
     private String objectif;
+     @Column(name = "ordre")
+    private  Integer ordre;
 
     // ====================================================================
     // === CORRECTION DE LA RELATION                                    ===
@@ -60,7 +62,13 @@ public class Chapitre {
     public void setSections(List<Section> sections) { this.sections = sections; }
     public List<Questionnaire> getQuestionnaires() { return questionnaires; }
     public void setQuestionnaires(List<Questionnaire> questionnaires) { this.questionnaires = questionnaires; }
+     public  Integer getOrdre() {
+        return ordre;
+    }
 
+    public void setOrdre( Integer ordre) {
+        this.ordre = ordre;
+    }
     // ====================================================================
     // === CORRECTION DES GETTERS/SETTERS POUR LA RELATION              ===
     // ====================================================================

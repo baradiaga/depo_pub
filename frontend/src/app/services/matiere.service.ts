@@ -1,94 +1,42 @@
-// Dans matiere.service.ts
+// Fichier : src/app/services/syllabus.service.ts (Nouveau Fichier)
 
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-// ====================================================================
-// --- INTERFACES (MODÈLES DE DONNÉES ) ---
-// ====================================================================
-
-export interface TestPourListe {
-  id: number;
-  titre: string;
-  // Ajoutez d'autres propriétés si nécessaire
-}
-
-export interface ChapitrePourListe {
+// --- CONTRAT DE DONNÉES POUR LE SYLLABUS ---
+export interface ChapitreSyllabus {
   id: number;
   nom: string;
-  niveau: number;
-  objectif: string;
-  tests: TestPourListe[];
-  numero?: number;
-  resultat?: string;
-  categorie?: string;
+  ordre: number;
+  statut: string; // "Validé", "À faire", etc.
+  dernierScore: number | null;
 }
 
-export interface MatiereAvecDetails {
+export interface MatiereSyllabus {
   id: number;
   nom: string;
+  code: string;
   description: string;
-  chapitres: ChapitrePourListe[];
-  ec: string; 
-  ordre: number; 
-  coefficient: number; 
+  chapitres: ChapitreSyllabus[];
 }
-
-// NOUVELLE INTERFACE : pour les données à envoyer lors de la création d'une matière.
-// Seuls les champs nécessaires sont listés.
-export interface NouvelleMatiereDto {
-  nom: string;
-  ec?: string;
-  description?: string;
-}
-
-
-// ====================================================================
-// --- CLASSE DU SERVICE ---
-// ====================================================================
 
 @Injectable({
   providedIn: 'root'
-})
-export class MatiereService {
-  private apiUrl = 'http://localhost:8080/api/matieres';
+} )
+export class SyllabusService {
+  // On utilise un nouvel endpoint dédié
+  private apiUrl = 'http://localhost:8080/api/syllabus';
 
   constructor(private http: HttpClient ) { }
 
   /**
-   * Récupère la liste complète des matières avec tous leurs détails.
-   * C'est la méthode principale pour obtenir la liste.
+   * Récupère le syllabus d'une matière pour l'étudiant connecté.
+   * @param matiereId L'ID de la matière (ElementConstitutif).
    */
-  getMatieres(): Observable<MatiereAvecDetails[]> {
-    // Appelle 'GET /api/matieres', qui est maintenant géré par le backend.
-    return this.http.get<MatiereAvecDetails[]>(this.apiUrl );
-  }
-
-  /**
-   * Récupère uniquement la liste des noms des matières.
-   */
-  getNomsMatieres(): Observable<string[]> {
-    return this.http.get<string[]>(`${this.apiUrl}/noms` );
-  }
-
-  /**
-   * Récupère une seule matière par son identifiant.
-   */
-  getMatiereById(id: number): Observable<MatiereAvecDetails> {
-    return this.http.get<MatiereAvecDetails>(`${this.apiUrl}/${id}` );
-  }
-
-  // ====================================================================
-  // --- NOUVELLE FONCTIONNALITÉ : AJOUTER UNE MATIÈRE ---
-  // ====================================================================
-  /**
-   * Envoie une nouvelle matière au backend pour la création.
-   * @param matiereData Les données de la matière à créer (nom, etc.).
-   */
-  addMatiere(matiereData: NouvelleMatiereDto): Observable<MatiereAvecDetails> {
-    // Fait un appel POST à 'http://localhost:8080/api/matieres'
-    // avec les données de la nouvelle matière dans le corps de la requête.
-    return this.http.post<MatiereAvecDetails>(this.apiUrl, matiereData );
+  getSyllabusPourEtudiant(matiereId: number): Observable<MatiereSyllabus> {
+    console.log(`[SyllabusService] Appel de l'API pour le syllabus de la matière ID : ${matiereId}`);
+    // L'URL finale sera : GET /api/syllabus/matiere/15
+    return this.http.get<MatiereSyllabus>(`${this.apiUrl}/matiere/${matiereId}` );
   }
 }

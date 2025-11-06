@@ -1,7 +1,7 @@
 // Fichier : ElementConstitutifRepository.java (Version Finale et Complète)
 
 package com.moscepa.repository;
-
+import org.springframework.data.jpa.repository.EntityGraph;
 import com.moscepa.entity.ElementConstitutif;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
@@ -14,6 +14,8 @@ public interface ElementConstitutifRepository extends JpaRepository<ElementConst
     List<ElementConstitutif> findByUniteEnseignementId(Long ueId);
 
     Optional<ElementConstitutif> findByNom(String nom);
+     @EntityGraph(attributePaths = {"chapitres"})
+    Optional<ElementConstitutif> findById(Long id);
 
     // ====================================================================
     // === MÉTHODE MANQUANTE AJOUTÉE ICI                                ===

@@ -1,14 +1,19 @@
 <div class="dashboard-container">
-  <h2 class="dashboard-title">Tableau de bord</h2>
-
+  <h2>Tableau de bord</h2>
 
   <div class="card-grid">
-    <div *ngFor="let card of cards" class="card" (click)="goTo(card.route)">
-      <div class="card-icon">{{ card.icon }}</div>
-      <div class="card-content">
-        <h3>{{ card.title }}</h3>
-        <p>{{ card.description }}</p>
+    <ng-container *ngIf="isNotEtudiant">
+      <div *ngFor="let card of cards" class="card" (click)="goTo(card.route)">
+        <div class="card-icon">{{ card.icon }}</div>
+        <div class="card-content">
+          <h3>{{ card.title }}</h3>
+          <p>{{ card.description }}</p>
+        </div>
       </div>
-    </div>
+    </ng-container>
+
+    <ng-container *ngIf="!isNotEtudiant">
+      <p>Aucune carte disponible pour les étudiants.</p>
+    </ng-container>
   </div>
 </div>
