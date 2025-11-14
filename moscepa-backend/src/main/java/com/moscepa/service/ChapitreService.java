@@ -1,5 +1,9 @@
+// Fichier : src/main/java/com/moscepa/service/ChapitreService.java (Version mise à jour)
+
 package com.moscepa.service;
 
+// ... (vos imports restent les mêmes)
+import com.moscepa.dto.ChapitreAvecSectionsDto;
 import com.moscepa.dto.ChapitreDetailDto;
 import com.moscepa.dto.ChapitrePayload;
 import com.moscepa.dto.QuestionDto;
@@ -27,8 +31,18 @@ public class ChapitreService {
     @Autowired
     private ElementConstitutifRepository ecRepository;
 
+    // --- VOS MÉTHODES EXISTANTES (INCHANGÉES) ---
+
+    @Transactional(readOnly = true)
+    public ChapitreDetailDto getChapitreDetailsPourTest(Long id) {
+        Chapitre chapitre = chapitreRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Chapitre non trouvé avec l'ID: " + id));
+        return new ChapitreDetailDto(chapitre);
+    }
+
     @Transactional
     public ChapitreDetailDto creerChapitreAvecNomMatiere(ChapitrePayload payload) {
+        // ... (votre logique existante est inchangée)
         ElementConstitutif ecParent = ecRepository.findByNom(payload.getMatiere())
             .orElseThrow(() -> new EntityNotFoundException("Matière non trouvée avec le nom: " + payload.getMatiere()));
 
@@ -39,21 +53,24 @@ public class ChapitreService {
         nouveauChapitre.setElementConstitutif(ecParent);
 
         if (payload.getSections() != null) {
-            int ordreCompteur = 1; // On initialise un compteur pour l'ordre
+            int ordreCompteur = 1;
             for (SectionPayload sectionPayload : payload.getSections()) {
                 Section nouvelleSection = new Section();
                 nouvelleSection.setTitre(sectionPayload.getTitre());
-                nouvelleSection.setContenu(""); // Contenu initial vide, c'est ok
-                
-                // On assigne l'ordre actuel et on incrémente le compteur
-                nouvelleSection.setOrdre(ordreCompteur++); 
-
+                nouvelleSection.setContenu("");
+                nouvelleSection.setOrdre(ordreCompteur++);
                 nouveauChapitre.addSection(nouvelleSection);
             }
         }
 
         Chapitre chapitreSauvegarde = chapitreRepository.save(nouveauChapitre);
         return new ChapitreDetailDto(chapitreSauvegarde);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<ChapitreAvecSectionsDto> findChapitreCompletByMatiereAndNiveau(String matiereNom, Integer niveau) {
+        return chapitreRepository.findByElementConstitutifNomAndNiveau(matiereNom, niveau)
+            .map(ChapitreAvecSectionsDto::new);
     }
 
     @Transactional(readOnly = true)
@@ -64,6 +81,7 @@ public class ChapitreService {
 
     @Transactional(readOnly = true)
     public List<QuestionDto> getQuestionsPourChapitre(Long chapitreId) {
+        // ... (votre logique existante est inchangée)
         Chapitre chapitre = chapitreRepository.findById(chapitreId)
             .orElseThrow(() -> new EntityNotFoundException("Chapitre non trouvé avec l'ID: " + chapitreId));
         
@@ -76,5 +94,21 @@ public class ChapitreService {
     @Transactional(readOnly = true)
     public Optional<ChapitreDetailDto> getChapitreDetailsById(Long id) {
         return chapitreRepository.findById(id).map(ChapitreDetailDto::new);
+    }
+
+    // ====================================================================
+    // === NOUVELLE MÉTHODE AJOUTÉE POUR LA PAGE DE DÉTAIL DE L'ÉTUDIANT   ===
+    // ====================================================================
+    /**
+     * Récupère un chapitre par son ID avec tous les détails de ses sections.
+     * Utilise une requête optimisée du repository pour charger toutes les données en une fois.
+     * @param id L'ID du chapitre.
+     * @return Un Optional contenant le DTO complet du chapitre.
+     */
+    @Transactional(readOnly = true)
+    public Optional<ChapitreAvecSectionsDto> findChapitreCompletById(Long id) {
+        // On appellera ici la nouvelle méthode du repository
+        return chapitreRepository.findChapitreCompletById(id)
+                .map(ChapitreAvecSectionsDto::new); // On convertit l'entité en DTO
     }
 }

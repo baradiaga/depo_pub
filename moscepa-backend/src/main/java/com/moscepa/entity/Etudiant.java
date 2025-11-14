@@ -7,8 +7,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-//@Entity
-@Table(name = "moscepa_etudiants")
+
 public class Etudiant {
 
     @Id

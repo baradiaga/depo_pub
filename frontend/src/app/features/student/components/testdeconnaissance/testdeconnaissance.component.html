@@ -1,67 +1,53 @@
-<div class="container-fluid py-4">
-  <h1 class="h3 mb-4 text-gray-800">Test de Connaissance</h1>
+<!-- Fichier : src/app/features/student/components/testdeconnaissance/testdeconnaissance.component.html (Version mise à jour) -->
 
-  <div *ngIf="isLoading" class="text-center p-5">
-    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
-  </div>
-
-  <div *ngIf="!isLoading" class="row">
-    <div class="col-lg-4 mb-4">
-      <div class="card shadow-sm">
-        <div class="card-header py-3">
-          <h6 class="m-0 font-weight-bold text-primary">Sélectionnez une matière</h6>
-        </div>
-        <div class="card-body">
-          <select class="form-select" (change)="onSelectMatiere($event)">
-            <option [ngValue]="null" selected>-- Choisissez une matière --</option>
-            <ng-container *ngIf="matieres$ | async as matieres">
-              <option *ngFor="let matiere of matieres" [value]="matiere.id">
-                {{ matiere.titreComplet }}
-              </option>
-            </ng-container>
-          </select>
-        </div>
-      </div>
+<div class="container mt-5">
+  <div class="card shadow-sm">
+    <div class="card-header">
+      <h2>Test de Connaissance Global</h2>
+      <p class="text-muted">Évaluez votre niveau général sur une matière pour obtenir un parcours d'apprentissage personnalisé.</p>
     </div>
-
-    <div class="col-lg-8">
-      <div *ngIf="isDetailsLoading" class="card shadow-sm text-center">
-        <div class="card-body p-5"><div class="spinner-border text-primary"></div></div>
+    <div class="card-body">
+      
+      <!-- Indicateur de chargement principal -->
+      <div *ngIf="isLoading" class="text-center my-5">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p class="mt-2">Chargement des matières...</p>
       </div>
 
-      <div *ngIf="!isDetailsLoading">
-        <div *ngIf="ecDetails$ | async as details; else noMatiereSelected">
-          <div class="card shadow-sm">
-            <div class="card-header py-3 d-flex justify-content-between align-items-center">
-              <h6 class="m-0 font-weight-bold text-primary">Chapitres pour : {{ details.nom }}</h6>
-              <span class="badge bg-secondary rounded-pill">{{ details.code }}</span>
-            </div>
-            <div class="list-group list-group-flush">
-              <div *ngFor="let chapitre of details.chapitres" class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                  <h6 class="mb-0">{{ chapitre.nom }}</h6>
-                  <small class="text-muted">Dernier résultat : {{ chapitre.resultat || 'N/A' }}%</small>
-                </div>
-                <button class="btn btn-sm btn-outline-primary" (click)="onStartTest(chapitre)">
-                  <i class="fas fa-play me-1"></i> Démarrer
-                </button>
-              </div>
-              <div *ngIf="details.chapitres.length === 0" class="list-group-item text-center text-muted">
-                Aucun chapitre disponible.
-              </div>
-            </div>
+      <!-- Contenu principal une fois les matières chargées -->
+      <ng-container *ngIf="!isLoading && (matieres$ | async) as matieres">
+        
+        <div *ngIf="matieres.length > 0; else noMatieres">
+          <div class="mb-4">
+            <label for="matiereSelect" class="form-label"><strong>1. Choisissez une matière :</strong></label>
+            <select id="matiereSelect" class="form-select form-select-lg" (change)="onSelectMatiere($event)">
+              <option value="">-- Sélectionnez une matière --</option>
+              <option *ngFor="let matiere of matieres" [value]="matiere.id">
+                {{ matiere.nom }}
+              </option>
+            </select>
           </div>
-        </div>
-      </div>
 
-      <ng-template #noMatiereSelected>
-        <div *ngIf="!isDetailsLoading" class="card shadow-sm text-center">
-          <div class="card-body p-5">
-            <i class="fas fa-arrow-left fa-2x text-gray-400 mb-3"></i>
-            <p class="text-muted">Veuillez sélectionner une matière.</p>
+          <!-- Le bouton pour lancer le test n'est actif que si une matière est sélectionnée -->
+          <div class="d-grid gap-2">
+            <button 
+              class="btn btn-primary btn-lg" 
+              [disabled]="!selectedMatiereId"
+              (click)="lancerTestDeConnaissance()">
+              <i class="icon-play-circle me-2"></i>
+              Commencer le Test de Connaissance
+            </button>
           </div>
         </div>
-      </ng-template>
+
+        <!-- Message si aucune matière n'est disponible -->
+        <ng-template #noMatieres>
+          <div class="alert alert-info">
+            Aucune matière n'est actuellement disponible pour un test de connaissance.
+          </div>
+        </ng-template>
+
+      </ng-container>
     </div>
   </div>
 </div>

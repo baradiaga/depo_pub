@@ -1,53 +1,56 @@
-// Fichier : src/app/services/test.service.ts (Corrigé et Complété)
+// Fichier : src/app/services/test.service.ts (Version mise à jour pour l'historique)
 
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { Question, ResultatTest } from '../models/models';
 
 // ====================================================================
-// === INTERFACES EXPORTÉES                                         ===
+// === NOUVELLE INTERFACE POUR L'HISTORIQUE DES RÉSULTATS           ===
 // ====================================================================
-
-// Représente une option de réponse pour une question
-export interface Reponse {
-  id: number;
-  texte: string;
-  correcte: boolean;
-}
-
-// Représente une question dans un test
-export interface Question {
-  id: number;
-  enonce: string;
-  type: 'QCU' | 'QCM' | 'VRAI_FAUX' | 'TEXTE_LIBRE';
-  points: number;
-  reponses: Reponse[];
-}
-
-// Représente un test complet avec ses questions
-export interface Test {
-  id: number;
-  titre: string;
-  description?: string;
-  chapitreId: number;
-  questions: Question[]; // La liste des questions est maintenant une propriété de Test
+/**
+ * Représente un seul élément dans la liste de l'historique des résultats.
+ * Doit correspondre au DTO `HistoriqueResultatDto.java` du backend.
+ */
+export interface HistoriqueResultat {
+  nomChapitre: string;
+  dateSoumission: string; // Les dates sont souvent transmises comme des chaînes de caractères (ISO )
+  scoreObtenu: number;
+  scoreTotalPossible: number;
+  pourcentage: number;
 }
 
 @Injectable({
   providedIn: 'root'
-} )
+})
 export class TestService {
 
-  private apiUrl = 'http://localhost:8080/api';
+  private apiUrl = 'http://localhost:8080/api/tests';
 
-  constructor(private http: HttpClient ) { }
+  constructor(private http: HttpClient  ) { }
 
+  // --- VOS MÉTHODES EXISTANTES (INCHANGÉES) ---
+
+  getQuestionsPourChapitre(chapitreId: number): Observable<Question[]> {
+    console.log(`[TestService] Appel API pour récupérer les questions du chapitre ${chapitreId}`);
+    return this.http.get<Question[]>(`${this.apiUrl}/chapitre/${chapitreId}/questions`  );
+  }
+
+  soumettreReponses(chapitreId: number, reponses: any): Observable<ResultatTest> {
+    console.log(`[TestService] Appel API pour soumettre les réponses du chapitre ${chapitreId}`);
+    return this.http.post<ResultatTest>(`${this.apiUrl}/chapitre/${chapitreId}/soumettre`, reponses  );
+  }
+
+  // ====================================================================
+  // === NOUVELLE MÉTHODE POUR L'HISTORIQUE DES RÉSULTATS             ===
+  // ====================================================================
   /**
-   * Récupère la liste de tous les tests associés à un chapitre spécifique.
-   * Cette méthode est celle que le composant va utiliser.
+   * Récupère l'historique des résultats de test pour l'étudiant connecté.
+   * @returns Un Observable contenant un tableau d'objets HistoriqueResultat.
    */
-  getTestsByChapitre(chapitreId: number): Observable<Test[]> {
-    // Note: Assurez-vous que cet endpoint existe dans votre backend.
-    return this.http.get<Test[]>(`${this.apiUrl}/chapitres/${chapitreId}/tests` );
+  getMonHistorique(): Observable<HistoriqueResultat[]> {
+    // Appelle l'endpoint : GET /api/tests/mon-historique
+    console.log(`[TestService] Appel API pour récupérer l'historique des résultats.`);
+    return this.http.get<HistoriqueResultat[]>(`${this.apiUrl}/mon-historique` );
   }
 }

@@ -46,7 +46,7 @@ export class SyllabusComponent implements OnInit {
 
   lancerTest(chapitre: ChapitreSyllabus): void {
     console.log(`[SyllabusComponent] Lancement du test pour le chapitre ID : ${chapitre.id}`);
-    this.router.navigate(['/app/test/passer', chapitre.id]);
+    this.router.navigate(['/app/student/test/passer', chapitre.id]);
   }
 
   // ====================================================================

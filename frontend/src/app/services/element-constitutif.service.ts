@@ -6,7 +6,8 @@ import { Observable, Subject } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
 // On importe les interfaces depuis le fichier central
-import { ElementConstitutifRequest, ElementConstitutifResponse } from './models';
+import { ElementConstitutifRequest, ElementConstitutifResponse } from '../models/models';
+
 
 @Injectable({
   providedIn: 'root'

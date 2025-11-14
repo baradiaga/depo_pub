@@ -5,7 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 
 import { ChapitreService } from '../../../../services/chapitre.service';
-import { Chapitre } from '../../../../services/models'; // <-- CORRECTION
+import { Chapitre } from '../../../../models/models'; // <-- CORRECTION
 import { ParcoursService } from '../../../../services/parcours.service';
 
 @Component({

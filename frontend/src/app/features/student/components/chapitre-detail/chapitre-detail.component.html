@@ -1,58 +1,43 @@
-<!-- Fichier : src/app/features/student/components/chapitre-detail/chapitre-detail.component.html (Final) -->
+<!-- Fichier : src/app/features/student/pages/chapitre-detail/chapitre-detail.component.html (Version finale) -->
 
-<!-- État de chargement -->
-<div *ngIf="isLoading" class="text-center mt-5">
-  <div class="spinner-border text-primary" role="status">
-    <span class="visually-hidden">Chargement...</span>
-  </div>
-  <p>Chargement des détails du chapitre...</p>
-</div>
+<!-- On utilise le pipe 'async' pour gérer l'Observable et l'état de chargement automatiquement -->
+<ng-container *ngIf="chapitre$ | async as chapitre; else loadingOrError">
+  
+  <div class="chapitre-container">
+    
+    <!-- En-tête du chapitre -->
+    <header class="chapitre-header">
+      <h1>{{ chapitre.nom }}</h1>
+      <p class="objectif">{{ chapitre.objectif }}</p>
+    </header>
 
-<!-- Contenu principal -->
-<div *ngIf="!isLoading">
-
-  <!-- Cas 1 : Le chapitre a été trouvé -->
-  <div *ngIf="chapitre" class="container mt-4">
-    <div class="card shadow-sm">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <h2 class="mb-0">{{ chapitre.nom }}</h2>
-        <span *ngIf="chapitre.score !== undefined" class="badge rounded-pill" [ngClass]="getCouleurScore(chapitre.score)">
-          Dernier score : {{ chapitre.score | number:'1.0-0' }}%
-        </span>
+    <!-- Contenu des sections -->
+    <main class="sections-container">
+      <div *ngFor="let section of chapitre.sections" class="section-card">
+        <h2>{{ section.titre }}</h2>
+        <!-- 
+          [innerHTML] est utilisé pour interpréter le contenu HTML qui vient de la base de données.
+          Angular le nettoie pour éviter les failles de sécurité (XSS).
+        -->
+        <div class="section-content" [innerHTML]="section.contenu"></div>
       </div>
-      <div class="card-body">
-        <!-- ========================================================== -->
-        <!-- === CORRECTION FINALE APPLIQUÉE ICI                      === -->
-        <!-- ========================================================== -->
-        <h5 class="card-subtitle mb-3 text-muted">Matière : {{ chapitre.elementConstitutifNom }}</h5>
-        
-        <hr>
+    </main>
 
-        <div class="contenu mt-3">
-          <h4>Contenu du chapitre</h4>
-          <div *ngFor="let section of chapitre.sections">
-            <h5>{{ section.titre }}</h5>
-            <div [innerHTML]="section.contenu"></div>
-            <hr>
-          </div>
-          <p *ngIf="!chapitre.sections || chapitre.sections.length === 0">
-            <em>Le contenu détaillé de ce chapitre n'est pas encore disponible.</em>
-          </p>
-        </div>
-      </div>
-      <div class="card-footer text-end">
-        <a routerLink="/app/student/parcours" class="btn btn-outline-secondary">← Retour aux parcours</a>
-      </div>
-    </div>
+    <!-- Pied de page avec le bouton d'action -->
+    <footer class="chapitre-footer">
+      <button class="btn btn-primary btn-lg" (click)="passerLeTest()">
+        Passer le Test
+      </button>
+    </footer>
+
   </div>
 
-  <!-- Cas 2 : Le chapitre n'a pas été trouvé -->
-  <div *ngIf="!chapitre" class="container mt-4 text-center">
-    <div class="alert alert-danger">
-      <h3>Chapitre Introuvable ❌</h3>
-      <p>Le chapitre que vous essayez de consulter n'a pas été trouvé.</p>
-      <a routerLink="/app/student/parcours" class="btn btn-danger">Retourner à la liste des parcours</a>
-    </div>
-  </div>
+</ng-container>
 
-</div>
+<!-- Template affiché pendant le chargement ou en cas d'erreur -->
+<ng-template #loadingOrError>
+  <div class="loading-spinner">
+    <p>Chargement du chapitre...</p>
+    <!-- Vous pouvez ajouter un vrai spinner ici si vous le souhaitez -->
+  </div>
+</ng-template>

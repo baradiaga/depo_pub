@@ -1,4 +1,4 @@
-// Fichier : src/main/java/com/moscepa/service/ParcoursService.java (Version Finale Corrigée)
+// Fichier : src/main/java/com/moscepa/service/ParcoursService.java (Version finale et sécurisée)
 
 package com.moscepa.service;
 
@@ -24,11 +24,7 @@ public class ParcoursService {
     private final UtilisateurRepository utilisateurRepository;
     private final ChapitreRepository chapitreRepository;
     private final ResultatTestRepository resultatTestRepository;
-    // ====================================================================
-    // === CORRECTION APPLIQUÉE ICI : On supprime EtudiantRepository    ===
-    // ====================================================================
 
-    // On met à jour le constructeur pour ne plus injecter EtudiantRepository
     public ParcoursService(ParcoursRepository parcoursRepository, UtilisateurRepository utilisateurRepository, ChapitreRepository chapitreRepository, ResultatTestRepository resultatTestRepository) {
         this.parcoursRepository = parcoursRepository;
         this.utilisateurRepository = utilisateurRepository;
@@ -36,12 +32,9 @@ public class ParcoursService {
         this.resultatTestRepository = resultatTestRepository;
     }
 
+    // --- La méthode getParcoursPourEtudiant reste INCHANGÉE ---
     public ParcoursDto getParcoursPourEtudiant(Long utilisateurId) {
-        // ====================================================================
-        // === CORRECTION APPLIQUÉE ICI : Logique simplifiée                ===
-        // ====================================================================
-        // On n'a plus besoin de chercher un "profil étudiant" séparé.
-        // L'ID de l'utilisateur EST l'ID de l'étudiant.
+        // ... (votre logique existante est correcte)
         if (!utilisateurRepository.existsById(utilisateurId)) {
             throw new EntityNotFoundException("Aucun étudiant trouvé pour l'utilisateur ID: " + utilisateurId);
         }
@@ -51,10 +44,7 @@ public class ParcoursService {
         List<ParcoursItemDto> choisis = new ArrayList<>();
 
         for (Parcours parcours : parcoursList) {
-            
-            // On utilise directement l'ID de l'utilisateur
             List<ResultatTest> resultats = resultatTestRepository.findLatestByEtudiantAndChapitre(utilisateurId, parcours.getChapitre().getId());
-
             double scoreEnPourcentage = 0.0;
             if (!resultats.isEmpty()) {
                 ResultatTest dernierResultat = resultats.get(0);
@@ -62,14 +52,12 @@ public class ParcoursService {
                     scoreEnPourcentage = (dernierResultat.getScore() / dernierResultat.getScoreTotal()) * 100;
                 }
             }
-            
             ParcoursItemDto dto = new ParcoursItemDto(
                 parcours.getChapitre().getId(),
                 parcours.getChapitre().getNom(),
                 parcours.getChapitre().getElementConstitutif().getNom(),
                 scoreEnPourcentage
             );
-
             if (parcours.getType() == Parcours.TypeParcours.RECOMMANDE) {
                 recommandes.add(dto);
             }
@@ -88,30 +76,57 @@ public class ParcoursService {
 
     @Transactional
     public void enregistrerChoixEtudiant(Long utilisateurId, List<Long> chapitreIds) {
+        if (chapitreIds == null || chapitreIds.isEmpty()) {
+            return; // Rien à faire
+        }
+
         Utilisateur etudiant = utilisateurRepository.findById(utilisateurId)
                 .orElseThrow(() -> new EntityNotFoundException("Utilisateur non trouvé avec l'ID: " + utilisateurId));
+        
         List<Chapitre> chapitres = chapitreRepository.findAllById(chapitreIds);
-        List<Parcours> nouveauxParcours = new ArrayList<>();
+        
         for (Chapitre chapitre : chapitres) {
-            Parcours nouveauParcours = new Parcours();
-            nouveauParcours.setUtilisateur(etudiant);
-            nouveauParcours.setChapitre(chapitre);
-            nouveauParcours.setType(Parcours.TypeParcours.CHOISI);
-            nouveauParcours.setDateAjout(LocalDateTime.now());
-            nouveauxParcours.add(nouveauParcours);
-        }
-        if (!nouveauxParcours.isEmpty()) {
-            parcoursRepository.saveAll(nouveauxParcours);
+            // ====================================================================
+            // === VÉRIFICATION ANTI-DOUBLON AJOUTÉE ICI                       ===
+            // ====================================================================
+            boolean existeDeja = parcoursRepository.existsByUtilisateurIdAndChapitreIdAndType(
+                utilisateurId, 
+                chapitre.getId(), 
+                Parcours.TypeParcours.CHOISI
+            );
+
+            if (!existeDeja) {
+                Parcours nouveauParcours = new Parcours();
+                nouveauParcours.setUtilisateur(etudiant);
+                nouveauParcours.setChapitre(chapitre);
+                nouveauParcours.setType(Parcours.TypeParcours.CHOISI);
+                nouveauParcours.setDateAjout(LocalDateTime.now());
+                parcoursRepository.save(nouveauParcours); // On sauvegarde un par un pour la clarté
+            }
         }
     }
 
     @Transactional
     public void enregistrerParcoursRecommande(Long utilisateurId, List<Long> chapitreIds) {
+        if (chapitreIds == null || chapitreIds.isEmpty()) {
+            return; // Rien à faire
+        }
+
         Utilisateur etudiant = utilisateurRepository.findById(utilisateurId)
                 .orElseThrow(() -> new EntityNotFoundException("Utilisateur non trouvé avec l'ID: " + utilisateurId));
+        
         List<Chapitre> chapitres = chapitreRepository.findAllById(chapitreIds);
+        
         for (Chapitre chapitre : chapitres) {
-            boolean existeDeja = parcoursRepository.existsByUtilisateurIdAndChapitreIdAndType(utilisateurId, chapitre.getId(), Parcours.TypeParcours.RECOMMANDE);
+            // ====================================================================
+            // === VÉRIFICATION ANTI-DOUBLON (déjà présente et correcte)        ===
+            // ====================================================================
+            boolean existeDeja = parcoursRepository.existsByUtilisateurIdAndChapitreIdAndType(
+                utilisateurId, 
+                chapitre.getId(), 
+                Parcours.TypeParcours.RECOMMANDE
+            );
+
             if (!existeDeja) {
                 Parcours nouveauParcours = new Parcours();
                 nouveauParcours.setUtilisateur(etudiant);

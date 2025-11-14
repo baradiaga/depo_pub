@@ -5,8 +5,6 @@ package com.moscepa.entity;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.util.ArrayList;
-import java.util.Set; 
-import java.util.HashSet;
 import java.util.List;
 
 @Entity
@@ -37,24 +35,18 @@ public class ElementConstitutif {
     @JoinColumn(name = "enseignant_id")
     private Utilisateur enseignant;
 
-    // ====================================================================
-    // === CORRECTION DE LA RELATION BIDIRECTIONNELLE                   ===
-    // ====================================================================
-    /**
-     * Relation vers les chapitres.
-     * 'mappedBy' doit pointer vers la propriété dans l'entité Chapitre.
-     * Cette propriété s'appelle maintenant 'elementConstitutif'.
-     */
     @OneToMany(
-        mappedBy = "elementConstitutif", // <-- LA CORRECTION EST ICI
+        mappedBy = "elementConstitutif",
         cascade = CascadeType.ALL,
         orphanRemoval = true,
         fetch = FetchType.LAZY
     )
-    @JsonManagedReference // Pour éviter les boucles de sérialisation
+    @JsonManagedReference
     private List<Chapitre> chapitres = new ArrayList<>();
-    @ManyToMany(mappedBy = "matieresInscrites", fetch = FetchType.LAZY)
-    private Set<Utilisateur> etudiantsInscrits = new HashSet<>();
+
+    // ====================================================================
+    // === LA RELATION VERS LES ÉTUDIANTS A ÉTÉ COMPLÈTEMENT SUPPRIMÉE  ===
+    // ====================================================================
 
     // --- Constructeurs ---
     public ElementConstitutif() {}
@@ -70,14 +62,7 @@ public class ElementConstitutif {
         chapitre.setElementConstitutif(null);
     }
 
-    // --- Getters et Setters ---
-     public Set<Utilisateur> getEtudiantsInscrits() {
-        return etudiantsInscrits;
-    }
-
-    public void setEtudiantsInscrits(Set<Utilisateur> etudiantsInscrits) {
-        this.etudiantsInscrits = etudiantsInscrits;
-    }
+    // --- Getters et Setters (sans ceux de etudiantsInscrits) ---
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getNom() { return nom; }

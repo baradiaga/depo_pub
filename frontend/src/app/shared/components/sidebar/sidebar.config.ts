@@ -195,7 +195,7 @@ export const COMPLETE_SIDEBAR_CONFIG: MenuItem[] = [
     children: [
       { label: 'Matières', route: '/app/curriculum/matieres', featureKey: 'matieres' },
       { label: 'Test de connaissance', route: '/app/student/test-connaissance', featureKey: 'test-connaissance' },
-      { label: 'Résultats', route: '/app/student/resultats', featureKey: 'resultats' }
+      { label: 'Mes Résultats', route: '/app/student/mes-resultats', featureKey: 'mes-resultats' }
     ]
   },
   // --- ID 15: Apprentissage asynchrone (Routes corrigées) ---
@@ -296,7 +296,8 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, string[]> = {
     'mes_parcours_etudiant',
     'gestion_remediation',
     'apprentissage_asynchrone',
-    'test-connaissance'
+    'test-connaissance',
+    'mes-resultats'
   ],
 
   // L'ENSEIGNANT a accès à ses outils de création, de suivi et de contenu.

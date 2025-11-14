@@ -1,15 +1,17 @@
-// Fichier : src/app/services/etudiant.service.ts (Version Complète et Corrigée)
+// Fichier : src/app/services/etudiant.service.ts (Version finale avec CRUD complet)
 
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-// Interface pour le payload d'inscription complet
-export interface EtudiantRegistrationPayload {
+// Définissez vos interfaces ici ou importez-les
+export interface EtudiantPayload {
+  id?: number; // L'ID est optionnel (présent pour la mise à jour )
   nom: string;
   prenom: string;
   email: string;
-  motDePasse: string;
+  motDePasse?: string; // Le mot de passe est optionnel pour la mise à jour
+  // ... incluez tous les autres champs de votre formulaire
   dateDeNaissance: string;
   lieuDeNaissance: string;
   nationalite: string;
@@ -18,10 +20,9 @@ export interface EtudiantRegistrationPayload {
   telephone: string;
   anneeAcademique: string;
   filiere: string;
-  matiereIds: number[];
+  matiereIds?: number[];
 }
 
-// Interface simplifiée pour afficher une liste d'étudiants
 export interface EtudiantDto {
   id: number;
   nom: string;
@@ -31,35 +32,48 @@ export interface EtudiantDto {
 
 @Injectable({
   providedIn: 'root'
-} )
+})
 export class EtudiantService {
-  private usersApiUrl = 'http://localhost:8080/api/users';
+  private adminUsersApiUrl = 'http://localhost:8080/api/admin/users';
   private etudiantsApiUrl = 'http://localhost:8080/api/etudiants';
 
   constructor(private http: HttpClient ) { }
 
-  /**
-   * Récupère la liste de tous les utilisateurs ayant le rôle ETUDIANT.
-   */
+  // --- READ (Lecture) ---
   getEtudiants(): Observable<EtudiantDto[]> {
-    return this.http.get<EtudiantDto[]>(`${this.usersApiUrl}/etudiants` );
+    const url = `${this.adminUsersApiUrl}/role/ETUDIANT`;
+    return this.http.get<EtudiantDto[]>(url );
   }
 
+  // ====================================================================
+  // === NOUVELLE MÉTHODE POUR LE MODE ÉDITION                        ===
+  // ====================================================================
   /**
-   * Envoie les données du formulaire d'inscription complet au backend.
+   * Récupère les informations complètes d'un utilisateur par son ID.
    */
-  inscrireNouvelEtudiant(payload: EtudiantRegistrationPayload): Observable<any> {
+  getEtudiantById(id: number): Observable<EtudiantPayload> {
+    // Cet endpoint doit exister dans votre AdminController.java
+    return this.http.get<EtudiantPayload>(`${this.adminUsersApiUrl}/${id}` );
+  }
+
+  // --- CREATE (Création) ---
+  inscrireNouvelEtudiant(payload: EtudiantPayload): Observable<any> {
     return this.http.post(`${this.etudiantsApiUrl}/inscrire`, payload );
   }
 
+  // ====================================================================
+  // === NOUVELLE MÉTHODE POUR LA MISE À JOUR                         ===
+  // ====================================================================
   /**
-   * Supprime un étudiant par son ID.
-   * NOTE : Cette méthode supprime l'UTILISATEUR, pas juste une inscription.
-   * Elle devrait appeler l'API des utilisateurs.
+   * Met à jour les informations d'un étudiant existant.
    */
-  deleteEtudiant(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.usersApiUrl}/${id}` );
+  updateEtudiant(id: number, payload: EtudiantPayload): Observable<any> {
+    // Cet endpoint doit exister dans votre AdminController.java
+    return this.http.put(`${this.adminUsersApiUrl}/${id}`, payload );
   }
 
-  // --- Les autres méthodes peuvent être ajoutées ici au besoin ---
+  // --- DELETE (Suppression) ---
+  deleteEtudiant(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.adminUsersApiUrl}/${id}` );
+  }
 }

@@ -1,0 +1,48 @@
+<!-- Fichier : frontend/src/app/features/student/components/selection-test-connaissance/selection-test-connaissance.component.html -->
+
+<div class="container mt-4">
+  <div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+      <h4 class="mb-0">Lancement d'un Test de Connaissance</h4>
+    </div>
+    <div class="card-body">
+      <p class="card-text">Veuillez sélectionner une matière pour commencer votre évaluation.</p>
+
+      <!-- Affiche un spinner pendant le chargement -->
+      <div *ngIf="isLoading" class="d-flex justify-content-center my-3">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Chargement...</span>
+        </div>
+      </div>
+
+      <!-- Affiche le sélecteur si le chargement est terminé et qu'il y a des matières -->
+      <div *ngIf="!isLoading && matieres.length > 0" class="row align-items-end">
+        <div class="col-md-8">
+          <label for="matiereSelect" class="form-label fw-bold">Choisissez une matière :</label>
+          <select id="matiereSelect" class="form-select form-select-lg" [(ngModel)]="matiereSelectionneeId">
+            <option [ngValue]="null" disabled>-- Sélectionnez votre matière --</option>
+            <option *ngFor="let matiere of matieres" [value]="matiere.id">
+              {{ matiere.nom }}
+            </option>
+          </select>
+        </div>
+        <div class="col-md-4 d-grid">
+          <!-- Le bouton "Démarrer le test" -->
+          <button 
+            class="btn btn-success btn-lg" 
+            (click)="demarrerTest()" 
+            [disabled]="!matiereSelectionneeId">
+            <i class="bi bi-play-circle-fill me-2"></i>
+            Démarrer le test
+          </button>
+        </div>
+      </div>
+
+      <!-- Affiche un message si aucune matière n'est disponible -->
+      <div *ngIf="!isLoading && matieres.length === 0" class="alert alert-warning text-center" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        Aucune matière n'est disponible pour un test de connaissance pour le moment.
+      </div>
+    </div>
+  </div>
+</div>

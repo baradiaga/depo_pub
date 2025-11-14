@@ -1,8 +1,14 @@
+// Fichier : src/app/features/student/components/testdeconnaissance/testdeconnaissance.component.ts (Version mise à jour)
+
 import { Component, OnInit } from '@angular/core';
-import { Observable, BehaviorSubject, switchMap, of, tap, catchError } from 'rxjs';
-import { RecommandationTestService, ElementConstitutif, ChapitreTest, MatiereSelection } from '../../../../services/recommandation-test.service';
+import { Observable, BehaviorSubject, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
 import { Router } from '@angular/router';
+
+// On va supposer que ces interfaces viennent de votre service.
+// On simplifie pour n'avoir besoin que de la liste des matières.
+import { RecommandationTestService, MatiereSelection } from '../../../../services/recommandation-test.service';
 
 @Component({
   selector: 'app-testdeconnaissance',
@@ -12,11 +18,11 @@ import { Router } from '@angular/router';
 export class TestdeconnaissanceComponent implements OnInit {
 
   matieres$!: Observable<MatiereSelection[]>;
-  ecDetails$!: Observable<ElementConstitutif | undefined>;
-  private selectedMatiereIdSubject = new BehaviorSubject<number | null>(null);
+  
+  // On garde juste une trace de l'ID sélectionné.
+  selectedMatiereId: number | null = null;
   
   isLoading = true;
-  isDetailsLoading = false;
 
   constructor(
     private recoTestService: RecommandationTestService,
@@ -25,10 +31,10 @@ export class TestdeconnaissanceComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    // On charge la liste des matières disponibles pour l'étudiant.
     this.matieres$ = this.recoTestService.getListeMatieres().pipe(
       catchError(err => {
-        console.error("Erreur critique lors du chargement des matières:", err);
-        this.toastr.error("Impossible de charger la liste des matières. Vérifiez la console.", "Erreur Réseau");
+        this.toastr.error("Impossible de charger la liste des matières.", "Erreur Réseau");
         this.isLoading = false;
         return of([]);
       })
@@ -37,27 +43,30 @@ export class TestdeconnaissanceComponent implements OnInit {
     this.matieres$.subscribe(() => {
       this.isLoading = false;
     });
-
-    this.ecDetails$ = this.selectedMatiereIdSubject.pipe(
-      switchMap(id => {
-        if (id) {
-          this.isDetailsLoading = true;
-          return this.recoTestService.getDetailsEC(id).pipe(
-            tap(() => this.isDetailsLoading = false)
-          );
-        }
-        return of(undefined);
-      })
-    );
   }
 
+  // Met à jour l'ID de la matière sélectionnée.
   onSelectMatiere(event: Event): void {
     const selectElement = event.target as HTMLSelectElement;
-    this.selectedMatiereIdSubject.next(selectElement.value ? Number(selectElement.value) : null);
+    this.selectedMatiereId = selectElement.value ? Number(selectElement.value) : null;
   }
 
-  onStartTest(chapitre: ChapitreTest): void {
-    this.toastr.info(`Préparation du test pour : ${chapitre.nom}`, 'Test de connaissance');
-    this.router.navigate(['/admin/passer-test', chapitre.id]);
+  // ====================================================================
+  // === NOUVELLE LOGIQUE POUR LANCER LE TEST GLOBAL                  ===
+  // ====================================================================
+  /**
+   * Redirige l'utilisateur vers la page de test en passant l'ID de la matière.
+   */
+  lancerTestDeConnaissance(): void {
+    if (!this.selectedMatiereId) {
+      this.toastr.warning("Veuillez d'abord sélectionner une matière.");
+      return;
+    }
+
+    this.toastr.info("Préparation du test de connaissance...", "Lancement");
+    
+    // On navigue vers une nouvelle route qui sera dédiée à l'affichage du test de connaissance.
+    // On passe l'ID de la matière dans l'URL.
+    this.router.navigate(['/app/student/test-connaissance/passer', this.selectedMatiereId]);
   }
 }

@@ -22,9 +22,9 @@ public interface UtilisateurRepository extends JpaRepository<Utilisateur, Long> 
     List<Utilisateur> findByRole(Role role);
 
     // --- Surcharge de findById pour forcer le chargement des matières ---
-    @Override
-    @EntityGraph(attributePaths = "matieresInscrites")
-    Optional<Utilisateur> findById(Long id);
+    //@Override
+    //@EntityGraph(attributePaths = "matieresInscrites")
+    //Optional<Utilisateur> findById(Long id);
 
     // ====================================================================
     // === VOS MÉTHODES PERSONNALISÉES RÉ-AJOUTÉES ICI                  ===
@@ -50,4 +50,5 @@ public interface UtilisateurRepository extends JpaRepository<Utilisateur, Long> 
 
     @Query("SELECT u FROM Utilisateur u WHERE u.role = 'ADMIN'")
     List<Utilisateur> findAllAdmins();
+     List<Utilisateur> findByRole(String role);
 }

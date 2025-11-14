@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ChapitreService } from '../../../services/chapitre.service'; // On importe seulement le service
-import { ChapitrePayload } from '../../../services/models'; // On importe le payload depuis models.ts
+import { ChapitrePayload } from '../../../models/models'; // On importe le payload depuis models.ts
 import { ElementConstitutifService } from '../../../services/element-constitutif.service';
 import { ToastrService } from 'ngx-toastr';
 

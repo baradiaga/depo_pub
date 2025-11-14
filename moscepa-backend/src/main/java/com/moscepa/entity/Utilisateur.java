@@ -1,4 +1,4 @@
-// Fichier : src/main/java/com/moscepa/entity/Utilisateur.java (Version Finale et Propre)
+// Fichier : src/main/java/com/moscepa/entity/Utilisateur.java (Version Finale et Corrigée)
 
 package com.moscepa.entity;
 
@@ -63,17 +63,7 @@ public class Utilisateur {
 
     private String filiere;
     
-    // --- Relation pour les inscriptions aux matières ---
-    @ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
-    @JoinTable(
-        name = "moscepa_inscriptions",
-        joinColumns = @JoinColumn(name = "etudiant_id"),
-        inverseJoinColumns = @JoinColumn(name = "ec_id")
-    )
-    // ====================================================================
-    // === LE NOM EST MAINTENANT COHÉRENT PARTOUT                       ===
-    // ====================================================================
-    private Set<ElementConstitutif> matieresInscrites = new HashSet<>();
+    // La relation @ManyToMany vers les matières a été correctement supprimée.
 
     // --- Timestamps ---
     @CreationTimestamp
@@ -83,8 +73,8 @@ public class Utilisateur {
     @UpdateTimestamp
     private LocalDateTime dateModification;
     
-    // --- Permissions (si vous les utilisez) ---
-    @ManyToMany(fetch = FetchType.LAZY)
+    // --- Permissions (CORRIGÉ) ---
+    @ManyToMany(fetch = FetchType.LAZY) // <-- L'annotation est maintenant correctement présente
     @JoinTable(
         name = "moscepa_utilisateur_permissions",
         joinColumns = @JoinColumn(name = "utilisateur_id"),
@@ -133,15 +123,4 @@ public class Utilisateur {
     public void setDateModification(LocalDateTime dateModification) { this.dateModification = dateModification; }
     public Set<Permission> getPermissions() { return permissions; }
     public void setPermissions(Set<Permission> permissions) { this.permissions = permissions; }
-
-    // ====================================================================
-    // === GETTER ET SETTER COHÉRENTS                                   ===
-    // ====================================================================
-    public Set<ElementConstitutif> getMatieresInscrites() { 
-        return this.matieresInscrites;
-    }
-
-    public void setMatieresInscrites(Set<ElementConstitutif> matieresInscrites) { 
-        this.matieresInscrites = matieresInscrites;
-    }
 }

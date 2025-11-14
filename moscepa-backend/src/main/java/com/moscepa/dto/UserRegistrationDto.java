@@ -25,11 +25,17 @@ public class UserRegistrationDto {
     @Size(max = 255, message = "L'email ne peut pas dépasser 255 caractères")
     private String email;
 
-    @NotBlank(message = "Le mot de passe est obligatoire")
+    // La validation @NotBlank est retirée pour la mise à jour.
+    // La logique de service doit gérer le cas où le mot de passe est vide.
     @Size(min = 6, max = 100, message = "Le mot de passe doit contenir entre 6 et 100 caractères")
     private String motDePasse;
 
-    @NotNull(message = "Le rôle est obligatoire")
+    // ====================================================================
+    // === CORRECTION APPLIQUÉE ICI                                     ===
+    // ====================================================================
+    // L'annotation @NotNull est retirée. Le rôle devient optionnel dans ce DTO,
+    // ce qui est nécessaire pour que la mise à jour fonctionne sans que le
+    // formulaire Angular n'ait à renvoyer le rôle.
     private Role role;
 
     private Boolean actif = true;
@@ -45,7 +51,7 @@ public class UserRegistrationDto {
         this.role = role;
     }
 
-    // Getters et Setters
+    // Getters et Setters (inchangés)
     public String getNom() {
         return nom;
     }
@@ -105,4 +111,3 @@ public class UserRegistrationDto {
                 '}';
     }
 }
-

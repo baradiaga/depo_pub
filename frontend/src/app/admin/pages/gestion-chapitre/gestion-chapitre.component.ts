@@ -1,15 +1,17 @@
-// Fichier : src/app/admin/pages/gestion-chapitre/gestion-chapitre.component.ts (Corrigé et Final)
+// Fichier : gestion-chapitre.component.ts (Version corrigée et robuste)
 
 import { Component, OnInit } from '@angular/core';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
 import { forkJoin, Observable } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 
-// --- IMPORTS CORRIGÉS ET CENTRALISÉS ---
+// --- Services ---
 import { ChapitreService } from '../../../services/chapitre.service';
 import { SectionService } from '../../../services/section.service';
 import { ElementConstitutifService } from '../../../services/element-constitutif.service';
-import { Chapitre, Section, ElementConstitutifResponse } from '../../../services/models'; // On utilise le fichier central
+
+// --- Modèles ---
+import { Chapitre, Section, ElementConstitutifResponse } from '../../../models/models';
 
 @Component({
   selector: 'app-gestion-chapitre',
@@ -60,7 +62,16 @@ export class GestionChapitreComponent implements OnInit {
       .subscribe({
         next: (chapitre: Chapitre) => {
           this.chapitreCharge = chapitre;
+
+          // --- DÉBUT DE LA CORRECTION (Solution 3) ---
+          // On s'assure que 'sections' est TOUJOURS un tableau.
+          // Si la propriété est absente (undefined) ou null, on l'initialise comme un tableau vide.
+          this.chapitreCharge.sections = this.chapitreCharge.sections || [];
+          
+          // Maintenant, le forEach peut s'exécuter en toute sécurité, même si le tableau est vide.
           this.chapitreCharge.sections.forEach(s => s.contenu = s.contenu || '');
+          // --- FIN DE LA CORRECTION ---
+
           this.isLoading = false;
         },
         error: (err: any) => {
@@ -78,7 +89,8 @@ export class GestionChapitreComponent implements OnInit {
       return;
     }
 
-    // L'appel est maintenant correct car tout le monde utilise la même interface 'Section'.
+    // Grâce à la correction, this.chapitreCharge.sections est garanti d'être un tableau,
+    // donc cet appel est également plus sûr.
     const updateObservables = this.chapitreCharge.sections.map((section: Section) => 
       this.sectionService.updateContenu(section)
     );

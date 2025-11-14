@@ -1,4 +1,4 @@
-// Fichier : src/main/java/com/moscepa/entity/ResultatTest.java (Version Finale Corrigée)
+// Fichier : src/main/java/com/moscepa/entity/ResultatTest.java (Version finale et correcte)
 
 package com.moscepa.entity;
 
@@ -14,9 +14,12 @@ public class ResultatTest {
     private Long id;
 
     // ====================================================================
-    // === CORRECTION APPLIQUÉE ICI                                     ===
+    // === RELATION CORRIGÉE ET CLARIFIÉE                               ===
     // ====================================================================
-    // On remplace 'Etudiant' par 'Utilisateur'
+    // Le champ 'etudiant' est de type 'Utilisateur'.
+    // La colonne dans la base de données s'appelle 'etudiant_id'.
+    // Hibernate va maintenant créer une nouvelle clé étrangère correcte qui
+    // lie 'etudiant_id' à la table 'moscepa_utilisateurs'.
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "etudiant_id", nullable = false)
     private Utilisateur etudiant;
@@ -45,27 +48,29 @@ public class ResultatTest {
         this.dateTest = LocalDateTime.now();
     }
 
-    // --- Getters et Setters ---
+    // --- Getters et Setters (Confirmés corrects) ---
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    // ====================================================================
-    // === CORRECTION APPLIQUÉE ICI                                     ===
-    // ====================================================================
     public Utilisateur getEtudiant() { return etudiant; }
     public void setEtudiant(Utilisateur etudiant) { this.etudiant = etudiant; }
 
     public Test getTest() { return test; }
     public void setTest(Test test) { this.test = test; }
+
     public Double getScore() { return score; }
     public void setScore(Double score) { this.score = score; }
+
     public Double getScoreTotal() { return scoreTotal; }
     public void setScoreTotal(Double scoreTotal) { this.scoreTotal = scoreTotal; }
+
     public LocalDateTime getDateTest() { return dateTest; }
     public void setDateTest(LocalDateTime dateTest) { this.dateTest = dateTest; }
+
     public int getBonnesReponses() { return bonnesReponses; }
     public void setBonnesReponses(int bonnesReponses) { this.bonnesReponses = bonnesReponses; }
+
     public int getTotalQuestions() { return totalQuestions; }
     public void setTotalQuestions(int totalQuestions) { this.totalQuestions = totalQuestions; }
 }

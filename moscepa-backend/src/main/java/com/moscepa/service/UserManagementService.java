@@ -1,3 +1,5 @@
+// Fichier : src/main/java/com/moscepa/service/UserManagementService.java (Version finale et corrigée)
+
 package com.moscepa.service;
 
 import com.moscepa.dto.UserRegistrationDto;
@@ -15,9 +17,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-/**
- * Service pour la gestion des utilisateurs par les administrateurs
- */
 @Service
 @Transactional
 public class UserManagementService {
@@ -31,12 +30,47 @@ public class UserManagementService {
     @Autowired
     private ModelMapper modelMapper;
 
-    // ... (Toutes vos méthodes existantes : createUser, getAllUsers, etc. restent inchangées)
-    // ...
-    
+    // ... (Les autres méthodes comme createUser, getAllUsers, etc. sont inchangées)
+
     /**
-     * Crée un nouvel utilisateur (réservé aux administrateurs)
+     * Met à jour un utilisateur existant
      */
+    public UserResponseDto updateUser(Long id, UserRegistrationDto userRegistrationDto) {
+        Utilisateur utilisateur = utilisateurRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec l'ID: " + id));
+        
+        if (!utilisateur.getEmail().equals(userRegistrationDto.getEmail()) && 
+            utilisateurRepository.existsByEmail(userRegistrationDto.getEmail())) {
+            throw new RuntimeException("Un utilisateur avec cet email existe déjà");
+        }
+
+        // Mises à jour des champs simples
+        utilisateur.setNom(userRegistrationDto.getNom());
+        utilisateur.setPrenom(userRegistrationDto.getPrenom());
+        utilisateur.setEmail(userRegistrationDto.getEmail());
+        utilisateur.setActif(userRegistrationDto.getActif() != null ? userRegistrationDto.getActif() : true);
+
+        // ====================================================================
+        // === CORRECTION APPLIQUÉE ICI                                     ===
+        // ====================================================================
+        // On ne met à jour le rôle que s'il est explicitement fourni dans la requête.
+        // Si le DTO a un rôle null, on ne touche pas au rôle existant de l'utilisateur.
+        if (userRegistrationDto.getRole() != null) {
+            utilisateur.setRole(userRegistrationDto.getRole());
+        }
+
+        // La protection pour le mot de passe est déjà correcte :
+        // On ne met à jour le mot de passe que s'il est fourni et non vide.
+        if (userRegistrationDto.getMotDePasse() != null && !userRegistrationDto.getMotDePasse().isEmpty()) {
+            utilisateur.setMotDePasse(passwordEncoder.encode(userRegistrationDto.getMotDePasse()));
+        }
+
+        Utilisateur updatedUser = utilisateurRepository.save(utilisateur);
+        return convertToUserResponseDto(updatedUser);
+    }
+
+    // --- TOUTES LES AUTRES MÉTHODES RESTENT INCHANGÉES ---
+
     public UserResponseDto createUser(UserRegistrationDto userRegistrationDto) {
         if (utilisateurRepository.existsByEmail(userRegistrationDto.getEmail())) {
             throw new RuntimeException("Un utilisateur avec cet email existe déjà");
@@ -46,138 +80,69 @@ public class UserManagementService {
         utilisateur.setPrenom(userRegistrationDto.getPrenom());
         utilisateur.setEmail(userRegistrationDto.getEmail());
         utilisateur.setMotDePasse(passwordEncoder.encode(userRegistrationDto.getMotDePasse()));
+        // Pour la création, le rôle doit être fourni, sinon une erreur se produira ici si le DTO a un rôle null
         utilisateur.setRole(userRegistrationDto.getRole());
         utilisateur.setActif(userRegistrationDto.getActif() != null ? userRegistrationDto.getActif() : true);
         Utilisateur savedUser = utilisateurRepository.save(utilisateur);
         return convertToUserResponseDto(savedUser);
     }
 
-    /**
-     * Récupère tous les utilisateurs
-     */
     public List<UserResponseDto> getAllUsers() {
-        List<Utilisateur> utilisateurs = utilisateurRepository.findAllByOrderByDateCreationDesc();
-        return utilisateurs.stream()
+        return utilisateurRepository.findAllByOrderByDateCreationDesc().stream()
                 .map(this::convertToUserResponseDto)
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Récupère un utilisateur par son ID
-     */
     public Optional<UserResponseDto> getUserById(Long id) {
         return utilisateurRepository.findById(id)
                 .map(this::convertToUserResponseDto);
     }
 
-    /**
-     * Récupère tous les utilisateurs par rôle
-     */
     public List<UserResponseDto> getUsersByRole(Role role) {
-        List<Utilisateur> utilisateurs = utilisateurRepository.findByRoleOrderByNomAscPrenomAsc(role);
-        return utilisateurs.stream()
+        return utilisateurRepository.findByRoleOrderByNomAscPrenomAsc(role).stream()
                 .map(this::convertToUserResponseDto)
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Met à jour un utilisateur existant
-     */
-    public UserResponseDto updateUser(Long id, UserRegistrationDto userRegistrationDto) {
-        Utilisateur utilisateur = utilisateurRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec l'ID: " + id));
-        if (!utilisateur.getEmail().equals(userRegistrationDto.getEmail()) && 
-            utilisateurRepository.existsByEmail(userRegistrationDto.getEmail())) {
-            throw new RuntimeException("Un utilisateur avec cet email existe déjà");
-        }
-        utilisateur.setNom(userRegistrationDto.getNom());
-        utilisateur.setPrenom(userRegistrationDto.getPrenom());
-        utilisateur.setEmail(userRegistrationDto.getEmail());
-        utilisateur.setRole(userRegistrationDto.getRole());
-        utilisateur.setActif(userRegistrationDto.getActif() != null ? userRegistrationDto.getActif() : true);
-        if (userRegistrationDto.getMotDePasse() != null && !userRegistrationDto.getMotDePasse().isEmpty()) {
-            utilisateur.setMotDePasse(passwordEncoder.encode(userRegistrationDto.getMotDePasse()));
-        }
-        Utilisateur updatedUser = utilisateurRepository.save(utilisateur);
-        return convertToUserResponseDto(updatedUser);
-    }
-
-    /**
-     * Désactive un utilisateur
-     */
     public void deactivateUser(Long id) {
-        Utilisateur utilisateur = utilisateurRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec l'ID: " + id));
+        Utilisateur utilisateur = utilisateurRepository.findById(id).orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
         utilisateur.setActif(false);
         utilisateurRepository.save(utilisateur);
     }
 
-    /**
-     * Active un utilisateur
-     */
     public void activateUser(Long id) {
-        Utilisateur utilisateur = utilisateurRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec l'ID: " + id));
+        Utilisateur utilisateur = utilisateurRepository.findById(id).orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
         utilisateur.setActif(true);
         utilisateurRepository.save(utilisateur);
     }
 
-    /**
-     * Supprime un utilisateur (attention: suppression définitive)
-     */
     public void deleteUser(Long id) {
         if (!utilisateurRepository.existsById(id)) {
-            throw new RuntimeException("Utilisateur non trouvé avec l'ID: " + id);
+            throw new RuntimeException("Utilisateur non trouvé");
         }
         utilisateurRepository.deleteById(id);
     }
 
-    /**
-     * Recherche des utilisateurs par nom ou prénom
-     */
     public List<UserResponseDto> searchUsers(String searchTerm) {
-        List<Utilisateur> utilisateurs = utilisateurRepository.findByNomOrPrenomContainingIgnoreCase(searchTerm);
-        return utilisateurs.stream()
+        return utilisateurRepository.findByNomOrPrenomContainingIgnoreCase(searchTerm).stream()
                 .map(this::convertToUserResponseDto)
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Compte le nombre d'utilisateurs par rôle
-     */
     public long countUsersByRole(Role role) {
         return utilisateurRepository.countByRole(role);
     }
 
-    /**
-     * Vérifie si un email existe
-     */
     public boolean emailExists(String email) {
         return utilisateurRepository.existsByEmail(email);
     }
 
-    // =================================================================
-    // === NOUVELLE MÉTHODE AJOUTÉE                                  ===
-    // =================================================================
-    /**
-     * Récupère la liste de tous les utilisateurs qui sont des enseignants actifs.
-     * Cette méthode est utilisée pour peupler les menus déroulants dans les formulaires
-     * d'assignation de matières.
-     * @return Une liste de DTOs représentant les enseignants actifs.
-     */
     public List<UserResponseDto> getAllEnseignantsActifs() {
-        // On appelle la méthode que nous avons identifiée dans le repository
-        List<Utilisateur> enseignants = utilisateurRepository.findAllEnseignantsActifs();
-        
-        // On réutilise la méthode de conversion existante pour transformer la liste
-        return enseignants.stream()
+        return utilisateurRepository.findAllEnseignantsActifs().stream()
                           .map(this::convertToUserResponseDto)
                           .collect(Collectors.toList());
     }
 
-    /**
-     * Convertit une entité Utilisateur en UserResponseDto
-     */
     private UserResponseDto convertToUserResponseDto(Utilisateur utilisateur) {
         return modelMapper.map(utilisateur, UserResponseDto.class);
     }

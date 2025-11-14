@@ -1,28 +1,37 @@
-// Fichier : ElementConstitutifRepository.java (Version Finale et Complète)
+// Fichier : ElementConstitutifRepository.java (Version "Double Recherche")
 
 package com.moscepa.repository;
-import org.springframework.data.jpa.repository.EntityGraph;
+
 import com.moscepa.entity.ElementConstitutif;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
 import java.util.List;
 import java.util.Optional;
 
 public interface ElementConstitutifRepository extends JpaRepository<ElementConstitutif, Long> {
     
+    // --- Vos méthodes existantes (INCHANGÉES) ---
     List<ElementConstitutif> findByEnseignantId(Long enseignantId);
-
     List<ElementConstitutif> findByUniteEnseignementId(Long ueId);
-
     Optional<ElementConstitutif> findByNom(String nom);
-     @EntityGraph(attributePaths = {"chapitres"})
+    @EntityGraph(attributePaths = {"chapitres"})
     Optional<ElementConstitutif> findById(Long id);
+    long countByUniteEnseignementId(Long uniteEnseignementId);
 
     // ====================================================================
-    // === MÉTHODE MANQUANTE AJOUTÉE ICI                                ===
+    // === CORRECTION ULTIME : ON CHERCHE DANS LES DEUX TABLES À LA FOIS ===
     // ====================================================================
-    /**
-     * Compte le nombre d'Éléments Constitutifs liés à une Unité d'Enseignement.
-     * Utilisé pour empêcher la suppression d'une UE si elle n'est pas vide.
-     */
-    long countByUniteEnseignementId(Long uniteEnseignementId);
+    @Query(
+        value = "SELECT ec.* FROM moscepa_elements_constitutifs ec " +
+                "WHERE ec.id IN (" +
+                "    SELECT i1.ec_id FROM moscepa_inscriptions i1 WHERE i1.etudiant_id = :etudiantId" +
+                "    UNION" +
+                "    SELECT i2.ec_id FROM moscepa_inscriptions_ec i2 WHERE i2.etudiant_id = :etudiantId" +
+                ")",
+        nativeQuery = true
+    )
+    List<ElementConstitutif> findMatieresByEtudiantIdSqlNatif(@Param("etudiantId") Long etudiantId);
 }

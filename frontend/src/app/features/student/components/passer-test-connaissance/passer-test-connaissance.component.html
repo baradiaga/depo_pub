@@ -1,0 +1,105 @@
+<!-- Fichier : src/app/features/student/pages/passer-test-connaissance/passer-test-connaissance.component.html -->
+
+<div class="container mt-5">
+  <!-- Indicateur de chargement -->
+  <div *ngIf="isLoading" class="text-center">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Chargement...</span>
+    </div>
+    <p>Construction de votre test de connaissance...</p>
+  </div>
+
+  <!-- Contenu du test (affiché une fois le chargement terminé) -->
+  <div *ngIf="!isLoading && questions.length > 0">
+    <div class="card shadow-sm">
+      <div class="card-header">
+        <div class="d-flex justify-content-between align-items-center">
+          <h3>Test de Connaissance</h3>
+          <!-- Le chronomètre -->
+          <div *ngIf="dureeTestEnMinutes > 0" class="timer-display fw-bold fs-4">
+            <i class="icon-clock me-2"></i>{{ tempsAffiche }}
+          </div>
+        </div>
+        
+        <!-- La barre de progression -->
+        <div class="progress-container mt-3">
+          <div class="progress" style="height: 20px;">
+            <div 
+              class="progress-bar progress-bar-striped progress-bar-animated" 
+              role="progressbar" 
+              [style.width.%]="calculerProgression()"
+              [attr.aria-valuenow]="calculerProgression()" 
+              aria-valuemin="0" 
+              aria-valuemax="100">
+              {{ calculerProgression() | number:'1.0-0' }}%
+            </div>
+          </div>
+          <p class="text-muted mt-1 mb-0">Question {{ page }} sur {{ totalPages }}</p>
+        </div>
+      </div>
+      <div class="card-body">
+        <!-- Boucle sur les questions de la page actuelle -->
+        <div *ngFor="let q of displayedQuestions; let i = index" class="mb-4 border-bottom pb-3">
+          <p><strong>Question {{ page }}:</strong> {{ q.enonce }}</p>
+          
+          <!-- Affichage des options en fonction du type de question -->
+          <div [ngSwitch]="q.type">
+            
+            <!-- Cas QCU (Question à Choix Unique) -->
+            <div *ngSwitchCase="'QCU'">
+              <div *ngFor="let reponse of q.reponses" class="form-check">
+                <input class="form-check-input" type="radio" [name]="'question-' + q.id" [id]="'reponse-' + reponse.id" (change)="choisirReponse(q.id, reponse.id)">
+                <label class="form-check-label" [for]="'reponse-' + reponse.id">{{ reponse.texte }}</label>
+              </div>
+            </div>
+
+            <!-- Cas QCM (Question à Choix Multiples) -->
+            <div *ngSwitchCase="'QCM'">
+              <div *ngFor="let reponse of q.reponses" class="form-check">
+                <input class="form-check-input" type="checkbox" [id]="'reponse-' + reponse.id" (change)="choisirReponseMultiple(q.id, reponse.id, $event)">
+                <label class="form-check-label" [for]="'reponse-' + reponse.id">{{ reponse.texte }}</label>
+              </div>
+            </div>
+
+            <!-- Cas Vrai/Faux -->
+            <div *ngSwitchCase="'VRAI_FAUX'">
+              <div class="form-check">
+                <input class="form-check-input" type="radio" [name]="'question-' + q.id" [id]="'vrai-' + q.id" (change)="choisirReponseVraiFaux(q.id, true)">
+                <label class="form-check-label" [for]="'vrai-' + q.id">Vrai</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" [name]="'question-' + q.id" [id]="'faux-' + q.id" (change)="choisirReponseVraiFaux(q.id, false)">
+                <label class="form-check-label" [for]="'faux-' + q.id">Faux</label>
+              </div>
+            </div>
+
+            <!-- Cas Texte Libre -->
+            <div *ngSwitchCase="'TEXTE_LIBRE'">
+              <textarea class="form-control" rows="3" (blur)="saisirReponseTexte(q.id, $event)"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pied de page avec la pagination et le bouton de validation -->
+      <div class="card-footer d-flex justify-content-between align-items-center">
+        <button class="btn btn-secondary" (click)="precedent()" [disabled]="page <= 1">Précédent</button>
+        
+        <!-- Le bouton "Valider" n'apparaît que sur la dernière page -->
+        <button *ngIf="page === totalPages" class="btn btn-success" (click)="validerTest()" [disabled]="isSubmitting">
+          <span *ngIf="!isSubmitting">Terminer le Test</span>
+          <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+          <span *ngIf="isSubmitting"> Soumission...</span>
+        </button>
+
+        <button class="btn btn-primary" (click)="suivant()" [disabled]="page >= totalPages">Suivant</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Message si aucune question n'est trouvée -->
+  <div *ngIf="!isLoading && questions.length === 0" class="alert alert-info text-center">
+    <p>Aucune question n'est disponible pour ce test de connaissance pour le moment.</p>
+    <p>Veuillez contacter un administrateur pour enrichir la banque de questions de cette matière.</p>
+  </div>
+</div>

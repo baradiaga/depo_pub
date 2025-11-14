@@ -10,7 +10,7 @@ import { UniteEnseignement, UniteEnseignementService } from '../../../services/u
 import { ElementConstitutifService } from '../../../services/element-constitutif.service';
 
 // On importe les INTERFACES depuis le fichier central 'models.ts'
-import { ElementConstitutifResponse, ElementConstitutifRequest } from '../../../services/models';
+import { ElementConstitutifResponse, ElementConstitutifRequest } from '../../../models/models';
 import { UtilisateurService, UserResponseDto } from '../../../services/utilisateur.service';
 
 @Component({

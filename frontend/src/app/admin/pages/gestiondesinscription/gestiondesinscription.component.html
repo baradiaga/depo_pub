@@ -1,58 +1,46 @@
-<!-- Fichier : src/app/admin/pages/gestiondesinscription/gestiondesinscription.component.html (Corrigé) -->
-
 <div class="container mt-4">
   <div class="card shadow-sm">
     <div class="card-header d-flex justify-content-between align-items-center">
-      <h2>Gestion des Inscriptions</h2>
+      <h2>Gestion des Étudiants</h2>
       <button class="btn btn-primary" (click)="inscrireEtudiant()">
-        <i class="fas fa-plus me-1"></i> Inscrire un Étudiant
+        <i class="fas fa-user-plus me-1"></i> Ajouter un Étudiant
       </button>
     </div>
     <div class="card-body">
-      
-      <!-- Indicateur de chargement -->
+      <div class="mb-3">
+        <div class="input-group">
+          <span class="input-group-text"><i class="fas fa-search"></i></span>
+          <input type="text" class="form-control" placeholder="Rechercher par nom, prénom ou email..." [(ngModel)]="termeDeRecherche" (input)="filtrerEtudiants()">
+        </div>
+      </div>
       <div *ngIf="isLoading" class="text-center my-5">
-        <div class="spinner-border text-primary" role="status"></div>
-        <p class="mt-2">Chargement des inscriptions...</p>
+        <div class="spinner-border text-primary"></div>
       </div>
-
-      <!-- Message si aucune inscription n'est trouvée -->
-      <div *ngIf="!isLoading && inscriptions.length === 0" class="alert alert-info">
-        Aucun étudiant n'est inscrit pour le moment. Cliquez sur "Inscrire un Étudiant" pour commencer.
-      </div>
-
-      <!-- Tableau des inscriptions -->
-      <div *ngIf="!isLoading && inscriptions.length > 0" class="table-responsive">
+      <div *ngIf="!isLoading && etudiantsFiltres.length > 0" class="table-responsive">
         <table class="table table-hover align-middle">
           <thead class="table-light">
             <tr>
-              <th scope="col">Nom Complet</th>
-              <th scope="col">Email</th>
-              <!-- Les colonnes 'Filière' et 'Année' ont été retirées car les données ne sont plus disponibles ici -->
-              <th scope="col" class="text-center">Actions</th>
+              <th>Nom Complet</th>
+              <th>Email</th>
+              <th class="text-center">Actions</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let etudiant of inscriptions">
-              <td>
-                <strong>{{ etudiant.prenom }} {{ etudiant.nom }}</strong>
-              </td>
+            <tr *ngFor="let etudiant of etudiantsFiltres">
+              <td>{{ etudiant.prenom }} {{ etudiant.nom }}</td>
               <td>{{ etudiant.email }}</td>
               <td class="text-center">
-                <!-- Le bouton 'Modifier' est désactivé pour l'instant car la logique a changé -->
-                <button class="btn btn-sm btn-outline-secondary me-2" (click)="modifierInscription(etudiant.id)" disabled title="Logique de modification à revoir">
-                  <i class="fas fa-pencil-alt"></i>
-                </button>
-                <!-- Le bouton 'Supprimer' est désactivé car il faut supprimer une inscription spécifique (étudiant + matière), pas l'étudiant lui-même -->
-                <button class="btn btn-sm btn-outline-danger" (click)="supprimerInscription(etudiant.id)" disabled title="Logique de suppression à revoir">
-                  <i class="fas fa-trash"></i>
-                </button>
+                <button class="btn btn-sm btn-outline-secondary me-2" (click)="modifierInscription(etudiant.id)">Modifier</button>
+                <button class="btn btn-sm btn-outline-danger" (click)="supprimerInscription(etudiant.id)">Supprimer</button>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
-
+      <div *ngIf="!isLoading && etudiantsFiltres.length === 0" class="alert alert-info text-center">
+        <span *ngIf="termeDeRecherche">Aucun étudiant ne correspond à votre recherche.</span>
+        <span *ngIf="!termeDeRecherche">Aucun étudiant n'est inscrit.</span>
+      </div>
     </div>
   </div>
 </div>

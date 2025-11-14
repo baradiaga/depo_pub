@@ -1,1 +1,64 @@
-<p>resultats works!</p>
+<!-- Fichier : src/app/features/student/components/resultats/resultats.component.html (Version finale) -->
+
+<div class="container mt-5">
+  <div class="card shadow-sm">
+    <div class="card-header">
+      <h2>Mes Résultats</h2>
+      <p class="text-muted">Historique de tous les tests que vous avez passés.</p>
+    </div>
+    <div class="card-body">
+      
+      <!-- Indicateur de chargement -->
+      <div *ngIf="isLoading" class="text-center my-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Chargement...</span>
+        </div>
+        <p class="mt-2">Chargement de votre historique...</p>
+      </div>
+
+      <!-- Contenu principal : le tableau des résultats -->
+      <!-- On utilise le pipe 'async' pour souscrire automatiquement à l'Observable 'historique$' -->
+      <ng-container *ngIf="historique$ | async as resultats; else noResultsTemplate">
+        <div *ngIf="resultats.length > 0; else noResultsTemplate" class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
+              <tr>
+                <th scope="col">Nom du Test</th>
+                <th scope="col">Date de Soumission</th>
+                <th scope="col" class="text-center">Score</th>
+                <th scope="col" class="text-center">Pourcentage</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- On boucle sur chaque résultat de l'historique -->
+              <tr *ngFor="let resultat of resultats">
+                <td><strong>{{ resultat.nomChapitre }}</strong></td>
+                <td>
+                  <!-- Le pipe 'date' formate la date pour une meilleure lisibilité -->
+                  {{ resultat.dateSoumission | date:'dd/MM/yyyy à HH:mm' }}
+                </td>
+                <td class="text-center">
+                  {{ resultat.scoreObtenu | number:'1.1-1' }} / {{ resultat.scoreTotalPossible | number:'1.1-1' }}
+                </td>
+                <td class="text-center">
+                  <!-- On utilise un badge Bootstrap dont la couleur dépend du score -->
+                  <span class="badge rounded-pill fs-6" [ngClass]="getBadgeClass(resultat.pourcentage)">
+                    {{ resultat.pourcentage | number:'1.0-0' }}%
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-container>
+
+      <!-- Template affiché si aucun résultat n'est trouvé -->
+      <ng-template #noResultsTemplate>
+        <div *ngIf="!isLoading" class="alert alert-info text-center mt-3">
+          <p class="mb-0">Vous n'avez pas encore passé de test. Votre historique apparaîtra ici une fois que vous aurez soumis votre premier test.</p>
+        </div>
+      </ng-template>
+
+    </div>
+  </div>
+</div>

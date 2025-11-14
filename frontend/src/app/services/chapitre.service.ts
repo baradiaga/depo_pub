@@ -1,14 +1,27 @@
-// Fichier : src/app/services/chapitre.service.ts (Corrigé avec notification)
+// Fichier : src/app/services/chapitre.service.ts (Version mise à jour)
 
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { tap } from 'rxjs/operators'; // <-- IMPORT AJOUTÉ
+import { Chapitre, ChapitrePayload, ChapitreDetail } from '../models/models';
 
-// On importe les interfaces depuis le fichier central.
-import { Chapitre, ChapitrePayload } from './models';
-// On importe le service à notifier.
-import { ElementConstitutifService } from './element-constitutif.service'; // <-- IMPORT AJOUTÉ
+// --- NOUVELLES INTERFACES POUR LES DONNÉES COMPLÈTES ---
+// Ces interfaces doivent correspondre aux DTOs de votre backend.
+
+export interface SectionDetail {
+  id: number;
+  titre: string;
+  contenu: string;
+  ordre: number;
+}
+
+export interface ChapitreAvecSections {
+  id: number;
+  nom: string;
+  objectif: string;
+  sections: SectionDetail[];
+}
+
 
 @Injectable({
   providedIn: 'root'
@@ -16,51 +29,45 @@ import { ElementConstitutifService } from './element-constitutif.service'; // <-
 export class ChapitreService {
   private apiUrl = 'http://localhost:8080/api/chapitres';
 
-  // ====================================================================
-  // === CORRECTION APPLIQUÉE ICI                                     ===
-  // ====================================================================
-  // On injecte ElementConstitutifService pour pouvoir l'appeler.
-  constructor(
-    private http: HttpClient,
-    private ecService: ElementConstitutifService
-   ) { }
+  constructor(private http: HttpClient ) { }
 
-  /**
-   * Crée un nouveau chapitre et notifie les autres composants du changement.
-   */
-  creerChapitre(payload: ChapitrePayload): Observable<Chapitre> {
-    return this.http.post<Chapitre>(this.apiUrl, payload ).pipe(
-      // L'opérateur 'tap' permet d'exécuter une action sans modifier la réponse.
-      tap(() => {
-        // Après la création réussie d'un chapitre, on déclenche le rafraîchissement
-        // de la liste des matières, car un nouveau chapitre y a été ajouté.
-        console.log("Chapitre créé, envoi de la notification de rafraîchissement...");
-        this.ecService.refreshNeeded$.next();
-      })
-    );
+  // --- VOS MÉTHODES EXISTANTES (INCHANGÉES) ---
+
+  getChapitreDetails(id: number): Observable<ChapitreDetail> {
+    console.log(`[ChapitreService] Appel API pour récupérer les détails du chapitre ${id}`);
+    return this.http.get<ChapitreDetail>(`${this.apiUrl}/${id}/details` );
   }
 
-  /**
-   * Récupère un chapitre par son ID.
-   */
+  creerChapitre(payload: ChapitrePayload): Observable<Chapitre> {
+    return this.http.post<Chapitre>(this.apiUrl, payload );
+  }
+
   findById(id: number): Observable<Chapitre> {
     return this.http.get<Chapitre>(`${this.apiUrl}/${id}` );
   }
 
-  /**
-   * Trouve un chapitre par le nom de sa matière et son niveau.
-   */
   findChapitreByMatiereAndNiveau(matiereNom: string, niveau: number): Observable<Chapitre> {
     const params = new HttpParams()
       .set('matiere', matiereNom)
       .set('niveau', niveau.toString());
-    return this.http.get<Chapitre>(`${this.apiUrl}/search`, { params } );
+    const url = `${this.apiUrl}/search/complet`;
+    return this.http.get<Chapitre>(url, { params } );
   }
 
-  /**
-   * Récupère tous les chapitres pour une matière donnée.
-   */
   getChapitresParMatiere(matiereId: number): Observable<Chapitre[]> {
     return this.http.get<Chapitre[]>(`http://localhost:8080/api/elements-constitutifs/${matiereId}/chapitres` );
+  }
+
+  // ====================================================================
+  // === NOUVELLE MÉTHODE AJOUTÉE POUR LA PAGE DE DÉTAIL DE L'ÉTUDIANT   ===
+  // ====================================================================
+  /**
+   * Récupère les détails complets d'un chapitre, y compris le contenu de ses sections.
+   * @param id L'ID du chapitre à récupérer.
+   */
+  getChapitreComplet(id: number): Observable<ChapitreAvecSections> {
+    const url = `${this.apiUrl}/${id}/details-complets`;
+    console.log(`[ChapitreService] Appel de l'URL pour le détail complet : ${url}`);
+    return this.http.get<ChapitreAvecSections>(url );
   }
 }

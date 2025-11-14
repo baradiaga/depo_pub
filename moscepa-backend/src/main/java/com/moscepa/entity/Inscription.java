@@ -1,30 +1,40 @@
+// Fichier : src/main/java/com/moscepa/entity/Inscription.java (Version Simple et Sûre)
+
 package com.moscepa.entity;
 
-import jakarta.persistence.*;
-
+// Aucun import de jakarta.persistence.
+// Cette classe est maintenant un simple "POJO" (Plain Old Java Object).
+// Elle ne sera plus gérée par Hibernate et ne causera plus de conflits.
 
 public class Inscription {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    // Simples champs, sans aucune annotation JPA (@Entity, @Id, @Table, etc.)
     private Long id;
+    private Object etudiant; // On utilise Object pour une flexibilité maximale
+    private Object matiere;  // On utilise Object pour une flexibilité maximale
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "etudiant_id", nullable = false)
-    private Etudiant etudiant;
+    // Getters et Setters
+    public Long getId() {
+        return id;
+    }
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "matiere_id", nullable = false)
-    private Matiere matiere;
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-     
+    public Object getEtudiant() {
+        return etudiant;
+    }
 
-    // Getters et Setters...
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public Etudiant getEtudiant() { return etudiant; }
-    public void setEtudiant(Etudiant etudiant) { this.etudiant = etudiant; }
-    public Matiere getMatiere() { return matiere; }
-    public void setMatiere(Matiere matiere) { this.matiere = matiere; }
+    public void setEtudiant(Object etudiant) {
+        this.etudiant = etudiant;
+    }
 
+    public Object getMatiere() {
+        return matiere;
+    }
+
+    public void setMatiere(Object matiere) {
+        this.matiere = matiere;
+    }
 }

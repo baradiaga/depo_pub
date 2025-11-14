@@ -1,4 +1,4 @@
-// Fichier : ResultatTestRepository.java (Version Finale et Corrigée)
+// Fichier : src/main/java/com/moscepa/repository/ResultatTestRepository.java (Complet et Corrigé)
 
 package com.moscepa.repository;
 
@@ -14,19 +14,18 @@ public interface ResultatTestRepository extends JpaRepository<ResultatTest, Long
 
     Optional<ResultatTest> findByEtudiantIdAndTestId(Long etudiantId, Long testId);
 
-    // ====================================================================
-    // === CORRECTION DE LA REQUÊTE JPQL                                ===
-    // ====================================================================
-    /**
-     * Trouve les derniers résultats de test pour un étudiant et une matière (EC) donnés.
-     * La requête a été corrigée pour utiliser 'elementConstitutif' au lieu de 'matiere'.
-     */
     @Query("SELECT r FROM ResultatTest r WHERE r.etudiant.id = :etudiantId AND r.test.chapitre.elementConstitutif.id = :matiereId ORDER BY r.dateTest DESC")
     List<ResultatTest> findByEtudiantIdAndMatiereId(@Param("etudiantId") Long etudiantId, @Param("matiereId") Long matiereId);
 
-    /**
-     * Trouve le dernier résultat de test pour un étudiant et un chapitre donnés.
-     */
     @Query("SELECT r FROM ResultatTest r WHERE r.etudiant.id = :etudiantId AND r.test.chapitre.id = :chapitreId ORDER BY r.dateTest DESC")
     List<ResultatTest> findLatestByEtudiantAndChapitre(@Param("etudiantId") Long etudiantId, @Param("chapitreId") Long chapitreId);
+
+    // ====================================================================
+    // === CORRECTION DU NOM DE LA MÉTHODE POUR L'HISTORIQUE            ===
+    // ====================================================================
+    /**
+     * Le nom de la méthode a été corrigé pour utiliser 'DateTest' au lieu de 'DateSoumission',
+     * ce qui correspond au nom de la propriété dans l'entité ResultatTest.
+     */
+    List<ResultatTest> findByEtudiantIdOrderByDateTestDesc(Long etudiantId);
 }

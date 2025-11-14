@@ -4,7 +4,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core'; // <-- OnDestroy A
 import { Subscription } from 'rxjs'; // <-- Subscription AJOUTÉ
 
 import { ElementConstitutifService } from '../../../services/element-constitutif.service';
-import { Chapitre, ElementConstitutifResponse } from '../../../services/models';
+import { Chapitre, ElementConstitutifResponse } from '../../../models/models';
 
 @Component({
   selector: 'app-liste-matieres',

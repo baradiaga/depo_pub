@@ -1,0 +1,63 @@
+<!-- Fichier : resultat-diagnostic.component.html -->
+
+<div class="container mt-4" *ngIf="resultat">
+  <div class="card shadow-lg">
+    <div class="card-header bg-info text-white text-center">
+      <h2 class="mb-0">Analyse de votre Test</h2>
+    </div>
+    <div class="card-body p-4">
+      <div class="row text-center mb-4">
+        <!-- Score Global -->
+        <div class="col-md-6">
+          <div class="card h-100">
+            <div class="card-body">
+              <h5 class="card-title">Score Global</h5>
+              <p class="display-4 fw-bold" [ngClass]="getScoreColorClass(resultat.scoreGlobal)">
+                {{ resultat.scoreGlobal | number:'1.0-1' }}%
+              </p>
+              <p class="text-muted">
+                ({{ resultat.bonnesReponses }} / {{ resultat.totalQuestions }} bonnes réponses)
+              </p>
+            </div>
+          </div>
+        </div>
+        <!-- Message de synthèse -->
+        <div class="col-md-6">
+          <div class="card h-100 bg-light">
+            <div class="card-body d-flex flex-column justify-content-center">
+              <h5 class="card-title">Synthèse</h5>
+              <p class="fs-5">{{ resultat.message }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <hr>
+
+      <!-- Chapitres à réviser -->
+      <div *ngIf="resultat.chapitresAReviser && resultat.chapitresAReviser.length > 0">
+        <h3 class="mb-3 text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i> Chapitres à Réviser en Priorité</h3>
+        <ul class="list-group">
+          <li *ngFor="let chapitre of resultat.chapitresAReviser" class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-1">{{ chapitre.nom }}</h5>
+              <small>Votre score pour ce chapitre est faible.</small>
+            </div>
+            <span class="badge bg-danger rounded-pill fs-6">{{ chapitre.score | number:'1.0-0' }}%</span>
+          </li>
+        </ul>
+        <p class="mt-3">Nous vous recommandons de revoir le contenu de ces chapitres avant de retenter une évaluation.</p>
+      </div>
+
+      <!-- Message si tout est réussi -->
+      <div *ngIf="!resultat.chapitresAReviser || resultat.chapitresAReviser.length === 0" class="alert alert-success text-center">
+        <h4><i class="bi bi-trophy-fill"></i> Excellent Travail !</h4>
+        <p>Vous avez obtenu un score satisfaisant sur tous les chapitres. Continuez comme ça !</p>
+      </div>
+
+      <div class="d-grid gap-2 mt-4">
+        <button class="btn btn-primary" routerLink="/dashboard">Retourner au tableau de bord</button>
+      </div>
+    </div>
+  </div>
+</div>

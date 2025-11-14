@@ -1,72 +1,55 @@
+// Fichier : src/main/java/com/moscepa/dto/ChapitreDetailDto.java (Version Simplifiée)
+
 package com.moscepa.dto;
 
 import com.moscepa.entity.Chapitre;
-import com.moscepa.entity.Section;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
- * DTO pour afficher les détails complets d'un chapitre.
- * Cette version est mise à jour pour utiliser ElementConstitutif.
+ * DTO pour les détails d'un chapitre, utilisé par la page de test.
+ * Il ne contient que les informations strictement nécessaires.
  */
 public class ChapitreDetailDto {
 
     private Long id;
-    private String nom; // On utilise 'nom' pour être cohérent avec l'entité
-    private String elementConstitutifNom;
+    private String nom;
     private Long elementConstitutifId;
-    private Integer niveau;
-    private String objectif;
-    private List<SectionDto> sections;
 
-    /**
-     * DTO interne pour représenter une section.
-     */
-    public static class SectionDto {
-        private Long id;
-        private String titre;
-        private String contenu;
+    // Constructeur par défaut (important pour certaines bibliothèques)
+    public ChapitreDetailDto() {}
 
-        public SectionDto(Section section) {
-            this.id = section.getId();
-            this.titre = section.getTitre();
-            this.contenu = section.getContenu();
-        }
-        // Getters
-        public Long getId() { return id; }
-        public String getTitre() { return titre; }
-        public String getContenu() { return contenu; }
-    }
-
-    /**
-     * Constructeur qui convertit une entité Chapitre en ce DTO.
-     */
+    // Constructeur pour la conversion facile depuis l'entité
     public ChapitreDetailDto(Chapitre chapitre) {
         this.id = chapitre.getId();
         this.nom = chapitre.getNom();
-        this.niveau = chapitre.getNiveau();
-        this.objectif = chapitre.getObjectif();
         
-        // ====================================================================
-        // === CORRECTION APPLIQUÉE ICI                                     ===
-        // ====================================================================
-        // On utilise la nouvelle relation avec ElementConstitutif
         if (chapitre.getElementConstitutif() != null) {
-            this.elementConstitutifNom = chapitre.getElementConstitutif().getNom();
             this.elementConstitutifId = chapitre.getElementConstitutif().getId();
         }
-
-        this.sections = chapitre.getSections().stream()
-                .map(SectionDto::new)
-                .collect(Collectors.toList());
     }
 
-    // --- Getters ---
-    public Long getId() { return id; }
-    public String getNom() { return nom; }
-    public String getElementConstitutifNom() { return elementConstitutifNom; }
-    public Long getElementConstitutifId() { return elementConstitutifId; }
-    public Integer getNiveau() { return niveau; }
-    public String getObjectif() { return objectif; }
-    public List<SectionDto> getSections() { return sections; }
+    // --- Getters et Setters ---
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getNom() {
+        return nom;
+    }
+
+    public void setNom(String nom) {
+        this.nom = nom;
+    }
+
+    public Long getElementConstitutifId() {
+        return elementConstitutifId;
+    }
+
+    public void setElementConstitutifId(Long elementConstitutifId) {
+        this.elementConstitutifId = elementConstitutifId;
+    }
 }

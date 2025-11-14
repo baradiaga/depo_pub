@@ -59,11 +59,10 @@
               <!-- ==================================================================== -->
               <!-- === MISE À JOUR N°2 : Lien sous "Test de connaissance"          === -->
               <!-- ==================================================================== -->
-             <td>
-  <a href="javascript:void(0);" (click)="lancerTest(chapitre)" class="btn btn-link p-0">
-    Faire le test
-  </a>
-</td>
+        <td>
+          <button class="btn btn-primary btn-sm" (click)="lancerTest(chapitre)">Faire le test</button>
+        </td>
+
               
               <td>
                 <span *ngIf="chapitre.resultatScore; else pasDeResultat" 

@@ -27,22 +27,15 @@ import java.util.Arrays;
 import java.util.List;
 
 @Configuration
-@EnableMethodSecurity // On garde @EnableMethodSecurity et on peut enlever @EnableWebSecurity qui est inclus
+@EnableMethodSecurity
 public class SecurityConfig {
 
-    // ====================================================================
-    // === CHANGEMENT 1 : On injecte les services, mais PAS le filtre.    ===
-    // ====================================================================
     @Autowired
     private UserDetailsServiceImpl userDetailsService;
 
     @Autowired
     private AuthEntryPointJwt unauthorizedHandler;
 
-    // ====================================================================
-    // === CHANGEMENT 2 : On déclare le filtre comme un Bean.             ===
-    // === Spring va le gérer correctement.                               ===
-    // ====================================================================
     @Bean
     public AuthTokenFilter authenticationJwtTokenFilter( ) {
         return new AuthTokenFilter();
@@ -51,7 +44,7 @@ public class SecurityConfig {
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService); // On utilise le service injecté
+        authProvider.setUserDetailsService(userDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
     }
@@ -77,17 +70,20 @@ public class SecurityConfig {
                 // Définir les routes PUBLIQUES
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/api-docs/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/etudiants/inscrire").permitAll() // J'ai corrigé l'URL probable
+                .requestMatchers(HttpMethod.POST, "/api/etudiants/inscrire").permitAll()
+                
+                // ====================================================================
+                // === CORRECTION APPLIQUÉE ICI                                     ===
+                // ====================================================================
+                // On autorise l'accès public à l'endpoint d'erreur interne de Spring Boot.
+                // Cela permet de voir la VRAIE erreur (souvent 500) au lieu d'une erreur 401 masquée.
+                .requestMatchers("/error").permitAll()
+                
                 // Pour TOUT LE RESTE, exiger une authentification.
                 .anyRequest().authenticated()
             );
 
-        // On dit à Spring d'utiliser notre DaoAuthenticationProvider
         http.authenticationProvider(authenticationProvider( ));
-
-        // ====================================================================
-        // === CHANGEMENT 3 : On ajoute le filtre en appelant sa méthode Bean.===
-        // ====================================================================
         http.addFilterBefore(authenticationJwtTokenFilter( ), UsernamePasswordAuthenticationFilter.class);
 
         return http.build( );

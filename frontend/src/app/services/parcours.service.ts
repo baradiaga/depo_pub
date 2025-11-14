@@ -1,14 +1,22 @@
-// Fichier : src/app/services/parcours.service.ts (Correct)
+// Fichier : src/app/services/parcours.service.ts (Version finale et corrigée)
 
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Chapitre } from './models';
+// On importe le DTO qui représente la réponse de l'API
+import { ParcoursDto } from '../dto/parcours.dto'; // Assurez-vous que ce chemin est correct
+
+// On peut garder cette interface si elle est utilisée ailleurs, sinon elle peut être supprimée.
 export interface Parcours {
   id: number;
   nom: string;
   dateCreation: string;
-  chapitres: Chapitre[];
+  chapitres: any[]; // Type 'any' pour la flexibilité
+}
+
+// Interface pour le payload d'enregistrement
+export interface ParcoursRequestPayload {
+  chapitresChoisisIds: number[];
 }
 
 @Injectable({
@@ -19,18 +27,20 @@ export class ParcoursService {
 
   constructor(private http: HttpClient ) { }
 
-  /**
-   * Enregistre un nouveau parcours personnalisé pour l'étudiant authentifié.
-   */
   enregistrerParcours(chapitreIds: number[]): Observable<any> {
-    const payload = { chapitreIds: chapitreIds };
+    const payload: ParcoursRequestPayload = { chapitresChoisisIds: chapitreIds };
     return this.http.post<any>(`${this.apiUrl}/etudiant`, payload );
   }
 
   /**
    * Récupère les parcours de l'étudiant actuellement authentifié.
    */
-  getMesParcours(): Observable<Parcours[]> {
-    return this.http.get<Parcours[]>(`${this.apiUrl}/etudiant/mes-parcours` );
+  getMesParcours(): Observable<ParcoursDto> { // <--- CORRECTION APPLIQUÉE ICI
+    // ====================================================================
+    // === LA SIGNATURE EST MAINTENANT CORRECTE                         ===
+    // ====================================================================
+    // La méthode promet maintenant de retourner un objet de type ParcoursDto,
+    // ce qui correspond à la réalité de l'API.
+    return this.http.get<ParcoursDto>(`${this.apiUrl}/etudiant/me` );
   }
 }

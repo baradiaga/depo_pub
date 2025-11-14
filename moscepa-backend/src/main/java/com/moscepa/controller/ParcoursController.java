@@ -1,3 +1,5 @@
+// Fichier : src/main/java/com/moscepa/controller/ParcoursController.java (Version finale corrigée)
+
 package com.moscepa.controller;
 
 import com.moscepa.dto.ParcoursDto;
@@ -21,6 +23,28 @@ public class ParcoursController {
         this.parcoursService = parcoursService;
     }
 
+    // ====================================================================
+    // === NOUVEL ENDPOINT POUR L'ÉTUDIANT CONNECTÉ                     ===
+    // ====================================================================
+    /**
+     * Récupère les parcours (recommandés et choisis) pour l'utilisateur
+     * actuellement authentifié.
+     */
+    @GetMapping("/etudiant/me") // URL claire et non ambiguë : /api/parcours/etudiant/me
+    public ResponseEntity<ParcoursDto> getMesParcours(Authentication authentication) {
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        Long utilisateurId = userPrincipal.getId();
+        ParcoursDto parcours = parcoursService.getParcoursPourEtudiant(utilisateurId);
+        return ResponseEntity.ok(parcours);
+    }
+
+    // ====================================================================
+    // === ANCIEN ENDPOINT (GARDÉ POUR L'ADMINISTRATION PAR EXEMPLE)    ===
+    // ====================================================================
+    /**
+     * Récupère les parcours pour un étudiant spécifique par son ID.
+     * Utile pour un administrateur qui voudrait consulter le parcours d'un étudiant.
+     */
     @GetMapping("/etudiant/{etudiantId}")
     public ResponseEntity<ParcoursDto> getParcoursPourEtudiant(@PathVariable Long etudiantId) {
         ParcoursDto parcours = parcoursService.getParcoursPourEtudiant(etudiantId);
