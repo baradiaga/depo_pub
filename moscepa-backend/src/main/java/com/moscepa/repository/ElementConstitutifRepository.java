@@ -24,14 +24,8 @@ public interface ElementConstitutifRepository extends JpaRepository<ElementConst
     // ====================================================================
     // === CORRECTION ULTIME : ON CHERCHE DANS LES DEUX TABLES À LA FOIS ===
     // ====================================================================
-    @Query(
-        value = "SELECT ec.* FROM moscepa_elements_constitutifs ec " +
-                "WHERE ec.id IN (" +
-                "    SELECT i1.ec_id FROM moscepa_inscriptions i1 WHERE i1.etudiant_id = :etudiantId" +
-                "    UNION" +
-                "    SELECT i2.ec_id FROM moscepa_inscriptions_ec i2 WHERE i2.etudiant_id = :etudiantId" +
-                ")",
-        nativeQuery = true
-    )
+      @Query("SELECT i.matiere FROM Inscription i WHERE i.etudiant.id = :etudiantId")
     List<ElementConstitutif> findMatieresByEtudiantIdSqlNatif(@Param("etudiantId") Long etudiantId);
+
+    
 }

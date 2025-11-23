@@ -38,5 +38,6 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
      */
     @Query("SELECT q FROM Question q JOIN q.chapitre c WHERE c.elementConstitutif.id = :matiereId")
     List<Question> findQuestionsByMatiereId(@Param("matiereId") Long matiereId);
+    List<Question> findByChapitreId(Long chapitreId);
 
 }

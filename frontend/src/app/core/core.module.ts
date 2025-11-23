@@ -1,7 +1,9 @@
+// Fichier : src/app/core/core.module.ts (Version Corrigée)
+
 import { NgModule, Optional, SkipSelf } from '@angular/core';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router'; // <-- 1. IMPORTER ICI
+import { RouterModule } from '@angular/router';
 import { SharedModule } from '../shared/shared.module';
 
 // Importez les services, layouts et intercepteurs
@@ -20,15 +22,20 @@ import { EtudiantLayoutComponent } from './layouts/etudiant-layout/etudiant-layo
     EtudiantLayoutComponent
   ],
   imports: [
-    // Modules nécessaires pour que les layouts fonctionnent
     CommonModule,
-    RouterModule, // <-- 2. AJOUTER ICI
+    RouterModule,
     SharedModule
   ],
   exports: [
+    // On exporte les layouts pour que AppModule puisse les utiliser
     PublicLayoutComponent,
     PrivateLayoutComponent,
-    EtudiantLayoutComponent
+    EtudiantLayoutComponent,
+
+    // ====================================================================
+    // === CORRECTION : On exporte RouterModule pour que AppModule y ait accès ===
+    // ====================================================================
+    RouterModule // <-- C'EST CET AJOUT QUI CORRIGE L'ERREUR
   ],
   providers: [
     AuthService,

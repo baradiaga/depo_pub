@@ -1,9 +1,9 @@
-// Fichier : src/app/services/test.service.ts (Version mise à jour pour l'historique)
+// Fichier : src/app/services/test.service.ts
 
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Question, ResultatTest } from '../models/models';
+import { Question, ResultatTest, CreateTestRequest } from '../models/models';
 
 // ====================================================================
 // === NOUVELLE INTERFACE POUR L'HISTORIQUE DES RÉSULTATS           ===
@@ -14,7 +14,7 @@ import { Question, ResultatTest } from '../models/models';
  */
 export interface HistoriqueResultat {
   nomChapitre: string;
-  dateSoumission: string; // Les dates sont souvent transmises comme des chaînes de caractères (ISO )
+  dateSoumission: string; // Les dates sont souvent transmises comme des chaînes de caractères (ISO)
   scoreObtenu: number;
   scoreTotalPossible: number;
   pourcentage: number;
@@ -27,30 +27,40 @@ export class TestService {
 
   private apiUrl = 'http://localhost:8080/api/tests';
 
-  constructor(private http: HttpClient  ) { }
+  constructor(private http: HttpClient) { }
 
-  // --- VOS MÉTHODES EXISTANTES (INCHANGÉES) ---
+  // ====================================================================
+  // === MÉTHODES EXISTANTES                                           ===
+  // ====================================================================
 
   getQuestionsPourChapitre(chapitreId: number): Observable<Question[]> {
     console.log(`[TestService] Appel API pour récupérer les questions du chapitre ${chapitreId}`);
-    return this.http.get<Question[]>(`${this.apiUrl}/chapitre/${chapitreId}/questions`  );
+    return this.http.get<Question[]>(`${this.apiUrl}/chapitre/${chapitreId}/questions`);
   }
 
   soumettreReponses(chapitreId: number, reponses: any): Observable<ResultatTest> {
     console.log(`[TestService] Appel API pour soumettre les réponses du chapitre ${chapitreId}`);
-    return this.http.post<ResultatTest>(`${this.apiUrl}/chapitre/${chapitreId}/soumettre`, reponses  );
+    return this.http.post<ResultatTest>(`${this.apiUrl}/chapitre/${chapitreId}/soumettre`, reponses);
+  }
+
+  // ====================================================================
+  // === NOUVELLE MÉTHODE POUR CRÉER UN TEST                          ===
+  // ====================================================================
+  /**
+   * Crée un nouveau test à partir des données fournies.
+   * @param request Objet contenant les infos du test (CreateTestRequest).
+   * @returns Un Observable du test créé.
+   */
+  createTest(request: CreateTestRequest): Observable<any> {
+    console.log(`[TestService] Appel API pour créer un test :`, request);
+    return this.http.post<any>(`${this.apiUrl}`, request);
   }
 
   // ====================================================================
   // === NOUVELLE MÉTHODE POUR L'HISTORIQUE DES RÉSULTATS             ===
   // ====================================================================
-  /**
-   * Récupère l'historique des résultats de test pour l'étudiant connecté.
-   * @returns Un Observable contenant un tableau d'objets HistoriqueResultat.
-   */
   getMonHistorique(): Observable<HistoriqueResultat[]> {
-    // Appelle l'endpoint : GET /api/tests/mon-historique
     console.log(`[TestService] Appel API pour récupérer l'historique des résultats.`);
-    return this.http.get<HistoriqueResultat[]>(`${this.apiUrl}/mon-historique` );
+    return this.http.get<HistoriqueResultat[]>(`${this.apiUrl}/mon-historique`);
   }
 }

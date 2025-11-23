@@ -1,40 +1,42 @@
-// Fichier : src/main/java/com/moscepa/entity/Inscription.java (Version Simple et Sûre)
+// Fichier : src/main/java/com/moscepa/entity/Inscription.java
 
 package com.moscepa.entity;
 
-// Aucun import de jakarta.persistence.
-// Cette classe est maintenant un simple "POJO" (Plain Old Java Object).
-// Elle ne sera plus gérée par Hibernate et ne causera plus de conflits.
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "moscepa_inscriptions")
 public class Inscription {
 
-    // Simples champs, sans aucune annotation JPA (@Entity, @Id, @Table, etc.)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Object etudiant; // On utilise Object pour une flexibilité maximale
-    private Object matiere;  // On utilise Object pour une flexibilité maximale
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "etudiant_id", nullable = false)
+    private Utilisateur etudiant;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ec_id", nullable = false) // ec_id pour Element Constitutif
+    private ElementConstitutif matiere;
+
+    @Column(name = "date_inscription", nullable = false)
+    private LocalDateTime dateInscription;
+
+    // Méthode utilitaire exécutée avant la sauvegarde
+    @PrePersist
+    protected void onCreate() {
+        this.dateInscription = LocalDateTime.now();
+    }
 
     // Getters et Setters
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Object getEtudiant() {
-        return etudiant;
-    }
-
-    public void setEtudiant(Object etudiant) {
-        this.etudiant = etudiant;
-    }
-
-    public Object getMatiere() {
-        return matiere;
-    }
-
-    public void setMatiere(Object matiere) {
-        this.matiere = matiere;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public Utilisateur getEtudiant() { return etudiant; }
+    public void setEtudiant(Utilisateur etudiant) { this.etudiant = etudiant; }
+    public ElementConstitutif getMatiere() { return matiere; }
+    public void setMatiere(ElementConstitutif matiere) { this.matiere = matiere; }
+    public LocalDateTime getDateInscription() { return dateInscription; }
+    public void setDateInscription(LocalDateTime dateInscription) { this.dateInscription = dateInscription; }
 }

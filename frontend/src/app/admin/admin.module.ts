@@ -5,7 +5,7 @@ import { SharedModule } from '../shared/shared.module'; // <-- 1. L'import le pl
 import { AdminRoutingModule } from './admin-routing.module'; // <-- 2. Notre nouveau routing
 
 // Modules externes spécifiques à ce module (si nécessaire)
-import { AngularEditorModule } from '@kolkov/angular-editor';
+import { QuillModule } from 'ngx-quill'; // <-- On utilise UNIQUEMENT celui-ci
 
 // --- 3. Importez TOUS les composants qui appartiennent à ce module ---
 
@@ -52,7 +52,7 @@ import { FormulaireInscriptionComponent } from './pages/formulaire-inscription/f
     // --- 5. La liste d'imports est maintenant simple et propre ---
     SharedModule, // Fournit CommonModule, FormsModule, ReactiveFormsModule, etc.
     AdminRoutingModule,
-    AngularEditorModule, // Module externe utilisé par ce feature module
+    QuillModule, // Module externe utilisé par ce feature module
     EnseignantModule,
   ]
 })

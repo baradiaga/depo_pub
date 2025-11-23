@@ -1,3 +1,5 @@
+// Fichier : src/main/java/com/moscepa/entity/Chapitre.java (Version Définitivement Corrigée)
+
 package com.moscepa.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -21,31 +23,35 @@ public class Chapitre {
     private Integer niveau;
     @Lob
     private String objectif;
-     @Column(name = "ordre")
-    private  Integer ordre;
+    @Column(name = "ordre")
+    private Integer ordre;
 
-    // ====================================================================
-    // === CORRECTION DE LA RELATION                                    ===
-    // ====================================================================
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "element_constitutif_id", nullable = false) // Le nom de la colonne dans la BDD
-    @JsonBackReference // Pour éviter les boucles de sérialisation
+    @JoinColumn(name = "element_constitutif_id", nullable = false)
+    @JsonBackReference
     private ElementConstitutif elementConstitutif;
 
-    @OneToMany(mappedBy = "chapitre", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "chapitre", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Section> sections = new ArrayList<>();
 
-    @OneToMany(mappedBy = "chapitre", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "chapitre", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Questionnaire> questionnaires = new ArrayList<>();
 
-    // ... (constructeurs)
+    // ====================================================================
+    // === CORRECTION DÉFINITIVE : AJOUT DE LA RELATION VERS L'ENTITÉ TEST ===
+    // ====================================================================
+    @OneToMany(mappedBy = "chapitre", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Test> tests = new ArrayList<>();
+
+
+    // --- Constructeurs, méthodes utilitaires, etc. ---
+    public Chapitre() {}
 
     public void addSection(Section section) {
         this.sections.add(section);
         section.setChapitre(this);
     }
-    // ... (autres méthodes utilitaires)
 
     // --- Getters et Setters ---
     public Long getId() { return id; }
@@ -58,25 +64,21 @@ public class Chapitre {
     public void setNiveau(Integer niveau) { this.niveau = niveau; }
     public String getObjectif() { return objectif; }
     public void setObjectif(String objectif) { this.objectif = objectif; }
+    public Integer getOrdre() { return ordre; }
+    public void setOrdre(Integer ordre) { this.ordre = ordre; }
+    public ElementConstitutif getElementConstitutif() { return elementConstitutif; }
+    public void setElementConstitutif(ElementConstitutif elementConstitutif) { this.elementConstitutif = elementConstitutif; }
     public List<Section> getSections() { return sections; }
     public void setSections(List<Section> sections) { this.sections = sections; }
     public List<Questionnaire> getQuestionnaires() { return questionnaires; }
     public void setQuestionnaires(List<Questionnaire> questionnaires) { this.questionnaires = questionnaires; }
-     public  Integer getOrdre() {
-        return ordre;
+
+    // --- GETTERS ET SETTERS POUR LA NOUVELLE RELATION ---
+    public List<Test> getTests() {
+        return tests;
     }
 
-    public void setOrdre( Integer ordre) {
-        this.ordre = ordre;
-    }
-    // ====================================================================
-    // === CORRECTION DES GETTERS/SETTERS POUR LA RELATION              ===
-    // ====================================================================
-    public ElementConstitutif getElementConstitutif() {
-        return elementConstitutif;
-    }
-
-    public void setElementConstitutif(ElementConstitutif elementConstitutif) {
-        this.elementConstitutif = elementConstitutif;
+    public void setTests(List<Test> tests) {
+        this.tests = tests;
     }
 }

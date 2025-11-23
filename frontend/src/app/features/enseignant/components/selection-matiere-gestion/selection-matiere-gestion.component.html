@@ -1,0 +1,47 @@
+<!-- Fichier : src/app/features/enseignant/components/selection-matiere-gestion/selection-matiere-gestion.component.html -->
+
+<div class="container mt-4">
+  <div class="card">
+    <div class="card-header">
+      <h3 class="mb-0">Gestion du Contenu Pédagogique</h3>
+    </div>
+    <div class="card-body">
+      <p class="card-text">Veuillez sélectionner une matière pour commencer à gérer ses chapitres et ses sections.</p>
+
+      <!-- Affichage pendant le chargement -->
+      <div *ngIf="isLoading" class="text-center my-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Chargement...</span>
+        </div>
+        <p class="mt-2">Chargement de vos matières...</p>
+      </div>
+
+      <!-- Affichage en cas d'erreur -->
+      <div *ngIf="errorMessage && !isLoading" class="alert alert-danger">
+        {{ errorMessage }}
+      </div>
+
+      <!-- Affichage de la liste des matières -->
+      <div *ngIf="!isLoading && !errorMessage">
+        <div *ngIf="matieres.length > 0; else aucuneMatiere">
+          <ul class="list-group">
+            <li *ngFor="let matiere of matieres" class="list-group-item d-flex justify-content-between align-items-center">
+              <span class="fs-5">{{ matiere.nom }}</span>
+              <button class="btn btn-primary" (click)="gererContenu(matiere.id)">
+                <i class="bi bi-pencil-square me-2"></i>Gérer le contenu
+              </button>
+            </li>
+          </ul>
+        </div>
+        
+        <!-- Template si aucune matière n'est trouvée -->
+        <ng-template #aucuneMatiere>
+          <div class="alert alert-warning">
+            Vous n'êtes responsable d'aucune matière pour le moment.
+          </div>
+        </ng-template>
+      </div>
+
+    </div>
+  </div>
+</div>

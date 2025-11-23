@@ -8,7 +8,7 @@ import { SyllabusComponent } from './components/syllabus/syllabus.component';
 import { SequencesComponent } from './components/sequences/sequences.component';
 import { ActivitesComponent } from './components/activites/activites.component';
 import { EvaluationsComponent } from './components/evaluations/evaluations.component';
-
+import { StudentModule } from '../../features/student/student.module';
 @NgModule({
   declarations: [
     // --- 2. Déclarez tous les composants ici ---
@@ -20,7 +20,8 @@ import { EvaluationsComponent } from './components/evaluations/evaluations.compo
   ],
   imports: [
     SharedModule,
-    CurriculumRoutingModule
+    CurriculumRoutingModule,
+    StudentModule,
   ]
 })
 export class CurriculumModule { }

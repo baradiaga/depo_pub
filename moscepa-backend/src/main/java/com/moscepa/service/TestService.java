@@ -1,5 +1,3 @@
-// Fichier : src/main/java/com/moscepa/service/TestService.java (Version Finale et Corrigée)
-
 package com.moscepa.service;
 
 import com.moscepa.dto.*;
@@ -9,20 +7,13 @@ import com.moscepa.security.UserPrincipal;
 import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional; // Assurez-vous que cet import est présent
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,38 +22,92 @@ public class TestService {
 
     private static final Logger log = LoggerFactory.getLogger(TestService.class);
 
+    // Dépendances
     private final TestRepository testRepository;
     private final QuestionRepository questionRepository;
     private final ParcoursService parcoursService;
     private final ResultatTestRepository resultatTestRepository;
     private final UtilisateurRepository utilisateurRepository;
-    
-    public TestService(TestRepository testRepository, QuestionRepository questionRepository, ParcoursService parcoursService, ResultatTestRepository resultatTestRepository, UtilisateurRepository utilisateurRepository) {
+    private final ChapitreRepository chapitreRepository;
+    private final QuestionnaireRepository questionnaireRepository; // <-- ajouté
+
+    // Constructeur (toutes les dépendances)
+    public TestService(TestRepository testRepository,
+                       QuestionRepository questionRepository,
+                       ParcoursService parcoursService,
+                       ResultatTestRepository resultatTestRepository,
+                       UtilisateurRepository utilisateurRepository,
+                       ChapitreRepository chapitreRepository,
+                       QuestionnaireRepository questionnaireRepository) {
         this.testRepository = testRepository;
         this.questionRepository = questionRepository;
         this.parcoursService = parcoursService;
         this.resultatTestRepository = resultatTestRepository;
         this.utilisateurRepository = utilisateurRepository;
+        this.chapitreRepository = chapitreRepository;
+        this.questionnaireRepository = questionnaireRepository;
     }
 
-    // --- VOS MÉTHODES EXISTANTES (PRÉSERVÉES) ---
-    // ... (calculerEtSauvegarderResultat, getHistoriquePourEtudiant, etc. sont ici)
-    public List<QuestionDto> getQuestionsPourChapitre(Long chapitreId) {
-        List<Question> questions = questionRepository.findByQuestionnaireChapitreId(chapitreId);
-        if (questions.isEmpty()) {
-            log.warn("Aucune question trouvée pour le chapitre ID: {}", chapitreId);
+    @Transactional
+    public Test creerTestAvecQuestions(Long chapitreId, String titre, List<Long> questionIds) {
+        Chapitre chapitre = chapitreRepository.findById(chapitreId)
+                .orElseThrow(() -> new EntityNotFoundException("Chapitre non trouvé avec l'ID: " + chapitreId));
+
+        List<Question> questionsAAssocier = questionRepository.findAllById(questionIds);
+        if (questionsAAssocier.size() != questionIds.size()) {
+            throw new EntityNotFoundException("Une ou plusieurs questions n'ont pas été trouvées.");
         }
-        return questions.stream().map(QuestionDto::new).collect(Collectors.toList());
+
+        Test nouveauTest = new Test();
+        nouveauTest.setTitre(titre);
+        nouveauTest.setChapitre(chapitre);
+        nouveauTest.setQuestions(questionsAAssocier);
+
+        Test testSauvegarde = testRepository.save(nouveauTest);
+        log.info("Test '{}' créé avec {} questions pour le chapitre '{}'.", testSauvegarde.getTitre(), testSauvegarde.getQuestions().size(), chapitre.getNom());
+
+        return testSauvegarde;
     }
+
+    public List<QuestionDto> getQuestionsPourChapitre(Long chapitreId) {
+        Test test = testRepository.findTopByChapitreId(chapitreId)
+                .orElseThrow(() -> new EntityNotFoundException("Aucun test trouvé pour le chapitre ID: " + chapitreId));
+        return test.getQuestions().stream().map(QuestionDto::new).collect(Collectors.toList());
+    }
+@Transactional
+public Test creerTestDepuisQuestionnaire(Long questionnaireId) {
+    Questionnaire questionnaire = questionnaireRepository.findById(questionnaireId)
+            .orElseThrow(() -> new EntityNotFoundException("Questionnaire non trouvé avec l'ID: " + questionnaireId));
+
+    if (questionnaire.getChapitre() == null) {
+        throw new IllegalStateException("Impossible de créer un test : le questionnaire n'a pas de chapitre.");
+    }
+
+    if (questionnaire.getQuestions().isEmpty()) {
+        throw new EntityNotFoundException("Le questionnaire ne contient aucune question.");
+    }
+
+    Test test = new Test();
+    test.setTitre("Test pour " + questionnaire.getTitre());
+    test.setChapitre(questionnaire.getChapitre()); // ✅ garanti non-null
+    test.setQuestionnaire(questionnaire);
+    test.setQuestions(new ArrayList<>(questionnaire.getQuestions()));
+
+    return testRepository.save(test);
+}
+
 
     @Transactional
     public ResultatTestDto calculerEtSauvegarderResultat(Long chapitreId, Long utilisateurId, Map<String, Object> reponsesUtilisateur) {
         Utilisateur etudiant = utilisateurRepository.findById(utilisateurId)
                 .orElseThrow(() -> new EntityNotFoundException("Aucun utilisateur (étudiant) trouvé pour l'ID: " + utilisateurId));
-        
-        List<Question> questionsDuTest = questionRepository.findByQuestionnaireChapitreId(chapitreId);
-        if (questionsDuTest.isEmpty()) {
-            throw new EntityNotFoundException("Aucune question trouvée pour le chapitre ID : " + chapitreId);
+
+        Test test = testRepository.findTopByChapitreId(chapitreId)
+                .orElseThrow(() -> new EntityNotFoundException("Aucun test trouvé pour le chapitre ID: " + chapitreId));
+
+        List<Question> questionsDuTest = test.getQuestions();
+        if (questionsDuTest == null || questionsDuTest.isEmpty()) {
+            throw new EntityNotFoundException("Aucune question trouvée pour ce test.");
         }
 
         double scoreObtenu = 0.0;
@@ -80,11 +125,8 @@ public class TestService {
             }
         }
 
-        Test test = testRepository.findTopByChapitreId(chapitreId)
-                .orElseThrow(() -> new EntityNotFoundException("Aucun test trouvé pour le chapitre ID: " + chapitreId));
-
         ResultatTest nouveauResultat = new ResultatTest();
-        nouveauResultat.setEtudiant(etudiant); 
+        nouveauResultat.setEtudiant(etudiant);
         nouveauResultat.setTest(test);
         nouveauResultat.setScore(scoreObtenu);
         nouveauResultat.setScoreTotal(totalPointsPossible);
@@ -123,20 +165,9 @@ public class TestService {
             log.warn("Aucune question trouvée pour la matière ID: {}. Le test sera vide.", matiereId);
             return Collections.emptyList();
         }
-        Map<Chapitre, List<Question>> questionsParChapitre = toutesLesQuestions.stream()
-                .collect(Collectors.groupingBy(q -> q.getQuestionnaire().getChapitre()));
-        List<Question> questionsSelectionnees = new ArrayList<>();
-        final int QUESTIONS_PAR_CHAPITRE = 2;
-        for (List<Question> questionsDuChapitre : questionsParChapitre.values()) {
-            Collections.shuffle(questionsDuChapitre);
-            List<Question> questionsAChoisir = questionsDuChapitre.stream()
-                    .limit(QUESTIONS_PAR_CHAPITRE)
-                    .collect(Collectors.toList());
-            questionsSelectionnees.addAll(questionsAChoisir);
-        }
-        Collections.shuffle(questionsSelectionnees);
-        log.info("{} questions sélectionnées au total pour le test de connaissance.", questionsSelectionnees.size());
-        return questionsSelectionnees.stream()
+        final int NOMBRE_QUESTIONS_TEST = 20;
+        return toutesLesQuestions.stream()
+                .limit(NOMBRE_QUESTIONS_TEST)
                 .map(QuestionDto::new)
                 .collect(Collectors.toList());
     }
@@ -150,7 +181,6 @@ public class TestService {
         if (toutesLesQuestions.isEmpty()) {
             return Collections.emptyList();
         }
-        Collections.shuffle(toutesLesQuestions);
         List<Question> questionsSelectionnees = toutesLesQuestions.stream()
                 .limit(NOMBRE_QUESTIONS_DIAGNOSTIC)
                 .collect(Collectors.toList());
@@ -169,57 +199,35 @@ public class TestService {
             dto.setChapitreId(question.getChapitre().getId());
         }
         List<ReponsePourQuestionDto> optionsDto = question.getReponses().stream()
-            .map(ReponsePourQuestionDto::new)
-            .collect(Collectors.toList());
-        Collections.shuffle(optionsDto);
+                .map(ReponsePourQuestionDto::new)
+                .collect(Collectors.toList());
         dto.setOptions(optionsDto);
         return dto;
     }
 
-
-    // ====================================================================
-    // === MÉTHODE DE VÉRIFICATION FINALE (ANTI-CLASSE ANONYME)         ===
-    // ====================================================================
     private boolean verifierReponse(Question question, Object reponseDonnee) {
-        if (reponseDonnee == null) {
-            return false;
-        }
-        
-        String reponseStr = (reponseDonnee instanceof List) ? null : reponseDonnee.toString();
+        if (reponseDonnee == null) return false;
 
         try {
             switch (question.getTypeQuestion()) {
                 case QCU:
-                    if (reponseStr == null) return false;
-                    
-                    Optional<Reponse> bonneReponseOpt = question.getReponses().stream()
+                    String reponseQCUStr = reponseDonnee.toString();
+                    return question.getReponses().stream()
                             .filter(Reponse::isCorrecte)
-                            .findFirst();
-
-                    if (bonneReponseOpt.isEmpty()) {
-                        return false;
-                    }
-
-                    String bonneReponseIdStr = bonneReponseOpt.get().getId().toString();
-                    return reponseStr.trim().equals(bonneReponseIdStr);
+                            .anyMatch(bonneReponse -> bonneReponse.getId().toString().equals(reponseQCUStr.trim()));
 
                 case VRAI_FAUX:
                 case TEXTE_LIBRE:
-                    return reponseStr != null && reponseStr.trim().equalsIgnoreCase(question.getReponseCorrecteTexte().trim());
+                    String expected = question.getReponseCorrecteTexte();
+                    if (expected == null) return false;
+                    return reponseDonnee.toString().trim().equalsIgnoreCase(expected.trim());
 
                 case QCM:
-                    if (!(reponseDonnee instanceof List)) {
-                        return false;
-                    }
+                    if (!(reponseDonnee instanceof List)) return false;
                     Set<String> reponsesSoumisesIds = ((List<?>) reponseDonnee).stream()
-                        .map(Object::toString)
-                        .collect(Collectors.toSet());
-                    
+                            .map(Object::toString).collect(Collectors.toSet());
                     Set<String> bonnesReponsesIds = question.getReponses().stream()
-                        .filter(Reponse::isCorrecte)
-                        .map(r -> r.getId().toString())
-                        .collect(Collectors.toSet());
-                    
+                            .filter(Reponse::isCorrecte).map(r -> r.getId().toString()).collect(Collectors.toSet());
                     return reponsesSoumisesIds.equals(bonnesReponsesIds);
 
                 default:
@@ -231,23 +239,23 @@ public class TestService {
         }
     }
 
-    // ====================================================================
-    // === NOUVELLE LOGIQUE DE CORRECTION (INCHANGÉE)                   ===
-    // ====================================================================
-    private static final double SEUIL_RECOMMANDATION = 50.0;
-
     @Transactional
     public ResultatDiagnosticDto corrigerTestDiagnostic(SoumissionTestDto soumission) {
-        UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !(auth.getPrincipal() instanceof UserPrincipal)) {
+            throw new EntityNotFoundException("Utilisateur non authentifié ou principal invalide.");
+        }
+        UserPrincipal userPrincipal = (UserPrincipal) auth.getPrincipal();
+
         Utilisateur etudiant = utilisateurRepository.findById(userPrincipal.getId())
                 .orElseThrow(() -> new EntityNotFoundException("Étudiant non trouvé pour la correction."));
 
         List<Long> questionIds = soumission.getReponses().stream()
-                                           .map(ReponseSoumiseDto::getQuestionId)
-                                           .collect(Collectors.toList());
-        
+                .map(ReponseSoumiseDto::getQuestionId)
+                .collect(Collectors.toList());
+
         Map<Long, Question> questionsMap = questionRepository.findAllById(questionIds).stream()
-                                                          .collect(Collectors.toMap(Question::getId, q -> q));
+                .collect(Collectors.toMap(Question::getId, q -> q));
 
         Map<Chapitre, List<Boolean>> resultatsParChapitre = new HashMap<>();
         int totalBonnesReponses = 0;
@@ -267,7 +275,7 @@ public class TestService {
         resultatFinal.setTotalQuestions(questionsMap.size());
         resultatFinal.setBonnesReponses(totalBonnesReponses);
         resultatFinal.setScoreGlobal(calculatePercentage(totalBonnesReponses, questionsMap.size()));
-        
+
         Map<String, Double> scoreParChapitreMap = new HashMap<>();
         List<ChapitreRecommandationDto> chapitresAReviser = new ArrayList<>();
 
@@ -276,10 +284,10 @@ public class TestService {
             List<Boolean> resultats = entry.getValue();
             long bonnesReponsesChapitre = resultats.stream().filter(b -> b).count();
             double scoreChapitre = calculatePercentage(bonnesReponsesChapitre, resultats.size());
-            
+
             scoreParChapitreMap.put(chapitre.getNom(), scoreChapitre);
 
-            if (scoreChapitre < SEUIL_RECOMMANDATION) {
+            if (scoreChapitre < 50.0) {
                 chapitresAReviser.add(new ChapitreRecommandationDto(chapitre.getId(), chapitre.getNom(), scoreChapitre));
             }
         }
@@ -293,8 +301,8 @@ public class TestService {
         return resultatFinal;
     }
 
-    private double calculatePercentage(long numerator, long denominator) {
-        if (denominator == 0) return 0.0;
-        return ((double) numerator / denominator) * 100.0;
+    private double calculatePercentage(long num, long den) {
+        if (den == 0) return 0.0;
+        return ((double) num / den) * 100.0;
     }
 }

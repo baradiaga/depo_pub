@@ -144,6 +144,11 @@ export interface QuestionPourCreation {
 /**
  * Représente le payload complet pour la création manuelle d'un questionnaire.
  */
+export interface CreateTestRequest {
+  titre: string;
+  chapitreId: number;
+  questionIds: number[];
+}
 export interface QuestionnaireManuel {
   titre: string;
   matiereId: number | null;

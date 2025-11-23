@@ -1,0 +1,32 @@
+<!-- Fichier : src/app/features/enseignant/components/form-chapitre/form-chapitre.component.html -->
+
+<div class="modal-header">
+  <h4 class="modal-title">Ajouter un nouveau chapitre</h4>
+  <button type="button" class="btn-close" aria-label="Close" (click)="activeModal.dismiss('Cross click')"></button>
+</div>
+
+<div class="modal-body">
+  <form [formGroup]="chapitreForm" (ngSubmit)="onSubmit()">
+    <div class="mb-3">
+      <label for="nom" class="form-label">Nom du chapitre</label>
+      <input type="text" id="nom" class="form-control" formControlName="nom" required>
+      <div *ngIf="chapitreForm.get('nom')?.invalid && chapitreForm.get('nom')?.touched" class="text-danger mt-1">
+        <small *ngIf="chapitreForm.get('nom')?.errors?.['required']">Le nom est obligatoire.</small>
+        <small *ngIf="chapitreForm.get('nom')?.errors?.['maxlength']">Le nom est trop long.</small>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label for="objectif" class="form-label">Objectif pédagogique (optionnel)</label>
+      <textarea id="objectif" class="form-control" formControlName="objectif" rows="3"></textarea>
+    </div>
+  </form>
+</div>
+
+<div class="modal-footer">
+  <button type="button" class="btn btn-outline-secondary" (click)="activeModal.dismiss('cancel click')">Annuler</button>
+  <button type="submit" class="btn btn-primary" (click)="onSubmit()" [disabled]="chapitreForm.invalid || isSubmitting">
+    <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+    {{ isSubmitting ? 'Création...' : 'Créer le chapitre' }}
+  </button>
+</div>

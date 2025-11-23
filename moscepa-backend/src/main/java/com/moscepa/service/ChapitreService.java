@@ -1,19 +1,16 @@
-// Fichier : src/main/java/com/moscepa/service/ChapitreService.java (Version mise à jour)
+// Fichier : src/main/java/com/moscepa/service/ChapitreService.java (Version Finale Corrigée)
 
 package com.moscepa.service;
 
-// ... (vos imports restent les mêmes)
-import com.moscepa.dto.ChapitreAvecSectionsDto;
-import com.moscepa.dto.ChapitreDetailDto;
-import com.moscepa.dto.ChapitrePayload;
-import com.moscepa.dto.QuestionDto;
-import com.moscepa.dto.SectionPayload;
+import com.moscepa.dto.*;
 import com.moscepa.entity.Chapitre;
 import com.moscepa.entity.ElementConstitutif;
 import com.moscepa.entity.Section;
 import com.moscepa.repository.ChapitreRepository;
 import com.moscepa.repository.ElementConstitutifRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.slf4j.Logger; // <-- 1. AJOUT DE L'IMPORT
+import org.slf4j.LoggerFactory; // <-- 2. AJOUT DE L'IMPORT
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,13 +22,18 @@ import java.util.stream.Collectors;
 @Service
 public class ChapitreService {
 
+    // ====================================================================
+    // === CORRECTION : DÉCLARATION DU LOGGER                         ===
+    // ====================================================================
+    private static final Logger log = LoggerFactory.getLogger(ChapitreService.class);
+
     @Autowired
     private ChapitreRepository chapitreRepository;
     
     @Autowired
     private ElementConstitutifRepository ecRepository;
 
-    // --- VOS MÉTHODES EXISTANTES (INCHANGÉES) ---
+    // --- VOS MÉTHODES EXISTANTES ---
 
     @Transactional(readOnly = true)
     public ChapitreDetailDto getChapitreDetailsPourTest(Long id) {
@@ -42,7 +44,6 @@ public class ChapitreService {
 
     @Transactional
     public ChapitreDetailDto creerChapitreAvecNomMatiere(ChapitrePayload payload) {
-        // ... (votre logique existante est inchangée)
         ElementConstitutif ecParent = ecRepository.findByNom(payload.getMatiere())
             .orElseThrow(() -> new EntityNotFoundException("Matière non trouvée avec le nom: " + payload.getMatiere()));
 
@@ -81,7 +82,6 @@ public class ChapitreService {
 
     @Transactional(readOnly = true)
     public List<QuestionDto> getQuestionsPourChapitre(Long chapitreId) {
-        // ... (votre logique existante est inchangée)
         Chapitre chapitre = chapitreRepository.findById(chapitreId)
             .orElseThrow(() -> new EntityNotFoundException("Chapitre non trouvé avec l'ID: " + chapitreId));
         
@@ -96,19 +96,46 @@ public class ChapitreService {
         return chapitreRepository.findById(id).map(ChapitreDetailDto::new);
     }
 
-    // ====================================================================
-    // === NOUVELLE MÉTHODE AJOUTÉE POUR LA PAGE DE DÉTAIL DE L'ÉTUDIANT   ===
-    // ====================================================================
-    /**
-     * Récupère un chapitre par son ID avec tous les détails de ses sections.
-     * Utilise une requête optimisée du repository pour charger toutes les données en une fois.
-     * @param id L'ID du chapitre.
-     * @return Un Optional contenant le DTO complet du chapitre.
-     */
     @Transactional(readOnly = true)
     public Optional<ChapitreAvecSectionsDto> findChapitreCompletById(Long id) {
-        // On appellera ici la nouvelle méthode du repository
         return chapitreRepository.findChapitreCompletById(id)
-                .map(ChapitreAvecSectionsDto::new); // On convertit l'entité en DTO
+                .map(ChapitreAvecSectionsDto::new);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ChapitreContenuDto> findContenuCompletPourMatiere(Long matiereId) {
+        if (!ecRepository.existsById(matiereId)) {
+            throw new EntityNotFoundException("Matière non trouvée avec l'ID: " + matiereId);
+        }
+        List<Chapitre> chapitres = chapitreRepository.findAllChapitresCompletsByMatiereId(matiereId);
+        return chapitres.stream()
+                        .map(ChapitreContenuDto::new)
+                        .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public ChapitreContenuDto createChapitre(Long matiereId, ChapitreCreateDto dto) {
+        ElementConstitutif matiere = ecRepository.findById(matiereId)
+                .orElseThrow(() -> new EntityNotFoundException("Matière non trouvée avec l'ID: " + matiereId));
+        
+        Integer nouvelOrdre = chapitreRepository.countByElementConstitutifId(matiereId) + 1;
+
+        Chapitre nouveauChapitre = new Chapitre();
+        nouveauChapitre.setNom(dto.nom);
+        nouveauChapitre.setObjectif(dto.objectif);
+        nouveauChapitre.setOrdre(nouvelOrdre);
+        nouveauChapitre.setElementConstitutif(matiere);
+
+        Chapitre chapitreSauvegarde = chapitreRepository.save(nouveauChapitre);
+        return new ChapitreContenuDto(chapitreSauvegarde);
+    }
+
+    @Transactional
+    public void deleteChapitre(Long chapitreId) {
+        if (!chapitreRepository.existsById(chapitreId)) {
+            throw new EntityNotFoundException("Impossible de supprimer : Chapitre non trouvé avec l'ID: " + chapitreId);
+        }
+        chapitreRepository.deleteById(chapitreId);
+        log.info("Chapitre avec l'ID {} supprimé avec succès.", chapitreId);
     }
 }

@@ -1,4 +1,4 @@
-// Fichier : src/main/java/com/moscepa/config/SecurityConfig.java (Version Corrigée)
+// Fichier 1/2 : src/main/java/com/moscepa/config/SecurityConfig.java (Version Finale Corrigée)
 
 package com.moscepa.config;
 
@@ -71,13 +71,13 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/api-docs/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/etudiants/inscrire").permitAll()
+                .requestMatchers("/error").permitAll()
                 
                 // ====================================================================
                 // === CORRECTION APPLIQUÉE ICI                                     ===
                 // ====================================================================
-                // On autorise l'accès public à l'endpoint d'erreur interne de Spring Boot.
-                // Cela permet de voir la VRAIE erreur (souvent 500) au lieu d'une erreur 401 masquée.
-                .requestMatchers("/error").permitAll()
+                // On autorise l'accès public au dossier des fichiers uploadés.
+                .requestMatchers("/uploads/**").permitAll()
                 
                 // Pour TOUT LE RESTE, exiger une authentification.
                 .anyRequest().authenticated()
@@ -95,7 +95,7 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(List.of("http://localhost:4200" ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true);
+        configuration.setAllowCredentials(true); // C'est correct, on le garde à true
         configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

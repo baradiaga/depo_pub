@@ -15,12 +15,17 @@ public class Test {
     @Column(nullable = false)
     private String titre;
 
+    // Relation avec Chapitre
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chapitre_id", nullable = false)
     private Chapitre chapitre;
 
-    // CORRECTION : Assurez-vous que cette relation existe.
-    // C'est elle qui définit la liste de questions pour un test.
+    // Relation avec Questionnaire
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "questionnaire_id")
+    private Questionnaire questionnaire;
+
+    // Relation ManyToMany avec Question
     @ManyToMany
     @JoinTable(
         name = "moscepa_test_questions",
@@ -29,21 +34,34 @@ public class Test {
     )
     private List<Question> questions = new ArrayList<>();
 
-    // --- Getters et Setters ---
+    // ====================================================================
+    // Méthodes utilitaires pour gérer les questions
+    // ====================================================================
+    public void addQuestion(Question question) {
+        this.questions.add(question);
+        question.getTests().add(this); // synchronisation bidirectionnelle
+    }
 
+    public void removeQuestion(Question question) {
+        this.questions.remove(question);
+        question.getTests().remove(this); // synchronisation bidirectionnelle
+    }
+
+    // ====================================================================
+    // Getters et Setters
+    // ====================================================================
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+
     public String getTitre() { return titre; }
     public void setTitre(String titre) { this.titre = titre; }
+
     public Chapitre getChapitre() { return chapitre; }
     public void setChapitre(Chapitre chapitre) { this.chapitre = chapitre; }
 
-    // CORRECTION : Assurez-vous que ce getter est présent.
-    public List<Question> getQuestions() {
-        return questions;
-    }
+    public Questionnaire getQuestionnaire() { return questionnaire; }
+    public void setQuestionnaire(Questionnaire questionnaire) { this.questionnaire = questionnaire; }
 
-    public void setQuestions(List<Question> questions) {
-        this.questions = questions;
-    }
+    public List<Question> getQuestions() { return questions; }
+    public void setQuestions(List<Question> questions) { this.questions = questions; }
 }

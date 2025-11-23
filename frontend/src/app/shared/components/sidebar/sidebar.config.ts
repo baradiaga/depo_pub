@@ -131,8 +131,8 @@ export const COMPLETE_SIDEBAR_CONFIG: MenuItem[] = [
     icon: 'folder',
     defaultRoles: ['ADMIN', 'ENSEIGNANT', 'TECHNOPEDAGOGUE'],
     children: [
-      { label: 'Créer ressource', route: '/app/technopedagogue/ressources/create', featureKey: 'creer_ressource' },
-      { label: 'Mes ressources', route: '/app/technopedagogue/ressources', featureKey: 'mes_ressources' },
+      { label: 'Créer ressource', route: '/app/enseignant/matiere/:id/gestion', featureKey: 'creer_ressource' },
+      { label: 'Mes ressources', route: '/app/enseignant/ressources', featureKey: 'mes_ressources' },
       { label: 'Bibliothèque', route: '/app/technopedagogue/ressources/library', featureKey: 'bibliotheque' }
     ]
   },

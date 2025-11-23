@@ -14,7 +14,7 @@ import { PasserTestConnaissanceComponent } from './components/passer-test-connai
 import { SelectionTestConnaissanceComponent } from './components/selection-test-connaissance/selection-test-connaissance.component';
 import { DeroulementTestComponent } from './components/deroulement-test/deroulement-test.component';
 import { ResultatDiagnosticComponent } from './components/resultat-diagnostic/resultat-diagnostic.component';
-
+import { VueCoursComponent } from './components/vue-cours/vue-cours.component';
 const routes: Routes = [
   // --- Vos routes existantes ---
   { path: 'test/passer/:chapitreId', component: TestsListComponent },
@@ -33,6 +33,7 @@ const routes: Routes = [
   { path: 'test-connaissance/passer/:matiereId', component: PasserTestConnaissanceComponent },
   { path: 'dashboard/test-connaissance/:id', component: DeroulementTestComponent },
   {path: 'resultat-diagnostic',component: ResultatDiagnosticComponent },
+  {path: 'cours/:id', component: VueCoursComponent },
 
   // --- La route par défaut ---
   { path: '', redirectTo: 'parcours', pathMatch: 'full' }

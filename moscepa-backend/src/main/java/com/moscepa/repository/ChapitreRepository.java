@@ -28,4 +28,9 @@ public interface ChapitreRepository extends JpaRepository<Chapitre, Long> {
      */
     @Query("SELECT c FROM Chapitre c LEFT JOIN FETCH c.sections WHERE c.id = :id")
     Optional<Chapitre> findChapitreCompletById(@Param("id") Long id);
+
+    @Query("SELECT c FROM Chapitre c LEFT JOIN FETCH c.sections WHERE c.elementConstitutif.id = :matiereId ORDER BY c.ordre ASC")
+List<Chapitre> findAllChapitresCompletsByMatiereId(@Param("matiereId") Long matiereId);
+    Integer countByElementConstitutifId(Long matiereId);
+
 }

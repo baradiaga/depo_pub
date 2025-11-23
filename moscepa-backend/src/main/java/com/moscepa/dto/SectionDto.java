@@ -1,42 +1,58 @@
-// Fichier : src/main/java/com/moscepa/dto/SectionDto.java (Version finale et compatible à remplacer)
+// Fichier : src/main/java/com/moscepa/dto/SectionDto.java (Version Classe, plus flexible)
 
 package com.moscepa.dto;
 
 import com.moscepa.entity.Section;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import com.moscepa.entity.TypeSection; // Assurez-vous que cet import est là
 
-/**
- * DTO représentant une Section.
- * Ce 'record' est maintenant compatible avec toutes les parties de l'application.
- */
-public record SectionDto(
-    Long id,
-    @NotBlank(message = "Le titre ne peut pas être vide") String titre,
-    String contenu,
-    @NotNull(message = "L'ordre ne peut pas être nul") Integer ordre,
-    Long chapitreId // Le 5ème champ est conservé pour la compatibilité avec SectionService
-) {
-    /**
-     * Constructeur de conversion N°1 : Pour transformer une entité Section en ce DTO.
-     * Utilisé par ChapitreDto et ElementConstitutifService.
-     * @param section L'entité Section à convertir.
-     */
+public class SectionDto {
+
+    private Long id;
+    private String titre;
+    private String contenu;
+    private Integer ordre;
+    private TypeSection typeSection; // <-- APPORT : Le type de la section
+    private Long chapitreId; // Conservé pour la compatibilité
+
+    // Constructeur vide requis par de nombreux frameworks
+    public SectionDto() {}
+
+    // Constructeur pour la conversion depuis l'entité (le plus courant)
     public SectionDto(Section section) {
-        this(
-            section.getId(), 
-            section.getTitre(), 
-            section.getContenu(), 
-            section.getOrdre(),
-            // On s'assure que le chapitre n'est pas null avant d'appeler getId()
-            (section.getChapitre() != null) ? section.getChapitre().getId() : null
-        );
+        this.id = section.getId();
+        this.titre = section.getTitre();
+        this.contenu = section.getContenu();
+        this.ordre = section.getOrdre();
+        this.typeSection = section.getTypeSection(); // On récupère le nouveau champ
+        if (section.getChapitre() != null) {
+            this.chapitreId = section.getChapitre().getId();
+        }
+    }
+    
+    // Constructeur utilisé par votre SectionService (conservé pour la compatibilité)
+    public SectionDto(Long id, String titre, String contenu, Integer ordre, Long chapitreId) {
+        this.id = id;
+        this.titre = titre;
+        this.contenu = contenu;
+        this.ordre = ordre;
+        this.chapitreId = chapitreId;
+        // On peut laisser typeSection à null ou lui donner une valeur par défaut
+        this.typeSection = TypeSection.TEXTE; 
     }
 
-    /**
-     * Constructeur N°2 : Le constructeur principal (canonique) du record.
-     * Il est automatiquement généré par Java car les 5 champs sont déclarés ci-dessus.
-     * C'est ce constructeur que votre SectionService.java utilise, et qui causait l'erreur.
-     * En gardant les 5 champs dans la déclaration du record, ce constructeur est implicitement disponible.
-     */
+    // --- Getters et Setters ---
+    // (Générez tous les getters et setters pour les 6 champs ci-dessus)
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public String getTitre() { return titre; }
+    public void setTitre(String titre) { this.titre = titre; }
+    public String getContenu() { return contenu; }
+    public void setContenu(String contenu) { this.contenu = contenu; }
+    public Integer getOrdre() { return ordre; }
+    public void setOrdre(Integer ordre) { this.ordre = ordre; }
+    public TypeSection getTypeSection() { return typeSection; }
+    public void setTypeSection(TypeSection typeSection) { this.typeSection = typeSection; }
+    public Long getChapitreId() { return chapitreId; }
+    public void setChapitreId(Long chapitreId) { this.chapitreId = chapitreId; }
 }

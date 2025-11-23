@@ -1,0 +1,35 @@
+<!-- Fichier : src/app/features/enseignant/components/form-section/form-section.component.html -->
+
+<div class="modal-header">
+  <h4 class="modal-title">Ajouter une nouvelle section</h4>
+  <button type="button" class="btn-close" aria-label="Close" (click)="activeModal.dismiss('Cross click')"></button>
+</div>
+
+<div class="modal-body">
+  <form [formGroup]="sectionForm" (ngSubmit)="onSubmit()">
+    
+    <div class="mb-3">
+      <label for="titre" class="form-label">Titre de la section</label>
+      <input type="text" id="titre" class="form-control" formControlName="titre" required>
+      <div *ngIf="sectionForm.get('titre')?.invalid && sectionForm.get('titre')?.touched" class="text-danger mt-1">
+        <small>Le titre est obligatoire.</small>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label for="typeSection" class="form-label">Type de contenu</label>
+      <select id="typeSection" class="form-select" formControlName="typeSection">
+        <option *ngFor="let type of sectionTypes" [value]="type">{{ type }}</option>
+      </select>
+    </div>
+
+  </form>
+</div>
+
+<div class="modal-footer">
+  <button type="button" class="btn btn-outline-secondary" (click)="activeModal.dismiss('cancel click')">Annuler</button>
+  <button type="submit" class="btn btn-primary" (click)="onSubmit()" [disabled]="sectionForm.invalid || isSubmitting">
+    <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+    {{ isSubmitting ? 'Création...' : 'Créer la section' }}
+  </button>
+</div>

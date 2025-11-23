@@ -26,11 +26,13 @@ import { ResultatDiagnosticComponent } from './components/resultat-diagnostic/re
     PasserTestConnaissanceComponent,
     SelectionTestConnaissanceComponent,
     DeroulementTestComponent,
-    ResultatDiagnosticComponent
+    ResultatDiagnosticComponent,
+    
   ],
   imports: [
-    CommonModule, 
     SharedModule,
+    CommonModule, 
+    
     StudentRoutingModule
   ]
 })

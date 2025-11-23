@@ -28,4 +28,5 @@ public interface ResultatTestRepository extends JpaRepository<ResultatTest, Long
      * ce qui correspond au nom de la propriété dans l'entité ResultatTest.
      */
     List<ResultatTest> findByEtudiantIdOrderByDateTestDesc(Long etudiantId);
+    Optional<ResultatTest> findTopByEtudiantIdAndTestIdOrderByDateTestDesc(Long etudiantId, Long testId);
 }

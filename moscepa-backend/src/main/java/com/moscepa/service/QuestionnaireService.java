@@ -1,169 +1,162 @@
-// Fichier : QuestionnaireService.java (Version Corrigée)
-
 package com.moscepa.service;
 
-import com.moscepa.dto.GenerateurPayloadDTO;
+import com.moscepa.dto.GenerateurPayload;
 import com.moscepa.dto.QuestionnaireDetailDto;
-import com.moscepa.dto.QuestionnairePayloadDTO;
-import com.moscepa.entity.*;
+import com.moscepa.dto.QuestionnairePayload;
+import com.moscepa.entity.Chapitre;
+import com.moscepa.entity.Question;
+import com.moscepa.entity.Questionnaire;
+import com.moscepa.entity.Reponse;
 import com.moscepa.repository.ChapitreRepository;
-import com.moscepa.repository.QuestionRepository;
 import com.moscepa.repository.QuestionnaireRepository;
-import com.moscepa.repository.TestRepository;
-import org.springframework.http.HttpStatus;
+import jakarta.persistence.EntityNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Collections;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class QuestionnaireService {
 
-    private final QuestionnaireRepository questionnaireRepository;
-    private final QuestionRepository questionRepository;
-    private final ChapitreRepository chapitreRepository;
-    private final TestRepository testRepository;
+    private static final Logger log = LoggerFactory.getLogger(QuestionnaireService.class);
 
-    public QuestionnaireService(QuestionnaireRepository questionnaireRepository, QuestionRepository questionRepository, ChapitreRepository chapitreRepository, TestRepository testRepository ) {
+    private final QuestionnaireRepository questionnaireRepository;
+    private final ChapitreRepository chapitreRepository;
+    private final TestService testService; // ✅ injecter TestService
+
+    public QuestionnaireService(QuestionnaireRepository questionnaireRepository,
+                                ChapitreRepository chapitreRepository,
+                                TestService testService) { // ✅ remplacer TestRepository par TestService
         this.questionnaireRepository = questionnaireRepository;
-        this.questionRepository = questionRepository;
         this.chapitreRepository = chapitreRepository;
-        this.testRepository = testRepository;
+        this.testService = testService;
     }
 
+    // ====================================================================
+    // === CRÉATION / SAUVEGARDE DU QUESTIONNAIRE (brouillon)           ===
+    // ====================================================================
     @Transactional
-    public void sauvegarderQuestionnaire(QuestionnairePayloadDTO payload) {
+    public Questionnaire sauvegarderQuestionnaire(QuestionnairePayload payload) {
+        log.info("Requête reçue pour CRÉER un questionnaire : {}", payload.getTitre());
+
+        Chapitre chapitre = chapitreRepository.findById(payload.getChapitreId())
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Chapitre non trouvé avec l'ID: " + payload.getChapitreId()));
+
         Questionnaire questionnaire = new Questionnaire();
         questionnaire.setTitre(payload.getTitre());
         questionnaire.setDescription(payload.getDescription());
-        questionnaire.setDuree(payload.getDuree());
-
-        Chapitre chapitre = chapitreRepository.findById(payload.getChapitreId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chapitre non trouvé avec l'id: " + payload.getChapitreId()));
         questionnaire.setChapitre(chapitre);
+        questionnaire.setDateCreation(LocalDateTime.now());
 
+        List<Question> questions = new ArrayList<>();
         if (payload.getQuestions() != null) {
-            payload.getQuestions().forEach(questionDto -> {
+            payload.getQuestions().forEach(qDto -> {
                 Question question = new Question();
-                question.setEnonce(questionDto.getEnonce());
-                question.setTypeQuestion(questionDto.getType());
-                question.setPoints(questionDto.getPoints());
-                question.setReponseCorrecteTexte(questionDto.getReponseCorrecteTexte());
+                question.setEnonce(qDto.getEnonce());
+                question.setTypeQuestion(qDto.getType());
+                question.setPoints(qDto.getPoints());
+                question.setQuestionnaire(questionnaire);
 
-                if (questionDto.getReponses() != null) {
-                    questionDto.getReponses().forEach(reponseDto -> {
+                List<Reponse> reponses = new ArrayList<>();
+                if (qDto.getReponses() != null) {
+                    qDto.getReponses().forEach(rDto -> {
                         Reponse reponse = new Reponse();
-                        reponse.setTexte(reponseDto.getTexte());
-                        reponse.setCorrecte(reponseDto.isCorrecte());
-                        question.addReponse(reponse);
+                        reponse.setTexte(rDto.getTexte());
+                        reponse.setCorrecte(rDto.isCorrecte());
+                        reponse.setQuestion(question);
+                        reponses.add(reponse);
                     });
                 }
-                questionnaire.addQuestion(question);
+                question.setReponses(reponses);
+                questions.add(question);
             });
         }
 
-        boolean testExiste = testRepository.existsByChapitreId(payload.getChapitreId());
-        if (!testExiste) {
-            System.out.println("[QuestionnaireService] Aucun Test trouvé pour le chapitre ID " + payload.getChapitreId() + ". Création d'un Test par défaut.");
-            Test nouveauTest = new Test();
-            nouveauTest.setTitre("Évaluation - " + chapitre.getNom());
-            nouveauTest.setChapitre(chapitre);
-            testRepository.save(nouveauTest);
-        } else {
-            System.out.println("[QuestionnaireService] Un Test existe déjà pour le chapitre ID " + payload.getChapitreId() + ". Aucune action nécessaire.");
-        }
+        questionnaire.setQuestions(questions);
 
-        questionnaireRepository.save(questionnaire);
+        Questionnaire questionnaireSauvegarde = questionnaireRepository.save(questionnaire);
+        log.info("Questionnaire '{}' et ses {} questions ont été sauvegardés avec succès.",
+                questionnaireSauvegarde.getTitre(),
+                questionnaireSauvegarde.getQuestions() != null ? questionnaireSauvegarde.getQuestions().size() : 0);
+
+        // ✅ Créer automatiquement un test lié au questionnaire
+        testService.creerTestDepuisQuestionnaire(questionnaireSauvegarde.getId());
+
+        return questionnaireSauvegarde;
     }
 
-    @Transactional
-    public QuestionnaireDetailDto genererQuestionnaireDepuisBanque(GenerateurPayloadDTO payload) {
-        List<Question> questionsDisponibles = questionRepository.findBanqueQuestionsByChapitresIds(payload.getChapitresIds());
-
-        if (questionsDisponibles.size() < payload.getNombreQuestions()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Pas assez de questions dans la banque...");
-        }
-
-        Collections.shuffle(questionsDisponibles);
-        List<Question> questionsSelectionnees = questionsDisponibles.subList(0, payload.getNombreQuestions());
-
-        Questionnaire nouveauQuestionnaire = new Questionnaire();
-        nouveauQuestionnaire.setTitre(payload.getTitre());
-        nouveauQuestionnaire.setDuree(payload.getDuree());
-
-        Chapitre premierChapitre = chapitreRepository.findById(payload.getChapitresIds().get(0))
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chapitre non trouvé."));
-        nouveauQuestionnaire.setChapitre(premierChapitre);
-
-        for (Question questionOriginale : questionsSelectionnees) {
-            Question questionClone = new Question();
-            questionClone.setEnonce(questionOriginale.getEnonce());
-            questionClone.setTypeQuestion(questionOriginale.getTypeQuestion());
-            questionClone.setPoints(questionOriginale.getPoints());
-            questionClone.setReponseCorrecteTexte(questionOriginale.getReponseCorrecteTexte());
-            questionClone.setQuestionnaire(nouveauQuestionnaire);
-
-            for (Reponse reponseOriginale : questionOriginale.getReponses()) {
-                Reponse reponseClone = new Reponse();
-                reponseClone.setTexte(reponseOriginale.getTexte());
-                reponseClone.setCorrecte(reponseOriginale.isCorrecte());
-                questionClone.addReponse(reponseClone);
-            }
-            nouveauQuestionnaire.addQuestion(questionClone);
-        }
-
-        boolean testExiste = testRepository.existsByChapitreId(premierChapitre.getId());
-        if (!testExiste) {
-            System.out.println("[QuestionnaireService] Aucun Test trouvé pour le chapitre ID " + premierChapitre.getId() + ". Création d'un Test par défaut.");
-            Test nouveauTest = new Test();
-            nouveauTest.setTitre("Évaluation - " + premierChapitre.getNom());
-            nouveauTest.setChapitre(premierChapitre);
-            testRepository.save(nouveauTest);
-        }
-
-        Questionnaire questionnaireSauvegarde = questionnaireRepository.save(nouveauQuestionnaire);
-        return convertToDetailDto(questionnaireSauvegarde);
-    }
-
-    private QuestionnaireDetailDto convertToDetailDto(Questionnaire questionnaire) {
-        QuestionnaireDetailDto dto = new QuestionnaireDetailDto();
-        dto.setId(questionnaire.getId());
-        dto.setTitre(questionnaire.getTitre());
-        dto.setDuree(questionnaire.getDuree());
-        dto.setDescription(questionnaire.getDescription());
-        if (questionnaire.getQuestions() != null) {
-            dto.setNombreQuestions(questionnaire.getQuestions().size());
-        }
-
-        if (questionnaire.getChapitre() != null) {
-            dto.setNomChapitre(questionnaire.getChapitre().getNom());
-            
-            // ====================================================================
-            // === CORRECTION APPLIQUÉE ICI                                     ===
-            // ====================================================================
-            // On utilise getElementConstitutif() au lieu de getMatiere()
-            if (questionnaire.getChapitre().getElementConstitutif() != null) {
-                dto.setNomMatiere(questionnaire.getChapitre().getElementConstitutif().getNom());
-            }
-        }
-        return dto;
-    }
-
+    // ====================================================================
+    // === LISTE DES QUESTIONNAIRES (DTO)                                ===
+    // ====================================================================
     @Transactional(readOnly = true)
     public List<QuestionnaireDetailDto> findAllQuestionnaires() {
-        return questionnaireRepository.findAll().stream()
-                .map(this::convertToDetailDto)
+        return questionnaireRepository.findAll()
+                .stream()
+                .map(this::toDetailDto)
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public List<Questionnaire> findAll() {
+        return questionnaireRepository.findAll();
+    }
+
+    // ====================================================================
+    // === GÉNÉRATION AUTOMATIQUE DE QUESTIONNAIRE                       ===
+    // ====================================================================
+    @Transactional
+    public QuestionnaireDetailDto genererQuestionnaireDepuisBanque(GenerateurPayload params) {
+        log.info("Génération automatique de questionnaire: {}", params.getTitre());
+
+        Questionnaire q = new Questionnaire();
+        q.setTitre(params.getTitre());
+        q.setDescription("Questionnaire généré automatiquement");
+        q.setDateCreation(LocalDateTime.now());
+
+        if (params.getChapitreId() != null) {
+            Chapitre chapitre = chapitreRepository.findById(params.getChapitreId())
+                    .orElseThrow(() -> new EntityNotFoundException(
+                            "Chapitre non trouvé avec l'ID: " + params.getChapitreId()));
+            q.setChapitre(chapitre);
+        }
+
+        Questionnaire saved = questionnaireRepository.save(q);
+
+        // ✅ Créer automatiquement un test lié au questionnaire généré
+        testService.creerTestDepuisQuestionnaire(saved.getId());
+
+        return toDetailDto(saved);
+    }
+
+    // ====================================================================
+    // === SUPPRESSION                                                   ===
+    // ====================================================================
     @Transactional
     public void deleteQuestionnaireById(Long id) {
+        log.info("Suppression du questionnaire ID: {}", id);
         if (!questionnaireRepository.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Questionnaire non trouvé avec l'ID : " + id);
+            throw new EntityNotFoundException("Questionnaire non trouvé avec l'ID: " + id);
         }
         questionnaireRepository.deleteById(id);
+    }
+
+    // ====================================================================
+    // === MAPPERS                                                       ===
+    // ====================================================================
+    private QuestionnaireDetailDto toDetailDto(Questionnaire q) {
+        Long chapitreId = q.getChapitre() != null ? q.getChapitre().getId() : null;
+        return new QuestionnaireDetailDto(
+                q.getId(),
+                q.getTitre(),
+                q.getDescription(),
+                q.getDateCreation(),
+                chapitreId
+        );
     }
 }

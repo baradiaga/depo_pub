@@ -1,8 +1,10 @@
+// Fichier : src/main/java/com/moscepa/controller/QuestionnaireController.java
+
 package com.moscepa.controller;
 
-import com.moscepa.dto.GenerateurPayloadDTO;
+import com.moscepa.dto.GenerateurPayload;
 import com.moscepa.dto.QuestionnaireDetailDto;
-import com.moscepa.dto.QuestionnairePayloadDTO;
+import com.moscepa.dto.QuestionnairePayload;
 import com.moscepa.service.QuestionnaireService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/questionnaires" )
+@RequestMapping("/api/questionnaires")
 @CrossOrigin(origins = "*")
 public class QuestionnaireController {
 
@@ -24,11 +26,14 @@ public class QuestionnaireController {
         this.questionnaireService = questionnaireService;
     }
 
+    // ====================================================================
+    // === CRÉATION DE QUESTIONNAIRE                                     ===
+    // ====================================================================
     @PostMapping
-    public ResponseEntity<Void> createQuestionnaire(@RequestBody QuestionnairePayloadDTO payload) {
+    public ResponseEntity<Void> createQuestionnaire(@RequestBody QuestionnairePayload payload) {
         try {
             log.info("Requête reçue pour CRÉER un questionnaire : {}", payload.getTitre());
-            questionnaireService.sauvegarderQuestionnaire(payload); // Appelle la bonne méthode
+            questionnaireService.sauvegarderQuestionnaire(payload);
             return new ResponseEntity<>(HttpStatus.CREATED);
         } catch (Exception e) {
             log.error("Erreur lors de la création du questionnaire", e);
@@ -36,11 +41,14 @@ public class QuestionnaireController {
         }
     }
 
+    // ====================================================================
+    // === LISTE DE TOUS LES QUESTIONNAIRES                              ===
+    // ====================================================================
     @GetMapping
     public ResponseEntity<List<QuestionnaireDetailDto>> getAllQuestionnaires() {
         try {
             log.info("Requête reçue pour LISTER tous les questionnaires.");
-            List<QuestionnaireDetailDto> questionnaires = questionnaireService.findAllQuestionnaires(); // Appelle la nouvelle méthode
+            List<QuestionnaireDetailDto> questionnaires = questionnaireService.findAllQuestionnaires();
             return ResponseEntity.ok(questionnaires);
         } catch (Exception e) {
             log.error("Erreur lors de la récupération des questionnaires", e);
@@ -48,11 +56,13 @@ public class QuestionnaireController {
         }
     }
 
+    // ====================================================================
+    // === GÉNÉRATION AUTOMATIQUE DE QUESTIONNAIRE                       ===
+    // ====================================================================
     @PostMapping("/generer-depuis-banque")
-    public ResponseEntity<QuestionnaireDetailDto> genererQuestionnaire(@RequestBody GenerateurPayloadDTO params) {
+    public ResponseEntity<QuestionnaireDetailDto> genererQuestionnaire(@RequestBody GenerateurPayload params) {
         try {
             log.info("Requête reçue pour GÉNÉRER un questionnaire : {}", params.getTitre());
-            // CORRECTION : Appelle la méthode avec le bon nom
             QuestionnaireDetailDto questionnaireGenere = questionnaireService.genererQuestionnaireDepuisBanque(params);
             return ResponseEntity.ok(questionnaireGenere);
         } catch (Exception e) {
@@ -61,11 +71,14 @@ public class QuestionnaireController {
         }
     }
 
+    // ====================================================================
+    // === SUPPRESSION DE QUESTIONNAIRE                                  ===
+    // ====================================================================
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteQuestionnaire(@PathVariable Long id) {
         try {
             log.info("Requête reçue pour SUPPRIMER le questionnaire ID: {}", id);
-            questionnaireService.deleteQuestionnaireById(id); // Appelle la nouvelle méthode
+            questionnaireService.deleteQuestionnaireById(id);
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
             log.error("Erreur lors de la suppression du questionnaire ID: {}", id, e);

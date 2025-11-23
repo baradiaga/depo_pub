@@ -1,7 +1,6 @@
-// Fichier : gestion-chapitre.component.ts (Version corrigée et robuste)
+// Fichier : gestion-chapitre.component.ts (Version corrigée avec ngx-quill)
 
 import { Component, OnInit } from '@angular/core';
-import { AngularEditorConfig } from '@kolkov/angular-editor';
 import { forkJoin, Observable } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 
@@ -29,16 +28,8 @@ export class GestionChapitreComponent implements OnInit {
 
   isLoading = false;
 
-  editorConfig: AngularEditorConfig = {
-    editable: true,
-    spellcheck: true,
-    height: '350px',
-    minHeight: '200px',
-    maxHeight: '600px',
-    placeholder: 'Saisissez le contenu détaillé de la section ici...',
-    translate: 'no',
-    defaultParagraphSeparator: 'p',
-  };
+  // La propriété 'editorConfig' pour @kolkov/angular-editor a été supprimée.
+  // ngx-quill n'en a pas besoin pour une configuration simple.
 
   constructor(
     private ecService: ElementConstitutifService,
@@ -62,16 +53,8 @@ export class GestionChapitreComponent implements OnInit {
       .subscribe({
         next: (chapitre: Chapitre) => {
           this.chapitreCharge = chapitre;
-
-          // --- DÉBUT DE LA CORRECTION (Solution 3) ---
-          // On s'assure que 'sections' est TOUJOURS un tableau.
-          // Si la propriété est absente (undefined) ou null, on l'initialise comme un tableau vide.
           this.chapitreCharge.sections = this.chapitreCharge.sections || [];
-          
-          // Maintenant, le forEach peut s'exécuter en toute sécurité, même si le tableau est vide.
           this.chapitreCharge.sections.forEach(s => s.contenu = s.contenu || '');
-          // --- FIN DE LA CORRECTION ---
-
           this.isLoading = false;
         },
         error: (err: any) => {
@@ -89,8 +72,6 @@ export class GestionChapitreComponent implements OnInit {
       return;
     }
 
-    // Grâce à la correction, this.chapitreCharge.sections est garanti d'être un tableau,
-    // donc cet appel est également plus sûr.
     const updateObservables = this.chapitreCharge.sections.map((section: Section) => 
       this.sectionService.updateContenu(section)
     );

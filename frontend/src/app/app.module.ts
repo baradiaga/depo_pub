@@ -10,16 +10,17 @@ import { AppRoutingModule } from './app-routing.module';
 
 // --- 2. Importez les modules externes (bibliothèques tierces ) ---
 import { ToastrModule } from 'ngx-toastr';
-import { AngularEditorModule } from '@kolkov/angular-editor';
-// --- 3. Importez uniquement le composant racine de l'application ---
+import { QuillModule } from 'ngx-quill';// --- 3. Importez uniquement le composant racine de l'application ---
 import { AppComponent } from './app.component';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 
 
 @NgModule({
   declarations: [
     // AppModule ne déclare plus que le composant racine AppComponent.
-    AppComponent
+    AppComponent,
+    
   ],
   imports: [
     // --- 4. Modules à importer UNE SEULE FOIS dans l'application ---
@@ -33,12 +34,13 @@ import { AppComponent } from './app.component';
     SharedModule,     // SharedModule peut être importé ici et dans les autres modules
 
     // --- 6. Configuration des modules externes ---
-    AngularEditorModule,
+    QuillModule,
     ToastrModule.forRoot({
       timeOut: 5000,
       positionClass: 'toast-top-right',
       preventDuplicates: true,
     }),
+    NgbModule,
   ],
   providers: [
     // Le tableau des providers est maintenant VIDE.

@@ -1,7 +1,8 @@
-// Fichier : src/main/java/com/moscepa/service/SectionService.java
+// Fichier : src/main/java/com/moscepa/service/SectionService.java (Mis à Jour)
 
 package com.moscepa.service;
 
+import com.moscepa.dto.SectionCreateDto; // <-- Nouvel import
 import com.moscepa.dto.SectionDto;
 import com.moscepa.dto.SectionUpdateRequest;
 import com.moscepa.entity.Chapitre;
@@ -28,29 +29,39 @@ public class SectionService {
 
     // --- MÉTHODE DE CONVERSION (interne) ---
     private SectionDto convertToDto(Section section) {
-        return new SectionDto(
-                section.getId(),
-                section.getTitre(),
-                section.getContenu(),
-                section.getOrdre(),
-                section.getChapitre() != null ? section.getChapitre().getId() : null
-        );
+        return new SectionDto(section);
     }
 
-    // --- CRÉATION ---
+    // ====================================================================
+    // === MÉTHODE DE CRÉATION MISE À JOUR                            ===
+    // ====================================================================
+    /**
+     * Crée une nouvelle section dans un chapitre donné.
+     * La signature a été modifiée pour utiliser SectionCreateDto, qui est plus spécifique.
+     * @param chapitreId L'ID du chapitre parent.
+     * @param dto Les données de la nouvelle section (titre, type, etc.).
+     * @return Le DTO de la section qui vient d'être créée.
+     */
     @Transactional
-    public SectionDto createSection(Long chapitreId, SectionDto sectionDto) {
+    public SectionDto createSection(Long chapitreId, SectionCreateDto dto) {
         Chapitre chapitre = chapitreRepository.findById(chapitreId)
                 .orElseThrow(() -> new EntityNotFoundException("Chapitre non trouvé avec l'ID : " + chapitreId));
 
-        Section section = new Section();
-        section.setTitre(sectionDto.titre());
-        section.setContenu(sectionDto.contenu());
-        section.setOrdre(sectionDto.ordre());
-        section.setChapitre(chapitre);
+        // On calcule le prochain numéro d'ordre pour la nouvelle section
+        // Note : .getSections() peut déclencher une requête si le fetch type est LAZY.
+        // C'est acceptable ici car on a besoin de la taille.
+        int nouvelOrdre = chapitre.getSections().size() + 1;
 
-        Section savedSection = sectionRepository.save(section);
-        return convertToDto(savedSection);
+        Section nouvelleSection = new Section();
+        nouvelleSection.setTitre(dto.getTitre());
+        nouvelleSection.setContenu(dto.getContenu() != null ? dto.getContenu() : ""); // Contenu vide par défaut
+        nouvelleSection.setTypeSection(dto.getTypeSection());
+        nouvelleSection.setOrdre(nouvelOrdre);
+        nouvelleSection.setChapitre(chapitre);
+
+        Section sectionSauvegardee = sectionRepository.save(nouvelleSection);
+
+        return convertToDto(sectionSauvegardee);
     }
 
     // --- LECTURE ---
@@ -66,9 +77,7 @@ public class SectionService {
         return sectionRepository.findById(id).map(this::convertToDto);
     }
 
-    // ====================================================================
-    // === MÉTHODE DE MISE À JOUR DU CONTENU (la plus importante ici)   ===
-    // ====================================================================
+    // --- MISE À JOUR ---
     @Transactional
     public SectionDto updateSectionContent(Long id, SectionUpdateRequest updateRequest) {
         Section section = sectionRepository.findById(id)
@@ -89,4 +98,5 @@ public class SectionService {
         }
         sectionRepository.deleteById(id);
     }
+
 }

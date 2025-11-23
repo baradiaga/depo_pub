@@ -14,8 +14,11 @@ import { ModificationmotdepassComponent } from './components/modificationmotdepa
 import { ModificationprofilComponent } from './components/modificationprofil/modificationprofil.component';
 import { PageNotFoundComponent } from './components/page-not-found/page-not-found.component';
 
+
 // Directives partagées
 import { DashboardDirective } from './directives/dashboard.directive';
+import { SafeUrlPipe } from './pipes/safe-url.pipe';
+import { VueCoursComponent } from '../features/student/components/vue-cours/vue-cours.component';
 
 @NgModule({
   declarations: [
@@ -27,7 +30,9 @@ import { DashboardDirective } from './directives/dashboard.directive';
     ModificationmotdepassComponent,
     ModificationprofilComponent,
     DashboardDirective,
-    PageNotFoundComponent
+    PageNotFoundComponent,
+    SafeUrlPipe,
+    VueCoursComponent
   ],
   imports: [
     CommonModule,
@@ -48,7 +53,8 @@ import { DashboardDirective } from './directives/dashboard.directive';
     CommonModule,
     RouterModule,
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    SafeUrlPipe,
   ]
 })
 export class SharedModule {}

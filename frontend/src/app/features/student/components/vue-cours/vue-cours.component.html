@@ -1,0 +1,119 @@
+<!-- Fichier : src/app/features/etudiant/components/vue-cours/vue-cours.component.html -->
+
+<!-- ==================================================== -->
+<!-- === 1. AJOUT DE L'EN-TÊTE DE LA MODALE             === -->
+<!-- ==================================================== -->
+<!-- Il contient le titre et le bouton pour fermer la fenêtre. -->
+<div class="modal-header">
+  <h4 class="modal-title" id="modal-basic-title">Contenu du Cours</h4>
+  <button type="button" class="btn-close" aria-label="Close" (click)="activeModal.dismiss('Cross click')"></button>
+</div>
+
+<!-- ==================================================== -->
+<!-- === 2. AJOUT DU CORPS DE LA MODALE                 === -->
+<!-- ==================================================== -->
+<!-- Votre code existant est placé à l'intérieur de ce div. -->
+<div class="modal-body">
+  
+  <!-- Indicateur de chargement -->
+  <div *ngIf="isLoading" class="d-flex justify-content-center align-items-center" style="height: 60vh;">
+    <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status"></div>
+    <h4 class="ms-3">Chargement du cours...</h4>
+  </div>
+
+  <!-- Affichage en cas d'erreur -->
+  <div *ngIf="errorMessage && !isLoading" class="alert alert-danger">
+    <h4 class="alert-heading">Erreur !</h4>
+    <p>{{ errorMessage }}</p>
+  </div>
+
+  <!-- Structure principale du cours -->
+  <div class="row" *ngIf="!isLoading && !errorMessage">
+    <!-- COLONNE DE GAUCHE : NAVIGATION -->
+    <div class="col-md-4">
+      <div class="card shadow-sm">
+        <div class="card-header">
+          <h5 class="mb-0">Plan du Cours</h5>
+        </div>
+        <div style="max-height: 65vh; overflow-y: auto;">
+          <div *ngFor="let chapitre of chapitres" class="border-bottom">
+            <div class="list-group-item list-group-item-secondary fw-bold cursor-pointer" (click)="selectionnerChapitre(chapitre)">
+              {{ chapitre.nom }}
+            </div>
+            <div class="list-group list-group-flush">
+              <a *ngFor="let section of chapitre.sections" 
+                 (click)="selectionnerSection(section)"
+                 [class.active]="section.id === sectionSelectionnee?.id"
+                 class="list-group-item list-group-item-action ps-4 cursor-pointer">
+                <i class="bi me-2" [ngClass]="{
+                     'bi-file-text': section.typeSection === 'TEXTE',
+                     'bi-play-btn': section.typeSection === 'VIDEO',
+                     'bi-paperclip': section.typeSection === 'FICHIER',
+                     'bi-patch-question': section.typeSection === 'QUIZ'
+                   }"></i>
+                {{ section.titre }}
+              </a>
+              <div *ngIf="chapitre.sections.length === 0" class="list-group-item text-muted fst-italic ps-4">
+                Ce chapitre est vide.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COLONNE DE DROITE : CONTENU -->
+    <div class="col-md-8">
+      <div *ngIf="sectionSelectionnee; else noSectionSelected" class="card shadow-sm">
+        <div class="card-header">
+          <h5 class="mb-0">{{ sectionSelectionnee.titre }}</h5>
+        </div>
+        <div class="card-body" style="max-height: 65vh; overflow-y: auto;">
+          <div [ngSwitch]="sectionSelectionnee.typeSection">
+            <!-- Cas TEXTE -->
+            <div *ngSwitchCase="'TEXTE'">
+              <div [innerHTML]="sectionSelectionnee.contenu" class="ql-editor" style="height: auto; padding: 0;"></div>
+              <div *ngIf="!sectionSelectionnee.contenu" class="text-muted fst-italic">Cette section est vide.</div>
+            </div>
+            <!-- Cas VIDEO -->
+            <div *ngSwitchCase="'VIDEO'">
+              <div *ngIf="sectionSelectionnee.contenu" class="ratio ratio-16x9">
+                <iframe [src]="sectionSelectionnee.contenu | safeUrl" title="Lecteur vidéo" allowfullscreen></iframe>
+              </div>
+            </div>
+            <!-- Cas FICHIER -->
+            <div *ngSwitchCase="'FICHIER'">
+              <div *ngIf="sectionSelectionnee.contenu">
+                <p>Cette section contient un fichier à télécharger.</p>
+                <a [href]="'http://localhost:8080' + sectionSelectionnee.contenu" target="_blank" class="btn btn-primary">
+                  <i class="bi bi-download me-2"></i> Télécharger le fichier
+                </a>
+              </div>
+            </div>
+            <!-- Cas QUIZ -->
+            <div *ngSwitchCase="'QUIZ'">
+              <div class="text-center py-5">
+                <i class="bi bi-patch-question-fill display-4 text-primary"></i>
+                <h4 class="mt-3">Quiz à venir</h4>
+                <p>Cette section est un quiz. Le module de passage de quiz sera bientôt disponible.</p>
+              </div>
+            </div>
+            <!-- Cas par défaut -->
+            <div *ngSwitchDefault class="text-muted fst-italic">
+              Ce type de contenu n'est pas encore supporté.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Template si aucune section n'est sélectionnée -->
+      <ng-template #noSectionSelected>
+        <div class="d-flex flex-column justify-content-center align-items-center text-center" style="height: 60vh;">
+          <i class="bi bi-arrow-left-circle display-4 text-primary"></i>
+          <h4 class="mt-3">Bienvenue dans ce cours !</h4>
+          <p class="text-muted">Sélectionnez un chapitre ou une section dans le plan à gauche pour commencer.</p>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div>

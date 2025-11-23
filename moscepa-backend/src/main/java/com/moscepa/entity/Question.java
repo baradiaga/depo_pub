@@ -26,46 +26,75 @@ public class Question {
     @Column(name = "reponse_correcte_texte")
     private String reponseCorrecteTexte;
 
+    // ====================================================================
+    // Réponses associées à la question
+    // ====================================================================
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OrderBy("id ASC")
     private List<Reponse> reponses = new ArrayList<>();
 
-    // --- MODIFICATION 1 : Le lien vers Questionnaire est maintenant optionnel ---
-    // La contrainte nullable = false a été retirée.
-    // Une question peut maintenant exister sans être liée à un questionnaire (c'est une question de la "banque").
+    // ====================================================================
+    // Questionnaire associé (si la question appartient à un questionnaire)
+    // ====================================================================
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "questionnaire_id") // nullable = false a été supprimé
+    @JoinColumn(name = "questionnaire_id")
     @JsonBackReference
     private Questionnaire questionnaire;
 
-    // --- MODIFICATION 2 : Ajout des liens vers Matiere et Chapitre ---
-    // Ces liens sont nécessaires pour pouvoir filtrer les questions de la banque.
-    // Nous supposons qu'une question est liée à un chapitre, qui lui-même est lié à une matière.
+    // ====================================================================
+    // Chapitre associé
+    // ====================================================================
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chapitre_id")
     private Chapitre chapitre;
 
+    // ====================================================================
+    // Tests associés via ManyToMany
+    // ====================================================================
+    @ManyToMany(mappedBy = "questions")
+    @JsonBackReference
+    private List<Test> tests = new ArrayList<>();
+
+    // ====================================================================
+    // Méthodes utilitaires pour gérer les réponses
+    // ====================================================================
     public void addReponse(Reponse reponse) {
         this.reponses.add(reponse);
         reponse.setQuestion(this);
     }
 
-    // --- Getters et Setters (y compris pour les nouveaux champs) ---
+    public void removeReponse(Reponse reponse) {
+        this.reponses.remove(reponse);
+        reponse.setQuestion(null);
+    }
+
+    // ====================================================================
+    // Getters et Setters
+    // ====================================================================
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+
     public String getEnonce() { return enonce; }
     public void setEnonce(String enonce) { this.enonce = enonce; }
+
     public TypeQuestion getTypeQuestion() { return typeQuestion; }
     public void setTypeQuestion(TypeQuestion typeQuestion) { this.typeQuestion = typeQuestion; }
+
     public double getPoints() { return points; }
     public void setPoints(double points) { this.points = points; }
+
     public String getReponseCorrecteTexte() { return reponseCorrecteTexte; }
     public void setReponseCorrecteTexte(String reponseCorrecteTexte) { this.reponseCorrecteTexte = reponseCorrecteTexte; }
+
     public List<Reponse> getReponses() { return reponses; }
     public void setReponses(List<Reponse> reponses) { this.reponses = reponses; }
+
     public Questionnaire getQuestionnaire() { return questionnaire; }
     public void setQuestionnaire(Questionnaire questionnaire) { this.questionnaire = questionnaire; }
-    
-    // Getters et Setters pour Chapitre
+
     public Chapitre getChapitre() { return chapitre; }
     public void setChapitre(Chapitre chapitre) { this.chapitre = chapitre; }
+
+    public List<Test> getTests() { return tests; }
+    public void setTests(List<Test> tests) { this.tests = tests; }
 }

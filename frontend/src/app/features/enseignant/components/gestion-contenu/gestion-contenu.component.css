@@ -1,0 +1,9 @@
+.ql-editor {
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.card-body .ql-editor * {
+  max-width: 100% !important;
+}

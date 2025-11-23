@@ -1,4 +1,4 @@
-<!-- Fichier : src/app/features/admin/pages/gestion-questionnaire/gestion-questionnaire.component.html (Corrigé) -->
+<!-- Fichier : src/app/features/enseignant/components/gestion-questionnaire/gestion-questionnaire.component.html (Corrigé avec ngx-quill) -->
 
 <div class="container mt-4">
   <!-- ============================================= -->
@@ -43,16 +43,19 @@
             <select id="chapitre" class="form-select" [(ngModel)]="questionnaire.chapitreId" [disabled]="!questionnaire.matiereId || isLoadingChapitres">
               <option [ngValue]="null" disabled>-- Choisissez un chapitre --</option>
               <option *ngIf="isLoadingChapitres">Chargement des chapitres...</option>
-              <!-- ========================================================== -->
-              <!-- === CORRECTION APPLIQUÉE ICI : 'titre' -> 'nom'          === -->
-              <!-- ========================================================== -->
               <option *ngFor="let chapitre of chapitresDisponibles" [value]="chapitre.id">{{ chapitre.nom }}</option>
             </select>
           </div>
         </div>
         <div class="mb-3">
           <label class="form-label">Description</label>
-          <angular-editor [config]="editorConfig" [(ngModel)]="questionnaire.description"></angular-editor>
+          <!-- ==================================================================== -->
+          <!-- === CORRECTION : On remplace <angular-editor> par <quill-editor> === -->
+          <!-- ==================================================================== -->
+          <quill-editor 
+            [(ngModel)]="questionnaire.description"
+            [styles]="{ height: '150px' }">
+          </quill-editor>
         </div>
 
         <hr>
@@ -171,9 +174,6 @@
           <label class="form-label">Chapitres à inclure <span class="text-danger">*</span></label>
           <div class="border p-3 rounded">
             <div *ngIf="isLoadingChapitres" class="text-muted">Chargement...</div>
-            <!-- ========================================================== -->
-            <!-- === CORRECTION APPLIQUÉE ICI : 'titre' -> 'nom'          === -->
-            <!-- ========================================================== -->
             <div *ngFor="let chapitre of chapitresDisponibles" class="form-check">
               <input class="form-check-input" type="checkbox" [id]="'chap-' + chapitre.id" (change)="toggleChapitre(chapitre.id)">
               <label class="form-check-label" [for]="'chap-' + chapitre.id">{{ chapitre.nom }}</label>
