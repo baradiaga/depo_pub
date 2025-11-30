@@ -1,19 +1,13 @@
 <div class="admin-container">
-  <h1 class="main-title">Administration des Fonctionnalités</h1>
-
-  <!-- Onglets pour basculer entre les vues -->
-  <div class="view-tabs">
-    <button [class.active]="currentView === 'gestion'" (click)="currentView = 'gestion'">Gestion des Fonctionnalités (CRUD)</button>
-    <button [class.active]="currentView === 'permissions'" (click)="currentView = 'permissions'">Gestion des Permissions par Rôle</button>
-  </div>
+  <h1 class="main-title">Gestion des Fonctionnalités (CRUD)</h1>
 
   <!-- ===================================================== -->
   <!-- VUE 1: GESTION DES FONCTIONNALITÉS (CRUD) -->
   <!-- ===================================================== -->
-  <div *ngIf="currentView === 'gestion'">
+  <div>
     <div *ngIf="!isFormVisible">
       <button class="btn primary add-btn" (click)="startNewFonctionnalite()">+ Ajouter une fonctionnalité</button>
-      
+
       <div class="fonctionnalite-list">
         <div *ngFor="let f of allFonctionnalites" class="fonctionnalite-card">
           <div class="card-header">
@@ -38,7 +32,7 @@
     <!-- Formulaire de CRUD -->
     <div *ngIf="isFormVisible && editingFonctionnalite" class="form-container">
       <h2>{{ editingFonctionnalite.id ? 'Modifier la' : 'Nouvelle' }} fonctionnalité</h2>
-      
+
       <div class="form-grid">
         <input [(ngModel)]="editingFonctionnalite.nom" placeholder="Nom (ex: Gestion des utilisateurs)">
         <input [(ngModel)]="editingFonctionnalite.featureKey" placeholder="Feature Key (ex: gestion_utilisateurs)">
@@ -57,32 +51,6 @@
       <div class="form-actions">
         <button class="btn primary" (click)="saveFonctionnalite()">Enregistrer</button>
         <button class="btn" (click)="closeForm()">Annuler</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===================================================== -->
-  <!-- VUE 2: GESTION DES PERMISSIONS -->
-  <!-- ===================================================== -->
-  <div *ngIf="currentView === 'permissions'">
-    <div class="role-selector">
-      <label>Sélectionner un rôle :</label>
-<select (change)="onRoleChange($event)">        <option value="">-- Choisissez un rôle --</option>
-        <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
-      </select>
-    </div>
-
-    <div *ngIf="selectedRole" class="permissions-grid">
-      <div *ngFor="let f of allFonctionnalites" class="permission-group">
-        <h4><input type="checkbox" [checked]="isFeatureChecked(f.featureKey)" (change)="toggleFeaturePermission(f.featureKey)"> {{ f.nom }}</h4>
-        <ul>
-          <li *ngFor="let sf of f.sousFonctionnalites">
-            <input type="checkbox" [checked]="isFeatureChecked(sf.featureKey)" (change)="toggleFeaturePermission(sf.featureKey)"> {{ sf.label }}
-          </li>
-        </ul>
-      </div>
-      <div class="form-actions">
-        <button class="btn primary" (click)="savePermissions()">Enregistrer les permissions pour {{ selectedRole }}</button>
       </div>
     </div>
   </div>

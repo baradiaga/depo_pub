@@ -4,6 +4,7 @@ export interface SousFonctionnalite {
   label: string;
   featureKey: string;
   route: string;
+   queryParams?: { [key: string]: string };
 }
 
 // Correspond à FonctionnaliteDTO.java
@@ -13,6 +14,7 @@ export interface Fonctionnalite {
   featureKey: string;
   icon: string;
   sousFonctionnalites: SousFonctionnalite[];
+  
 }
 
 // Correspond à la Map<String, Set<String>> du PermissionController

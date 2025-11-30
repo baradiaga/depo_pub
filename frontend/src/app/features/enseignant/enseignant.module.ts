@@ -15,6 +15,10 @@ import { GestionContenuComponent } from './components/gestion-contenu/gestion-co
 import { FormChapitreComponent } from './components/form-chapitre/form-chapitre.component';
 import { FormSectionComponent } from './components/form-section/form-section.component';
 import { MesRessourcesComponent } from './components/mes-ressources/mes-ressources.component';
+import { BanqueQuestionGestionComponent } from './components/banque-question-gestion/banque-question-gestion.component';
+import { QuestionnaireDetailsComponent } from './components/questionnaire-details/questionnaire-details.component';
+import { GestionRessourcesPedagogiquesComponent } from './components/gestion-ressources-pedagogiques/gestion-ressources-pedagogiques.component';
+import { GestionFormationsComponent } from './components/gestion-formations/gestion-formations.component';
 
 @NgModule({
   // --- 3. Déclarez TOUS les composants de ce module ---
@@ -25,6 +29,10 @@ import { MesRessourcesComponent } from './components/mes-ressources/mes-ressourc
     FormChapitreComponent,
     FormSectionComponent,
     MesRessourcesComponent,
+    BanqueQuestionGestionComponent,
+    QuestionnaireDetailsComponent,
+    GestionRessourcesPedagogiquesComponent,
+    GestionFormationsComponent,
      
   ],
   // --- 4. Importez les modules nécessaires ---

@@ -66,7 +66,7 @@ export const COMPLETE_SIDEBAR_CONFIG: MenuItem[] = [
     icon: 'book',
     defaultRoles: ['ADMIN', 'RESPONSABLE_FORMATION'],
     children: [
-      { label: 'Créer formation', route: '/app/admin/formations/create', featureKey: 'creer_formation' },
+      { label: 'Créer formation', route: '/app/enseignant/formations', featureKey: 'creer_formation' },
       { label: 'Liste des formations', route: '/app/admin/formations', featureKey: 'liste_formations' },
       { label: 'Gérer inscriptions', route: '/app/admin/inscriptions', featureKey: 'gerer_inscriptions' }
     ]
@@ -133,7 +133,7 @@ export const COMPLETE_SIDEBAR_CONFIG: MenuItem[] = [
     children: [
       { label: 'Créer ressource', route: '/app/enseignant/matiere/:id/gestion', featureKey: 'creer_ressource' },
       { label: 'Mes ressources', route: '/app/enseignant/ressources', featureKey: 'mes_ressources' },
-      { label: 'Bibliothèque', route: '/app/technopedagogue/ressources/library', featureKey: 'bibliotheque' }
+      { label: 'Banque de ressource', route: '/app/enseignant/banques', featureKey: 'bibliotheque' }
     ]
   },
   // --- ID 10: Gestion des échelles de connaissances (Routes corrigées) ---
@@ -169,7 +169,7 @@ export const COMPLETE_SIDEBAR_CONFIG: MenuItem[] = [
     defaultRoles: ['ADMIN', 'ENSEIGNANT', 'TECHNOPEDAGOGUE'],
     children: [
       { label: 'Créer questionnaires', route: '/app/enseignant/gestion-questionnaire', featureKey: 'liste_questionnaire' },
-      { label: 'Créer questionnaire', route: '/app/enseignant/gestion-questionnaire/create', featureKey: 'creer_questionnaire' },
+      { label: 'liste de questionnaire', route: '/app/enseignant/gestion-questionnaire/create', featureKey: 'creer_questionnaire' },
       { label: 'Banque de questions', route: '/app/enseignant/banque-questions', featureKey: 'banque_questions' }
     ]
   },
@@ -245,10 +245,11 @@ export const COMPLETE_SIDEBAR_CONFIG: MenuItem[] = [
     icon: 'route',
     defaultRoles: ['ETUDIANT'],
     children: [
-      { label: 'Parcours recommandés', route: '/app/student/parcours', featureKey: 'parcours_recommandes_etudiant', queryParams: { type: 'RECOMMANDE' } },
-      { label: 'Parcours choisis', route: '/app/student/parcours', featureKey: 'parcours_choisis_etudiant', queryParams: { type: 'CHOISI' } },
-      { label: 'Parcours mixtes', route: '/app/student/parcours', featureKey: 'parcours_mixtes_etudiant', queryParams: { type: 'MIXTE' } }
-    ]
+  { label: 'Parcours recommandés', route: '/app/student/parcours', featureKey: 'parcours_recommandes_etudiant', queryParams: { type: 'recommandes' } },
+  { label: 'Parcours choisis', route: '/app/student/parcours', featureKey: 'parcours_choisis_etudiant', queryParams: { type: 'choisis' } },
+  { label: 'Parcours mixtes', route: '/app/student/parcours', featureKey: 'parcours_mixtes_etudiant', queryParams: { type: 'mixtes' } }
+]
+
   },
   // --- ID 18 (second): Innovation pédagogique (Routes corrigées) ---
   {

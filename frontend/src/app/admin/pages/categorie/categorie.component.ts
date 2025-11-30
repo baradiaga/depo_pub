@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { CategorieService, Categorie } from '../services/categorie.service';
+import { EchelleConnaissanceService, EchelleConnaissance } from '../services/echelle-connaissance.service';
 
 @Component({
   selector: 'app-categorie',
@@ -6,58 +8,75 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./categorie.component.css']
 })
 export class CategorieComponent implements OnInit {
-  categories: any[] = []; // Liste des catégories
-  nouvelleCategorie = { nom: '', echelleConnaissance: '' }; // Formulaire d'ajout
-  editionCategorie: any = null; // Catégorie en cours de modification
+  categories: Categorie[] = [];
+  nouvelleCategorie: Categorie = { nom: '', echelleId: 0 };
+  editionCategorie: Categorie | null = null;
 
-  // Liste prédéfinie des échelles de connaissance
-  echellesConnaissance: string[] = ['[0% - 33%]', '[34% - 66%]', '[67% - 100%]'];
+  echellesConnaissance: EchelleConnaissance[] = [];
+
+  constructor(
+    private categorieService: CategorieService,
+    private echelleService: EchelleConnaissanceService
+  ) {}
 
   ngOnInit(): void {
-    // Données simulées pour le test initial
-    this.categories = [
-      { id: 1, nom: 'categorie 1', echelleConnaissance: '[0% - 33%]' },
-      { id: 2, nom: 'categorie 2', echelleConnaissance: '[34% - 66%]' },
-      { id: 3, nom: 'categorie 3', echelleConnaissance: '[67% - 100%]' }
-    ];
+    this.loadEchelles();
+    this.loadCategories();
+  }
+
+  loadEchelles(): void {
+    this.echelleService.getAll().subscribe({
+      next: (data) => this.echellesConnaissance = data,
+      error: (err) => console.error('Erreur chargement échelles', err)
+    });
+  }
+
+  loadCategories(): void {
+    this.categorieService.getAll().subscribe({
+      next: (data) => this.categories = data,
+      error: (err) => console.error('Erreur chargement catégories', err)
+    });
   }
 
   ajouterCategorie(): void {
-    if (!this.nouvelleCategorie.nom.trim() || !this.nouvelleCategorie.echelleConnaissance.trim()) {
-      return;
-    }
+    if (!this.nouvelleCategorie.nom.trim() || !this.nouvelleCategorie.echelleId) return;
 
-    const newId = this.categories.length > 0 ? Math.max(...this.categories.map(c => c.id)) + 1 : 1;
-    const nouvelle = {
-      id: newId,
-      nom: this.nouvelleCategorie.nom.trim(),
-      echelleConnaissance: this.nouvelleCategorie.echelleConnaissance.trim()
-    };
-
-    this.categories.push(nouvelle);
-    this.nouvelleCategorie = { nom: '', echelleConnaissance: '' };
+    this.categorieService.create(this.nouvelleCategorie).subscribe({
+      next: (created) => {
+        this.categories.push(created);
+        this.nouvelleCategorie = { nom: '', echelleId: 0 };
+      },
+      error: (err) => console.error('Erreur ajout catégorie', err)
+    });
   }
 
-  startEdition(categorie: any): void {
+  startEdition(categorie: Categorie): void {
     this.editionCategorie = { ...categorie };
   }
 
   validerModification(): void {
-    const index = this.categories.findIndex(c => c.id === this.editionCategorie.id);
-    if (index !== -1) {
-      this.categories[index] = this.editionCategorie;
-    }
-    this.editionCategorie = null;
+    if (!this.editionCategorie || !this.editionCategorie.id) return;
+
+    this.categorieService.update(this.editionCategorie.id!, this.editionCategorie).subscribe({
+      next: (updated) => {
+        const index = this.categories.findIndex(c => c.id === updated.id);
+        if (index !== -1) this.categories[index] = updated;
+        this.editionCategorie = null;
+      },
+      error: (err) => console.error('Erreur modification catégorie', err)
+    });
   }
 
   annulerModification(): void {
     this.editionCategorie = null;
   }
 
-  supprimerCategorie(id: number): void {
-    this.categories = this.categories.filter(c => c.id !== id);
-    if (this.editionCategorie?.id === id) {
-      this.editionCategorie = null;
-    }
+  supprimerCategorie(id?: number): void {
+    if (!id) return;
+
+    this.categorieService.delete(id).subscribe({
+      next: () => this.categories = this.categories.filter(c => c.id !== id),
+      error: (err) => console.error('Erreur suppression catégorie', err)
+    });
   }
 }

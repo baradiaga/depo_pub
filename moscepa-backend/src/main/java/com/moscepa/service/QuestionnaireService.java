@@ -3,12 +3,8 @@ package com.moscepa.service;
 import com.moscepa.dto.GenerateurPayload;
 import com.moscepa.dto.QuestionnaireDetailDto;
 import com.moscepa.dto.QuestionnairePayload;
-import com.moscepa.entity.Chapitre;
-import com.moscepa.entity.Question;
-import com.moscepa.entity.Questionnaire;
-import com.moscepa.entity.Reponse;
-import com.moscepa.repository.ChapitreRepository;
-import com.moscepa.repository.QuestionnaireRepository;
+import com.moscepa.entity.*;
+import com.moscepa.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,8 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,18 +22,21 @@ public class QuestionnaireService {
 
     private final QuestionnaireRepository questionnaireRepository;
     private final ChapitreRepository chapitreRepository;
-    private final TestService testService; // ✅ injecter TestService
+    private final BanqueQuestionRepository banqueQuestionRepository; // ✅ ajout
+    private final TestService testService;
 
     public QuestionnaireService(QuestionnaireRepository questionnaireRepository,
                                 ChapitreRepository chapitreRepository,
-                                TestService testService) { // ✅ remplacer TestRepository par TestService
+                                BanqueQuestionRepository banqueQuestionRepository, // ✅ ajout
+                                TestService testService) {
         this.questionnaireRepository = questionnaireRepository;
         this.chapitreRepository = chapitreRepository;
+        this.banqueQuestionRepository = banqueQuestionRepository; // ✅ ajout
         this.testService = testService;
     }
 
     // ====================================================================
-    // === CRÉATION / SAUVEGARDE DU QUESTIONNAIRE (brouillon)           ===
+    // === CRÉATION / SAUVEGARDE DU QUESTIONNAIRE (manuel)               ===
     // ====================================================================
     @Transactional
     public Questionnaire sauvegarderQuestionnaire(QuestionnairePayload payload) {
@@ -62,6 +60,7 @@ public class QuestionnaireService {
                 question.setTypeQuestion(qDto.getType());
                 question.setPoints(qDto.getPoints());
                 question.setQuestionnaire(questionnaire);
+                question.setChapitre(chapitre);
 
                 List<Reponse> reponses = new ArrayList<>();
                 if (qDto.getReponses() != null) {
@@ -85,14 +84,13 @@ public class QuestionnaireService {
                 questionnaireSauvegarde.getTitre(),
                 questionnaireSauvegarde.getQuestions() != null ? questionnaireSauvegarde.getQuestions().size() : 0);
 
-        // ✅ Créer automatiquement un test lié au questionnaire
         testService.creerTestDepuisQuestionnaire(questionnaireSauvegarde.getId());
 
         return questionnaireSauvegarde;
     }
 
     // ====================================================================
-    // === LISTE DES QUESTIONNAIRES (DTO)                                ===
+    // === LISTE DES QUESTIONNAIRES                                      ===
     // ====================================================================
     @Transactional(readOnly = true)
     public List<QuestionnaireDetailDto> findAllQuestionnaires() {
@@ -102,11 +100,6 @@ public class QuestionnaireService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional(readOnly = true)
-    public List<Questionnaire> findAll() {
-        return questionnaireRepository.findAll();
-    }
-
     // ====================================================================
     // === GÉNÉRATION AUTOMATIQUE DE QUESTIONNAIRE                       ===
     // ====================================================================
@@ -114,21 +107,58 @@ public class QuestionnaireService {
     public QuestionnaireDetailDto genererQuestionnaireDepuisBanque(GenerateurPayload params) {
         log.info("Génération automatique de questionnaire: {}", params.getTitre());
 
+        if ((params.getChapitreId() == null) &&
+            (params.getChapitresIds() == null || params.getChapitresIds().isEmpty())) {
+            throw new IllegalArgumentException("Vous devez sélectionner au moins un chapitre.");
+        }
+
         Questionnaire q = new Questionnaire();
         q.setTitre(params.getTitre());
         q.setDescription("Questionnaire généré automatiquement");
         q.setDateCreation(LocalDateTime.now());
+
+        List<BanqueQuestion> questionsDisponibles;
 
         if (params.getChapitreId() != null) {
             Chapitre chapitre = chapitreRepository.findById(params.getChapitreId())
                     .orElseThrow(() -> new EntityNotFoundException(
                             "Chapitre non trouvé avec l'ID: " + params.getChapitreId()));
             q.setChapitre(chapitre);
+            questionsDisponibles = banqueQuestionRepository.findByChapitre(chapitre);
+        } else {
+            questionsDisponibles = banqueQuestionRepository.findByChapitreIdIn(params.getChapitresIds());
         }
+
+        if (questionsDisponibles.size() < params.getNombreQuestions()) {
+            throw new IllegalArgumentException("Pas assez de questions disponibles pour générer le questionnaire.");
+        }
+
+        Collections.shuffle(questionsDisponibles);
+        List<BanqueQuestion> selection = questionsDisponibles.subList(0, params.getNombreQuestions());
+
+        List<Question> questions = selection.stream().map(bq -> {
+            Question qEntity = new Question();
+            qEntity.setEnonce(bq.getEnonce());
+            qEntity.setTypeQuestion(bq.getTypeQuestion());
+            qEntity.setPoints(bq.getPoints());
+            qEntity.setQuestionnaire(q);
+
+            List<Reponse> reponses = bq.getReponses().stream().map(br -> {
+                Reponse r = new Reponse();
+                r.setTexte(br.getTexte());
+                r.setCorrecte(br.getCorrecte());
+                r.setQuestion(qEntity);
+                return r;
+            }).collect(Collectors.toList());
+
+            qEntity.setReponses(reponses);
+            return qEntity;
+        }).collect(Collectors.toList());
+
+        q.setQuestions(questions);
 
         Questionnaire saved = questionnaireRepository.save(q);
 
-        // ✅ Créer automatiquement un test lié au questionnaire généré
         testService.creerTestDepuisQuestionnaire(saved.getId());
 
         return toDetailDto(saved);
@@ -147,7 +177,7 @@ public class QuestionnaireService {
     }
 
     // ====================================================================
-    // === MAPPERS                                                       ===
+    // === MAPPER DTO                                                    ===
     // ====================================================================
     private QuestionnaireDetailDto toDetailDto(Questionnaire q) {
         Long chapitreId = q.getChapitre() != null ? q.getChapitre().getId() : null;
@@ -159,4 +189,39 @@ public class QuestionnaireService {
                 chapitreId
         );
     }
+
+    // ====================================================================
+// === TESTS ASSOCIÉS AU QUESTIONNAIRE                               ===
+// ====================================================================
+@Transactional(readOnly = true)
+public List<Test> getTestsByQuestionnaire(Long questionnaireId) {
+    Questionnaire questionnaire = questionnaireRepository.findById(questionnaireId)
+            .orElseThrow(() -> new EntityNotFoundException("Questionnaire non trouvé avec l'ID: " + questionnaireId));
+    return testService.findByQuestionnaireId(questionnaireId);
+}
+
+@Transactional
+public Test createTest(Long questionnaireId, Test test) {
+    Questionnaire questionnaire = questionnaireRepository.findById(questionnaireId)
+            .orElseThrow(() -> new EntityNotFoundException("Questionnaire non trouvé avec l'ID: " + questionnaireId));
+    test.setQuestionnaire(questionnaire);
+    return testService.save(test);
+}
+
+@Transactional
+public Test updateTest(Long testId, Test testData) {
+    return testService.update(testId, testData);
+}
+
+@Transactional
+public void deleteTest(Long testId) {
+    testService.deleteById(testId);
+}
+@Transactional(readOnly = true)
+public QuestionnaireDetailDto findDetailById(Long id) {
+    Questionnaire q = questionnaireRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Questionnaire non trouvé avec l'ID: " + id));
+    return toDetailDto(q);
+}
+
 }

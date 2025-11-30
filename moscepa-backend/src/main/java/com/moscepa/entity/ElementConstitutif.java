@@ -34,7 +34,7 @@ public class ElementConstitutif {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "enseignant_id")
     private Utilisateur enseignant;
-
+    
     @OneToMany(
         mappedBy = "elementConstitutif",
         cascade = CascadeType.ALL,
@@ -43,10 +43,15 @@ public class ElementConstitutif {
     )
     @JsonManagedReference
     private List<Chapitre> chapitres = new ArrayList<>();
-
+   
     // ====================================================================
     // === LA RELATION VERS LES ÉTUDIANTS A ÉTÉ COMPLÈTEMENT SUPPRIMÉE  ===
     // ====================================================================
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "formation_id") // Clé étrangère vers la table moscepa_formations
+    private Formation formation;
+
+    
 
     // --- Constructeurs ---
     public ElementConstitutif() {}
@@ -79,4 +84,12 @@ public class ElementConstitutif {
     public void setEnseignant(Utilisateur enseignant) { this.enseignant = enseignant; }
     public List<Chapitre> getChapitres() { return chapitres; }
     public void setChapitres(List<Chapitre> chapitres) { this.chapitres = chapitres; }
+    public Formation getFormation() {
+    return formation;
+}
+
+public void setFormation(Formation formation) {
+    this.formation = formation;
+}
+
 }

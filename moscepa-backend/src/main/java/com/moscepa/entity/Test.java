@@ -7,7 +7,11 @@ import java.util.List;
 @Entity
 @Table(name = "moscepa_tests")
 public class Test {
+    @Column
+    private Integer duree;
 
+    @Column(columnDefinition = "TEXT")
+    private String description;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -34,22 +38,37 @@ public class Test {
     )
     private List<Question> questions = new ArrayList<>();
 
-    // ====================================================================
-    // Méthodes utilitaires pour gérer les questions
-    // ====================================================================
+    // 🔥 Relation avec ResultatTest (sans cascade REMOVE)
+    @OneToMany(mappedBy = "test", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
+    private List<ResultatTest> resultats = new ArrayList<>();
+
+    // --- Helpers ---
     public void addQuestion(Question question) {
         this.questions.add(question);
-        question.getTests().add(this); // synchronisation bidirectionnelle
+        question.getTests().add(this);
     }
 
     public void removeQuestion(Question question) {
         this.questions.remove(question);
-        question.getTests().remove(this); // synchronisation bidirectionnelle
+        question.getTests().remove(this);
     }
 
-    // ====================================================================
-    // Getters et Setters
-    // ====================================================================
+    public void addResultat(ResultatTest resultat) {
+        this.resultats.add(resultat);
+        resultat.setTest(this);
+    }
+
+    public void removeResultat(ResultatTest resultat) {
+        this.resultats.remove(resultat);
+        resultat.setTest(null);
+    }
+
+    // --- Getters et Setters ---
+    public Integer getDuree() { return duree; }
+    public void setDuree(Integer duree) { this.duree = duree; }
+
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -64,4 +83,7 @@ public class Test {
 
     public List<Question> getQuestions() { return questions; }
     public void setQuestions(List<Question> questions) { this.questions = questions; }
+
+    public List<ResultatTest> getResultats() { return resultats; }
+    public void setResultats(List<ResultatTest> resultats) { this.resultats = resultats; }
 }

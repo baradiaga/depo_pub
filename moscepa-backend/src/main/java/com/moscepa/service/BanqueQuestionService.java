@@ -1,47 +1,149 @@
-package com.moscepa.service; // Assurez-vous que le package est correct
+// Fichier : src/main/java/com/moscepa/service/BanqueQuestionService.java
 
-import com.moscepa.dto.QuestionBanqueDto;
-import com.moscepa.entity.Question;
-import com.moscepa.repository.QuestionRepository;
+package com.moscepa.service;
+
+import com.moscepa.repository.TagRepository;
+import com.moscepa.dto.BanqueQuestionCreationDto;
+import com.moscepa.dto.BanqueQuestionDetailDto;
+import com.moscepa.entity.*;
+import com.moscepa.repository.*;
+import com.moscepa.security.UserPrincipal;
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional(readOnly = true)
 public class BanqueQuestionService {
 
-    private final QuestionRepository questionRepository;
+    private final BanqueQuestionRepository banqueQuestionRepository;
+    private final BanqueReponseRepository banqueReponseRepository;
+    private final ChapitreRepository chapitreRepository;
+    private final UtilisateurRepository utilisateurRepository;
+    private final TagRepository tagRepository;
 
-    public BanqueQuestionService(QuestionRepository questionRepository) {
-        this.questionRepository = questionRepository;
+    public BanqueQuestionService(BanqueQuestionRepository banqueQuestionRepository, BanqueReponseRepository banqueReponseRepository, ChapitreRepository chapitreRepository, UtilisateurRepository utilisateurRepository, TagRepository tagRepository) {
+        this.banqueQuestionRepository = banqueQuestionRepository;
+        this.banqueReponseRepository = banqueReponseRepository;
+        this.chapitreRepository = chapitreRepository;
+        this.utilisateurRepository = utilisateurRepository;
+        this.tagRepository = tagRepository;
     }
 
-    @Transactional(readOnly = true)
-    public List<QuestionBanqueDto> getBanqueQuestionsByChapitre(Long chapitreId) {
-        List<Question> questions = questionRepository.findBanqueQuestionsByChapitreId(chapitreId);
-        return questions.stream()
-                .map(this::convertToDto)
+    // ====================================================================
+    // === CRÉATION ET MISE À JOUR                                      ===
+    // ====================================================================
+
+    @Transactional
+    public BanqueQuestionDetailDto creerQuestion(BanqueQuestionCreationDto dto) {
+        return sauvegarderQuestion(new BanqueQuestion(), dto);
+    }
+
+    @Transactional
+    public BanqueQuestionDetailDto mettreAJourQuestion(Long id, BanqueQuestionCreationDto dto) {
+        BanqueQuestion question = banqueQuestionRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Question de banque non trouvée avec l'ID: " + id));
+        return sauvegarderQuestion(question, dto);
+    }
+
+    private BanqueQuestionDetailDto sauvegarderQuestion(BanqueQuestion question, BanqueQuestionCreationDto dto) {
+        // 1. Récupération des entités liées
+        Chapitre chapitre = chapitreRepository.findById(dto.getChapitreId())
+                .orElseThrow(() -> new EntityNotFoundException("Chapitre non trouvé avec l'ID: " + dto.getChapitreId()));
+
+        UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Utilisateur auteur = utilisateurRepository.findById(userPrincipal.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Auteur non trouvé."));
+
+        // 2. Mise à jour des propriétés de la question
+        question.setEnonce(dto.getEnonce());
+        question.setTypeQuestion(dto.getTypeQuestion());
+        question.setPoints(dto.getPoints());
+        question.setDifficulte(dto.getDifficulte());
+        question.setChapitre(chapitre);
+
+        if (question.getId() == null) {
+            question.setAuteur(auteur);
+            question.setStatut(StatutQuestion.BROUILLON); // Nouvelle question en brouillon
+        }
+
+        // 3. Gestion des Tags
+       Set<Tag> tags = dto.getTags().stream()
+    .map(nom -> tagRepository.findByNomIgnoreCase(nom)
+        .orElseGet(() -> {
+            Tag newTag = new Tag(nom);
+            return tagRepository.save(newTag);
+        }))
+    .collect(Collectors.toSet());
+
+question.setTags(tags);
+
+
+        // 4. Gestion des Réponses (Suppression et Recréation)
+        question.getReponses().clear(); // Supprime les anciennes réponses (via orphanRemoval)
+        dto.getReponses().forEach(reponseDto -> {
+            BanqueReponse reponse = new BanqueReponse();
+            reponse.setTexte(reponseDto.getTexte());
+            reponse.setCorrecte(reponseDto.getCorrecte());
+            reponse.setBanqueQuestion(question);
+            question.getReponses().add(reponse);
+        });
+
+        // 5. Sauvegarde
+        BanqueQuestion questionSauvegardee = banqueQuestionRepository.save(question);
+
+        return new BanqueQuestionDetailDto(questionSauvegardee);
+    }
+
+    // ====================================================================
+    // === LECTURE ET RECHERCHE                                         ===
+    // ====================================================================
+
+    public BanqueQuestionDetailDto getQuestionById(Long id) {
+        BanqueQuestion question = banqueQuestionRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Question de banque non trouvée avec l'ID: " + id));
+        return new BanqueQuestionDetailDto(question);
+    }
+
+    public List<BanqueQuestionDetailDto> getAllQuestions() {
+        return banqueQuestionRepository.findAll().stream()
+                .map(BanqueQuestionDetailDto::new)
                 .collect(Collectors.toList());
     }
+    // ====================================================================
+    // === SUPPRESSION                                                  ===
+    // ====================================================================
 
-    // Méthode de conversion de l'entité Question vers le DTO
-    private QuestionBanqueDto convertToDto(Question question) {
-        QuestionBanqueDto dto = new QuestionBanqueDto();
-        dto.setId(question.getId());
-        dto.setEnonce(question.getEnonce());
-        dto.setTypeQuestion(question.getTypeQuestion());
+    @Transactional
+    public void supprimerQuestion(Long id) {
+        BanqueQuestion question = banqueQuestionRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Question de banque non trouvée avec l'ID: " + id));
 
-        List<QuestionBanqueDto.ReponseDto> reponseDtos = question.getReponses().stream().map(reponse -> {
-            QuestionBanqueDto.ReponseDto reponseDto = new QuestionBanqueDto.ReponseDto();
-            reponseDto.setId(reponse.getId());
-            reponseDto.setTexte(reponse.getTexte());
-            reponseDto.setCorrecte(reponse.isCorrecte());
-            return reponseDto;
-        }).collect(Collectors.toList());
+        
+        // Si oui, soit on bloque la suppression, soit on supprime la référence dans les Questionnaires.
+        // Pour l'instant, nous allons supposer qu'elle n'est pas référencée.
 
-        dto.setReponses(reponseDtos);
-        return dto;
+        banqueQuestionRepository.delete(question);
     }
+
+    // ====================================================================
+    // === STATISTIQUES ET ÉVALUATION (Méthodes de mise à jour)         ===
+    // ====================================================================
+
+    @Transactional
+    public void mettreAJourStatistiques(Long questionId, boolean reponseCorrecte) {
+        BanqueQuestion question = banqueQuestionRepository.findById(questionId)
+                .orElseThrow(() -> new EntityNotFoundException("Question de banque non trouvée avec l'ID: " + questionId));
+
+   
+        question.incrementerUtilisations();
+        banqueQuestionRepository.save(question);
+    }
+
+    
 }

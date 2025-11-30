@@ -27,13 +27,13 @@
           -->
           <ng-container *ngFor="let child of item.sousFonctionnalites">
             
-            <!-- Le lien fonctionnel -->
-            <a [routerLink]="child.route"
-               [queryParams]="getQueryParamsFor(child.featureKey)"
-               routerLinkActive="active-submenu"
-               class="submenu-item">
-              {{ child.label }}
-            </a>
+ <a (click)="navigateTo(child)" 
+   class="submenu-item">
+   {{ child.label }}
+</a>
+
+
+
             
             
 

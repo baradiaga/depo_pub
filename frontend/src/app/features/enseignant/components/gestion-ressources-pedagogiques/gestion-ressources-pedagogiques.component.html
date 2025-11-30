@@ -1,0 +1,91 @@
+<!-- Fichier : src/app/features/enseignant/components/gestion-ressources-pedagogiques/gestion-ressources-pedagogiques.component.html -->
+
+<div class="container mt-4">
+  <h2>Gestion des Ressources Pédagogiques</h2>
+
+  <!-- Formulaire de Téléversement -->
+  <div class="card mb-4">
+    <div class="card-header bg-primary text-white">Téléverser une Nouvelle Ressource</div>
+    <div class="card-body">
+      <form (ngSubmit)="televerser()">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="titre">Titre de la Ressource</label>
+            <input id="titre" type="text" class="form-control" [(ngModel)]="metadata.titre" name="titre" required>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="fileInput">Fichier</label>
+            <input id="fileInput" type="file" class="form-control" (change)="onFileSelected($event)" required>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="description">Description</label>
+          <textarea id="description" class="form-control" [(ngModel)]="metadata.description" name="description" rows="2"></textarea>
+        </div>
+
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <label for="matiere">Matière</label>
+            <!-- ✅ utilisation de ngModel pour éviter $event.target -->
+            <select id="matiere" class="form-control" [(ngModel)]="metadata.matiereId" name="matiereId" (ngModelChange)="onMatiereChange($event)">
+              <option [value]="0">-- Sélectionner une matière --</option>
+              <option *ngFor="let matiere of mesMatieres" [value]="matiere.id">{{ matiere.nom }}</option>
+            </select>
+          </div>
+          <div class="col-md-4 mb-3">
+            <label for="chapitre">Chapitre</label>
+            <select id="chapitre" class="form-control" [(ngModel)]="metadata.chapitreId" name="chapitreId" required>
+              <option [value]="0">-- Sélectionner un chapitre --</option>
+              <option *ngFor="let chapitre of chapitresDisponibles" [value]="chapitre.id">{{ chapitre.nom }}</option>
+            </select>
+          </div>
+          <div class="col-md-4 mb-3">
+            <label for="tags">Tags (séparés par des virgules)</label>
+            <input id="tags" type="text" class="form-control" [(ngModel)]="metadata.tags" name="tags" placeholder="Ex: PDF, Cours, Algèbre">
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-success" [disabled]="isUploading">
+          <span *ngIf="isUploading" class="spinner-border spinner-border-sm me-2"></span>
+          Téléverser la Ressource
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Liste des Ressources -->
+  <div class="card">
+    <div class="card-header bg-info text-white">Ressources Téléversées ({{ ressources.length }})</div>
+    <div class="card-body">
+      <div *ngIf="isLoadingList" class="text-center">Chargement...</div>
+      <table class="table table-striped" *ngIf="!isLoadingList && ressources.length > 0">
+        <thead>
+          <tr>
+            <th>Titre</th>
+            <th>Fichier</th>
+            <th>Chapitre</th>
+            <th>Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let r of ressources">
+            <td>{{ r.titre }}</td>
+            <td>{{ r.nomFichier }} ({{ r.typeMime }})</td>
+            <!-- ✅ affichage du nom du chapitre -->
+            <td>{{ getChapitreNom(r.chapitreId) }}</td>
+            <td>{{ r.dateTeleversement | date:'shortDate' }}</td>
+            <td>
+              <a [href]="getTelechargementUrl(r.cheminStockage)" target="_blank" class="btn btn-sm btn-outline-primary me-2">Télécharger</a>
+              <button class="btn btn-sm btn-outline-danger" (click)="supprimerRessource(r.id, r.titre)">Supprimer</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div *ngIf="!isLoadingList && ressources.length === 0" class="text-center text-muted">
+        Aucune ressource pédagogique n'a été téléversée.
+      </div>
+    </div>
+  </div>
+</div>

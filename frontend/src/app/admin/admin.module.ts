@@ -26,7 +26,7 @@ import { ListeMatieresComponent } from './pages/liste-matieres/liste-matieres.co
 import { GestionDesInscriptionComponent } from './pages/gestiondesinscription/gestiondesinscription.component';
 import { EnseignantModule } from '../features/enseignant/enseignant.module';
 import { FormulaireInscriptionComponent } from './pages/formulaire-inscription/formulaire-inscription.component'; // <-- Importer le module
-
+import { PermissionManagementComponent } from './permission-management/permission-management.component';
 @NgModule({
   declarations: [
     // --- 4. Déclarez TOUS ces composants ici ---
@@ -47,6 +47,7 @@ import { FormulaireInscriptionComponent } from './pages/formulaire-inscription/f
     ListeMatieresComponent,
     GestionDesInscriptionComponent,
     FormulaireInscriptionComponent,
+    PermissionManagementComponent,
   ],
   imports: [
     // --- 5. La liste d'imports est maintenant simple et propre ---

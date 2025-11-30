@@ -44,4 +44,9 @@ public interface TestRepository extends JpaRepository<Test, Long> {
      * sans avoir besoin de charger l'entité complète. C'est très performant.
      */
     boolean existsByChapitreId(Long chapitreId);
+    /**
+ * Récupère tous les tests liés à un questionnaire donné.
+ */
+List<Test> findByQuestionnaireId(@Param("questionnaireId") Long questionnaireId);
+
 }

@@ -2,6 +2,14 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+// Interface pour un Test
+export interface Test {
+  id: number;
+  titre: string;
+  duree?: number;
+  description?: string;
+}
+
 // Structure pour la création manuelle
 export interface QuestionnairePayload {
   titre: string;
@@ -19,7 +27,7 @@ export interface ParametresGeneration {
   chapitresIds: number[];
 }
 
-// NOUVELLE INTERFACE: Correspond au QuestionnaireDetailDto du back-end
+// Interface correspondant au QuestionnaireDetailDto du back-end
 export interface QuestionnaireDetail {
   id: number;
   titre: string;
@@ -32,41 +40,83 @@ export interface QuestionnaireDetail {
 
 @Injectable({
   providedIn: 'root'
-} )
+})
 export class QuestionnaireService {
   private apiUrl = 'http://localhost:8080/api/questionnaires';
 
-  constructor(private http: HttpClient ) {}
+  constructor(private http: HttpClient) {}
 
   /**
    * Récupère la liste de tous les questionnaires.
-   * Renvoie un tableau de questionnaires détaillés.
    */
   getQuestionnaires(): Observable<QuestionnaireDetail[]> {
-    return this.http.get<QuestionnaireDetail[]>(this.apiUrl );
+    return this.http.get<QuestionnaireDetail[]>(this.apiUrl);
   }
 
   /**
-   * Crée un questionnaire manuellement. Ne renvoie pas de contenu.
+   * Crée un questionnaire manuellement.
    */
   sauvegarderQuestionnaire(questionnaire: QuestionnairePayload): Observable<void> {
-    return this.http.post<void>(this.apiUrl, questionnaire );
+    return this.http.post<void>(this.apiUrl, questionnaire);
   }
 
   /**
-   * Crée un questionnaire automatiquement.
-   * Renvoie le questionnaire détaillé qui a été généré.
+   * Génère un questionnaire automatiquement.
    */
   genererQuestionnaireAutomatique(params: ParametresGeneration): Observable<QuestionnaireDetail> {
     const url = `${this.apiUrl}/generer-depuis-banque`;
-    return this.http.post<QuestionnaireDetail>(url, params );
+    return this.http.post<QuestionnaireDetail>(url, params);
   }
 
   /**
-   * Supprime un questionnaire par son ID. Ne renvoie pas de contenu.
+   * Supprime un questionnaire par son ID.
    */
   supprimerQuestionnaire(id: number): Observable<void> {
     const url = `${this.apiUrl}/${id}`;
-    return this.http.delete<void>(url );
+    return this.http.delete<void>(url);
+  }
+
+  /**
+   * Récupère les détails d’un questionnaire par ID.
+   */
+  getQuestionnaireDetails(id: number): Observable<QuestionnaireDetail> {
+    const url = `${this.apiUrl}/${id}`;
+    return this.http.get<QuestionnaireDetail>(url);
+  }
+
+  // ====================================================================
+  // === TESTS ASSOCIÉS AU QUESTIONNAIRE                               ===
+  // ====================================================================
+
+  /**
+   * Récupère les tests associés à un questionnaire.
+   */
+  getTestsByQuestionnaire(questionnaireId: number): Observable<Test[]> {
+    const url = `${this.apiUrl}/${questionnaireId}/tests`;
+    return this.http.get<Test[]>(url);
+  }
+
+  /**
+   * Crée un test lié à un questionnaire.
+   */
+  createTest(questionnaireId: number, test: Partial<Test>): Observable<Test> {
+    const url = `${this.apiUrl}/${questionnaireId}/tests`;
+    return this.http.post<Test>(url, test);
+  }
+
+  /**
+   * Met à jour un test existant.
+   */
+  updateTest(testId: number, test: Partial<Test>): Observable<Test> {
+    const url = `${this.apiUrl}/tests/${testId}`;
+    return this.http.put<Test>(url, test);
+  }
+
+  /**
+   * Supprime un test par son ID.
+   */
+  deleteTest(testId: number): Observable<void> {
+    const url = `${this.apiUrl}/tests/${testId}`;
+    return this.http.delete<void>(url);
   }
 }

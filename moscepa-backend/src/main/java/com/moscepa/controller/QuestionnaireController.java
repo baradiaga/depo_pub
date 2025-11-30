@@ -85,4 +85,78 @@ public class QuestionnaireController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+    // ====================================================================
+// === TESTS ASSOCIÉS AU QUESTIONNAIRE                               ===
+// ====================================================================
+
+/**
+ * Récupérer tous les tests liés à un questionnaire.
+ */
+@GetMapping("/{id}/tests")
+public ResponseEntity<?> getTestsByQuestionnaire(@PathVariable Long id) {
+    try {
+        log.info("Requête reçue pour LISTER les tests du questionnaire ID: {}", id);
+        return ResponseEntity.ok(questionnaireService.getTestsByQuestionnaire(id));
+    } catch (Exception e) {
+        log.error("Erreur lors de la récupération des tests du questionnaire ID: {}", id, e);
+        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+}
+
+/**
+ * Créer un nouveau test lié à un questionnaire.
+ */
+@PostMapping("/{id}/tests")
+public ResponseEntity<?> createTest(@PathVariable Long id, @RequestBody com.moscepa.entity.Test test) {
+    try {
+        log.info("Requête reçue pour CRÉER un test pour le questionnaire ID: {}", id);
+        return new ResponseEntity<>(questionnaireService.createTest(id, test), HttpStatus.CREATED);
+    } catch (Exception e) {
+        log.error("Erreur lors de la création d'un test pour le questionnaire ID: {}", id, e);
+        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+}
+
+/**
+ * Mettre à jour un test existant.
+ */
+@PutMapping("/tests/{testId}")
+public ResponseEntity<?> updateTest(@PathVariable Long testId, @RequestBody com.moscepa.entity.Test test) {
+    try {
+        log.info("Requête reçue pour MODIFIER le test ID: {}", testId);
+        return ResponseEntity.ok(questionnaireService.updateTest(testId, test));
+    } catch (Exception e) {
+        log.error("Erreur lors de la mise à jour du test ID: {}", testId, e);
+        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+}
+
+/**
+ * Supprimer un test.
+ */
+@DeleteMapping("/tests/{testId}")
+public ResponseEntity<Void> deleteTest(@PathVariable Long testId) {
+    try {
+        log.info("Requête reçue pour SUPPRIMER le test ID: {}", testId);
+        questionnaireService.deleteTest(testId);
+        return ResponseEntity.noContent().build();
+    } catch (Exception e) {
+        log.error("Erreur lors de la suppression du test ID: {}", testId, e);
+        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+}
+// ====================================================================
+// === DÉTAIL D’UN QUESTIONNAIRE                                     ===
+// ====================================================================
+@GetMapping("/{id}")
+public ResponseEntity<QuestionnaireDetailDto> getQuestionnaireById(@PathVariable Long id) {
+    try {
+        log.info("Requête reçue pour DÉTAIL du questionnaire ID: {}", id);
+        return ResponseEntity.ok(questionnaireService.findDetailById(id));
+    } catch (Exception e) {
+        log.error("Erreur lors de la récupération du questionnaire ID: {}", id, e);
+        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+}
+
 }

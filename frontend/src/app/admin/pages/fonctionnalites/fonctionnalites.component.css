@@ -1,10 +1,10 @@
 .admin-container { max-width: 1200px; margin: auto; font-family: sans-serif; }
-.main-title { border-bottom: 2px solid #3f51b5; padding-bottom: 10px; }
+.main-title { border-bottom: 2px solid #1c5980; padding-bottom: 10px; }
 .view-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #ccc; }
 .view-tabs button { padding: 10px 15px; border: none; background: #f0f0f0; cursor: pointer; border-radius: 5px 5px 0 0; }
-.view-tabs button.active { background: #3f51b5; color: white; font-weight: bold; }
+.view-tabs button.active { background: #1c5980; color: white; font-weight: bold; }
 .btn { padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; }
-.btn.primary { background-color: #3f51b5; color: white; border-color: #3f51b5; }
+.btn.primary { background-color: #1c5980; color: white; border-color: #1c5980; }
 .btn.danger { background-color: #f44336; color: white; border-color: #f44336; }
 .btn.secondary { background-color: #e0e0e0; }
 .btn.small { padding: 4px 8px; font-size: 0.8em; }

@@ -1,6 +1,7 @@
 // Fichier : src/main/java/com/moscepa/service/ChapitreService.java (Version Finale Corrigée)
 
 package com.moscepa.service;
+import com.moscepa.entity.ResultatTest;
 
 import com.moscepa.dto.*;
 import com.moscepa.entity.Chapitre;
@@ -131,11 +132,34 @@ public class ChapitreService {
     }
 
     @Transactional
-    public void deleteChapitre(Long chapitreId) {
-        if (!chapitreRepository.existsById(chapitreId)) {
-            throw new EntityNotFoundException("Impossible de supprimer : Chapitre non trouvé avec l'ID: " + chapitreId);
-        }
-        chapitreRepository.deleteById(chapitreId);
-        log.info("Chapitre avec l'ID {} supprimé avec succès.", chapitreId);
+public void deleteChapitre(Long chapitreId) {
+    Chapitre chapitre = chapitreRepository.findById(chapitreId)
+        .orElseThrow(() -> new EntityNotFoundException(
+            "Impossible de supprimer : Chapitre non trouvé avec l'ID: " + chapitreId));
+
+    // Vérifier si des résultats existent pour les tests liés
+    boolean hasResults = chapitre.getTests().stream()
+        .anyMatch(test -> test.getResultats() != null && !test.getResultats().isEmpty());
+
+    if (hasResults) {
+        throw new IllegalStateException(
+            "Suppression refusée : des résultats de tests existent pour ce chapitre.");
+    }
+
+    chapitreRepository.delete(chapitre);
+    log.info("Chapitre avec l'ID {} supprimé avec succès.", chapitreId);
+}
+// ============================================================
+    // === MÉTHODE DRY-RUN : LISTER LES RÉSULTATS BLOQUANTS =======
+    // ============================================================
+    @Transactional(readOnly = true)
+    public List<ResultatTest> getResultatsPourChapitre(Long chapitreId) {
+        Chapitre chapitre = chapitreRepository.findById(chapitreId)
+            .orElseThrow(() -> new EntityNotFoundException(
+                "Chapitre non trouvé avec l'ID: " + chapitreId));
+
+        return chapitre.getTests().stream()
+            .flatMap(test -> test.getResultats().stream())
+            .collect(Collectors.toList());
     }
 }

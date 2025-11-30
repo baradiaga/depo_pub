@@ -1,22 +1,17 @@
 <div class="container mt-4">
   <h2 class="mb-4 text-center">Attribution des fonctionnalités par rôle</h2>
   <div class="d-flex justify-content-end mb-3 gap-2">
-  
-
+  </div>
 
   <!-- Sélection du rôle -->
   <div class="mb-4">
     <label class="form-label fw-bold">Sélectionner un rôle :</label>
-    <select [(ngModel)]="selectedRole" class="form-select w-50">
+    <select [(ngModel)]="selectedRole" (ngModelChange)="onRoleChange()" class="form-select w-50">
       <option value="" disabled selected>-- Choisir un rôle --</option>
       <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
     </select>
   </div>
   <br><br>
-  <!-- Bouton pour afficher la liste simple -->
-
-
-
 
   <!-- Tableau des fonctionnalités -->
   <div *ngIf="selectedRole">
@@ -35,7 +30,7 @@
             <input
               type="checkbox"
               class="form-check-input me-2"
-              [checked]="visibleModules.has(featureGroup.module)"
+              [checked]="isFeatureAssigned(featureGroup.module)"
               (change)="onMainFeatureToggle($event, featureGroup.module)"
               [id]="'module-' + i"
             />
@@ -44,7 +39,7 @@
             </label>
           </td>
           <td>
-            <div *ngIf="visibleModules.has(featureGroup.module)" class="d-flex flex-wrap gap-3 fade-in">
+            <div *ngIf="isFeatureAssigned(featureGroup.module)" class="d-flex flex-wrap gap-3 fade-in">
               <div class="form-check" *ngFor="let sub of featureGroup.subFeatures">
                 <input
                   class="form-check-input"

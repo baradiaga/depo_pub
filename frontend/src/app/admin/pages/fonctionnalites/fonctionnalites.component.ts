@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { FonctionnaliteAdminService } from '../services/fonctionnalite-admin.service';
-import { Fonctionnalite, PermissionsMap } from '../../../models/fonctionnalite.model'; // Adaptez si votre dossier 'models' est ailleurs
+import { Fonctionnalite } from '../../../models/fonctionnalite.model'; // Adaptez si votre dossier 'models' est ailleurs
 
 @Component({
   selector: 'app-fonctionnalites',
@@ -11,32 +11,23 @@ import { Fonctionnalite, PermissionsMap } from '../../../models/fonctionnalite.m
 export class FonctionnalitesComponent implements OnInit, OnDestroy {
 
   // --- État général ---
-  currentView: 'gestion' | 'permissions' = 'gestion';
+  currentView: 'gestion' | 'permissions' = 'gestion'; // <-- CONSERVÉ
   private subs = new Subscription();
 
-  // --- Données pour les deux vues ---
+  // --- Données pour la vue CRUD ---
   allFonctionnalites: Fonctionnalite[] = [];
-  permissionsMap: PermissionsMap = {};
-  roles: string[] = ['ADMIN', 'ETUDIANT', 'ENSEIGNANT', 'TUTEUR', 'TECHNOPEDAGOGUE', 'RESPONSABLE_FORMATION'];
 
   // --- État pour le formulaire de GESTION (CRUD) ---
   isFormVisible = false;
   editingFonctionnalite: Fonctionnalite | null = null;
-  
-  // --- État pour la vue PERMISSIONS ---
-  selectedRole: string | null = null;
-  selectedRolePermissions = new Set<string>();
 
   constructor(private adminService: FonctionnaliteAdminService) {}
 
   ngOnInit(): void {
     this.adminService.loadAllAdminData();
 
+    // S'abonner uniquement aux fonctionnalités pour la vue CRUD
     this.subs.add(this.adminService.fonctionnalites$.subscribe(data => this.allFonctionnalites = data));
-    this.subs.add(this.adminService.permissions$.subscribe(data => {
-      this.permissionsMap = data;
-      if (this.selectedRole) this.selectRoleForPermissions(this.selectedRole); // Rafraîchir
-    }));
   }
 
   ngOnDestroy(): void {
@@ -87,44 +78,5 @@ export class FonctionnalitesComponent implements OnInit, OnDestroy {
   closeForm(): void {
     this.isFormVisible = false;
     this.editingFonctionnalite = null;
-  }
-
-  // --- Méthodes pour le mode PERMISSIONS ---
-
-  selectRoleForPermissions(roleName: string): void {
-    this.selectedRole = roleName;
-    this.selectedRolePermissions = new Set(this.permissionsMap[roleName] || []);
-  }
-
-  isFeatureChecked(featureKey: string): boolean {
-    return this.selectedRolePermissions.has(featureKey);
-  }
-
-  toggleFeaturePermission(featureKey: string): void {
-    if (this.selectedRolePermissions.has(featureKey)) {
-      this.selectedRolePermissions.delete(featureKey);
-    } else {
-      this.selectedRolePermissions.add(featureKey);
-    }
-  }
-
-  savePermissions(): void {
-    if (!this.selectedRole) return;
-    const permissionsToSave = Array.from(this.selectedRolePermissions);
-    this.subs.add(
-      this.adminService.savePermissionsForRole(this.selectedRole, permissionsToSave).subscribe(() => {
-        alert(`Permissions pour le rôle ${this.selectedRole} enregistrées !`);
-      })
-    );
-  }
-   onRoleChange(event: Event): void {
-    // 1. On s'assure que la cible de l'événement est bien un élément HTML de type <select>
-    const selectElement = event.target as HTMLSelectElement;
-
-    // 2. On récupère la valeur de l'élément sélectionné
-    const roleName = selectElement.value;
-
-    // 3. On appelle votre méthode de logique métier existante avec la valeur propre
-    this.selectRoleForPermissions(roleName);
   }
 }

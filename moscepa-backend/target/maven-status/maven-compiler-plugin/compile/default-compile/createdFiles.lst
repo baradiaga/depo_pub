@@ -1,1 +1,11 @@
+com\moscepa\service\StudentJourneyService.class
 com\moscepa\service\TestService$1.class
+com\moscepa\dto\CourseProgressDto.class
+com\moscepa\dto\BanqueQuestionCreationDto.class
+com\moscepa\controller\StudentJourneyController.class
+com\moscepa\entity\EchelleConnaissance.class
+com\moscepa\dto\StudentJourneyDto.class
+com\moscepa\service\EchelleConnaissanceService.class
+com\moscepa\controller\EchelleConnaissanceController.class
+com\moscepa\dto\EchelleConnaissanceDto.class
+com\moscepa\repository\EchelleConnaissanceRepository.class

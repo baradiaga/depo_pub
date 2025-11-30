@@ -1,164 +1,154 @@
-import { Component } from '@angular/core';
-import { ThemeService } from '../../../core/services/theme.service';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Subscription } from 'rxjs';
+import { FonctionnaliteAdminService } from '../services/fonctionnalite-admin.service';
+import { Fonctionnalite, PermissionsMap } from '../../../models/fonctionnalite.model';
 
+// Interface pour la structure de données adaptée au template
 interface FeatureGroup {
-  module: string;
-  subFeatures: string[];
+  module: string; // Correspond à la featureKey de la fonctionnalité principale
+  subFeatures: string[]; // Correspond aux featureKey des sous-fonctionnalités
 }
 
 @Component({
   selector: 'app-feature-assignment',
   templateUrl: './feature-assignment.component.html',
-  styleUrls: ['./feature-assignment.component.css']
+  styleUrls: ['./feature-assignment.component.css'] // À créer si nécessaire
 })
-export class FeatureAssignmentComponent {
+export class FeatureAssignmentComponent implements OnInit, OnDestroy {
 
-
- 
-  roles: string[] = ['ADMIN', 'ETUDIANT', 'ENSEIGNANT', 'TUTEUR', 'TECHNOPEDAGOGUE', 'RESPONSABLE_FORMATION'];
+  // --- État ---
   selectedRole: string = '';
-  afficherListe: boolean = false;
+  private subs = new Subscription();
 
-  visibleModules: Set<string> = new Set<string>();
+  // Données brutes du service
+  allFonctionnalites: Fonctionnalite[] = [];
+  permissionsMap: PermissionsMap = {};
+  roles: string[] = ['ADMIN', 'ETUDIANT', 'ENSEIGNANT', 'TUTEUR', 'TECHNOPEDAGOGUE', 'RESPONSABLE_FORMATION'];
 
-  allFeatures: FeatureGroup[] = [
-     {
-      module: 'Parametrage',
-      subFeatures: ['profil utilisateur', 'Modifier mot de passe', 'modifier profil']
-    },
-    
-    {
-      module: 'Gestion des fonctionnalités',
-      subFeatures: ['Créer fonctionnalité', 'Modifier fonctionnalité', 'Supprimer fonctionnalité', 'Lister fonctionnalités']
-    },
-    {
-      module: 'Gestion des utilisateurs',
-      subFeatures: ['Créer utilisateur', 'Modifier utilisateur', 'Supprimer utilisateur', 'Lister utilisateurs']
-    },
-    {
-      module: 'Gestion des inscriptions aux classes',
-      subFeatures: ['Inscrire étudiant', 'Modifier inscription', 'Supprimer inscription', 'Lister inscriptions par classe']
-    },
-    {
-      module: 'Gestion des inscriptions aux cours',
-      subFeatures: ['Inscrire étudiant', 'Modifier inscription', 'Supprimer inscription', 'Lister inscriptions par matière']
-    },
-    {
-      module: 'Gestion des formations',
-      subFeatures: ['Créer formation', 'Modifier formation', 'Supprimer formation', 'Lister formations']
-    },
-    {
-      module: 'Gestion des maquettes',
-      subFeatures: ['Créer maquette', 'Modifier maquette', 'Supprimer maquette', 'Lister maquettes']
-    },
-    {
-      module: 'Gestion des éléments constitutifs (matières)',
-      subFeatures: ['Créer matière', 'Modifier matière', 'Supprimer matière', 'Lister matières']
-    },
-    {
-      module: 'Gestion des équivalences',
-      subFeatures: ['Créer équivalence', 'Modifier équivalence', 'Supprimer équivalence', 'Lister équivalences']
-    },
-    {
-      module: 'Gestion des échelles de connaissances',
-      subFeatures: [
-        'Créer échelle de connaissance',
-        'Modifier échelle de connaissance',
-        'Supprimer échelle de connaissance',
-        'Lister échelles de connaissances'
-      ]
-    },
-    {
-      module: 'Gestion des catégories',
-      subFeatures: ['Créer catégorie', 'Modifier catégorie', 'Supprimer catégorie', 'Lister catégories']
-    },
-    {
-      module: 'Gestion des parcours questionnaires',
-      subFeatures: ['Créer questionnaire', 'Modifier questionnaire', 'Supprimer questionnaire', 'Lister questionnaires']
-    },
-    {
-      module: 'Gestion des questions',
-      subFeatures: ['Créer question', 'Modifier question', 'Supprimer question', 'Lister questions']
-    },
-    {
-      module: 'Gestion des parcours',
-      subFeatures: ['Générer parcours recommandé', 'Générer parcours choisi', 'Générer parcours mixte']
-    },
-    {
-      module: 'Gestion des ressources pédagogiques',
-      subFeatures: [
-        'Créer ressource pédagogique',
-        'Modifier ressource pédagogique',
-        'Supprimer ressource pédagogique',
-        'Lister ressources pédagogiques'
-      ]
-    },
-    {
-      module: 'Gestion des activités pédagogiques',
-      subFeatures: [
-        'Créer activité pédagogique',
-        'Modifier activité pédagogique',
-        'Supprimer activité pédagogique',
-        'Lister activités pédagogiques'
-      ]
-    },
-    {
-      module: 'Gestion des séances de cours',
-      subFeatures: ['Créer séance de cours', 'Modifier séance de cours', 'Supprimer séance de cours', 'Lister séances']
-    },
-    {
-      module: 'Gestion de la foire aux questions (FAQ)',
-      subFeatures: ['Créer FAQ', 'Modifier FAQ', 'Supprimer FAQ', 'Lister FAQ']
-    }
-  ];
+  // Données pour le template
+  allFeatures: FeatureGroup[] = [];
+  selectedRolePermissions = new Set<string>();
+  visibleModules = new Set<string>(); // Pour gérer l'affichage des sous-fonctionnalités
 
-  roleFeaturesMap: Record<string, string[]> = {
-    ADMIN: ['Créer utilisateur', 'Lister utilisateurs'],
-    ETUDIANT: [],
-    ENSEIGNANT: []
-  };
+  constructor(private adminService: FonctionnaliteAdminService) {}
 
-  isFeatureAssigned(feature: string): boolean {
-    return this.roleFeaturesMap[this.selectedRole]?.includes(feature);
+  ngOnInit(): void {
+    // Le service doit déjà avoir chargé les données, mais on s'abonne
+    this.subs.add(this.adminService.fonctionnalites$.subscribe(data => {
+      this.allFonctionnalites = data;
+      this.transformFonctionnalitesToFeatures();
+    }));
+
+    this.subs.add(this.adminService.permissions$.subscribe(data => {
+      this.permissionsMap = data;
+      // Si un rôle est déjà sélectionné, on rafraîchit les permissions
+      if (this.selectedRole) {
+        this.loadPermissionsForRole(this.selectedRole);
+      }
+    }));
   }
 
-  toggleFeatureAssignment(feature: string): void {
-    const features = this.roleFeaturesMap[this.selectedRole] || [];
+  ngOnDestroy(): void {
+    this.subs.unsubscribe();
+  }
 
-    if (features.includes(feature)) {
-      this.roleFeaturesMap[this.selectedRole] = features.filter(f => f !== feature);
+  /**
+   * Transforme la liste plate de Fonctionnalite en FeatureGroup pour le template.
+   */
+  private transformFonctionnalitesToFeatures(): void {
+    this.allFeatures = this.allFonctionnalites.map(f => ({
+      module: f.featureKey, // Utiliser la featureKey comme nom de module
+      subFeatures: f.sousFonctionnalites.map(sf => sf.featureKey)
+    }));
+  }
+
+  /**
+   * Charge les permissions pour le rôle sélectionné.
+   */
+  loadPermissionsForRole(roleName: string): void {
+    this.selectedRolePermissions = new Set(this.permissionsMap[roleName] || []);
+    // Réinitialiser l'état d'affichage des sous-fonctionnalités
+    this.visibleModules.clear();
+    this.allFeatures.forEach(group => {
+      // On vérifie si la permission principale est cochée
+      if (this.selectedRolePermissions.has(group.module)) {
+        this.visibleModules.add(group.module);
+      }
+    });
+  }
+
+  /**
+   * Gère le changement de rôle via ngModel.
+   */
+  onRoleChange(): void {
+    if (this.selectedRole) {
+      this.loadPermissionsForRole(this.selectedRole);
     } else {
-      this.roleFeaturesMap[this.selectedRole] = [...features, feature];
+      this.selectedRolePermissions.clear();
+      this.visibleModules.clear();
     }
   }
 
-  toggleModuleAssignment(module: string, assign: boolean): void {
-    const group = this.allFeatures.find(f => f.module === module);
-    if (!group) return;
+  /**
+   * Vérifie si une fonctionnalité (ou sous-fonctionnalité) est assignée au rôle.
+   */
+  isFeatureAssigned(featureKey: string): boolean {
+    return this.selectedRolePermissions.has(featureKey);
+  }
 
-    const current = this.roleFeaturesMap[this.selectedRole] || [];
-
-    if (assign) {
-      this.visibleModules.add(module);
+  /**
+   * Bascule l'état d'une fonctionnalité (ou sous-fonctionnalité).
+   */
+  toggleFeatureAssignment(featureKey: string): void {
+    if (this.selectedRolePermissions.has(featureKey)) {
+      this.selectedRolePermissions.delete(featureKey);
     } else {
-      this.visibleModules.delete(module);
-      this.roleFeaturesMap[this.selectedRole] = current.filter(f => !group.subFeatures.includes(f));
+      this.selectedRolePermissions.add(featureKey);
     }
   }
 
-  onMainFeatureToggle(event: Event, module: string): void {
-    const input = event.target as HTMLInputElement;
-    if (input && module) {
-      this.toggleModuleAssignment(module, input.checked);
+  /**
+   * Gère le basculement de la fonctionnalité principale (module).
+   * Coche/décoche la fonctionnalité principale et toutes ses sous-fonctionnalités.
+   */
+  onMainFeatureToggle(event: Event, moduleKey: string): void {
+    const isChecked = (event.target as HTMLInputElement).checked;
+    const featureGroup = this.allFeatures.find(f => f.module === moduleKey);
+
+    if (!featureGroup) return;
+
+    // 1. Basculer l'état de la fonctionnalité principale
+    if (isChecked) {
+      this.selectedRolePermissions.add(moduleKey);
+      this.visibleModules.add(moduleKey);
+    } else {
+      this.selectedRolePermissions.delete(moduleKey);
+      this.visibleModules.delete(moduleKey);
     }
+
+    // 2. Basculer l'état de toutes les sous-fonctionnalités
+    featureGroup.subFeatures.forEach(subKey => {
+      if (isChecked) {
+        this.selectedRolePermissions.add(subKey);
+      } else {
+        this.selectedRolePermissions.delete(subKey);
+      }
+    });
   }
 
+  /**
+   * Enregistre les permissions mises à jour.
+   */
   enregistrer(): void {
-    console.log('Permissions pour', this.selectedRole, ':', this.roleFeaturesMap[this.selectedRole]);
-    alert('Permissions enregistrées pour le rôle : ' + this.selectedRole);
-  }
-
-    
-   
+    if (!this.selectedRole) {
+      alert('Veuillez sélectionner un rôle avant d\'enregistrer.');
+      return;
     }
-
+    const permissionsToSave = Array.from(this.selectedRolePermissions);
+    this.subs.add(
+      this.adminService.savePermissionsForRole(this.selectedRole, permissionsToSave).subscribe(() => {
+        alert(`Permissions pour le rôle ${this.selectedRole} enregistrées avec succès !`);
+      })
+    );
+  }
+}

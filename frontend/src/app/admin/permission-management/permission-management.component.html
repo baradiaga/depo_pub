@@ -1,112 +1,58 @@
-<div class="permission-management">
-  <div class="header">
-    <h2>Gestion des Permissions Utilisateurs</h2>
-    <p>Assignez des permissions personnalisées aux utilisateurs selon leurs besoins.</p>
-  </div>
+<div class="container">
+  <h2>Gestion des Permissions jjjj</h2>
 
-  <div class="users-table">
-    <table>
-      <thead>
-        <tr>
-          <th>Email</th>
-          <th>Rôle</th>
-          <th>Permissions</th>
-          <th>Type</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let user of users">
-          <td>{{ user.email }}</td>
-          <td>
-            <span class="role-badge" [class]="'role-' + user.role.toLowerCase()">
-              {{ user.role }}
-            </span>
-          </td>
-          <td>
-            <span class="permission-count">
-              {{ getPermissionCount(user) }} permissions
-            </span>
-            <small *ngIf="!user.hasCustomPermissions" class="default-indicator">
-              ({{ getDefaultPermissionCount(user.role) }} par défaut)
-            </small>
-          </td>
-          <td>
-            <span *ngIf="user.hasCustomPermissions" class="custom-badge">
-              Personnalisées
-            </span>
-            <span *ngIf="!user.hasCustomPermissions" class="default-badge">
-              Par défaut
-            </span>
-          </td>
-          <td>
-            <button 
-              class="btn btn-primary" 
-              (click)="openPermissionModal(user)">
-              Modifier
-            </button>
-            <button 
-              *ngIf="user.hasCustomPermissions"
-              class="btn btn-secondary" 
-              (click)="resetToDefaultPermissions(user)">
-              Réinitialiser
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Nom</th>
+        <th>Email</th>
+        <th>Rôle</th>
+        <th>Permissions</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let user of utilisateurs">
+        <td>{{ user.nom }} {{ user.prenom }}</td>
+        <td>{{ user.email }}</td>
+        <td>{{ user.role }}</td>
+        <td>{{ getPermissionCount(user) }}</td>
+        <td>
+          <button (click)="openPermissionModal(user)">Modifier</button>
+          <button (click)="resetToDefaultPermissions(user)">Réinitialiser</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
 
-  <!-- Modal de gestion des permissions -->
-  <div *ngIf="showPermissionModal" class="modal-overlay" (click)="closePermissionModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h3>Permissions pour {{ selectedUser?.email }}</h3>
-        <button class="close-btn" (click)="closePermissionModal()">×</button>
+  <!-- Modal Permissions -->
+  <div *ngIf="showPermissionModal" class="modal">
+    <div class="modal-content">
+      <h3>Modifier les permissions de {{ selectedUser?.nom }} {{ selectedUser?.prenom }}</h3>
+
+      <div class="actions">
+        <button (click)="selectAllPermissions()">Tout sélectionner</button>
+        <button (click)="deselectAllPermissions()">Tout désélectionner</button>
+        <button (click)="selectRoleDefaults()">Par défaut du rôle</button>
       </div>
 
-      <div class="modal-body">
-        <div class="permission-actions">
-          <button class="btn btn-sm" (click)="selectAllPermissions()">Tout sélectionner</button>
-          <button class="btn btn-sm" (click)="deselectAllPermissions()">Tout désélectionner</button>
-          <button class="btn btn-sm" (click)="selectRoleDefaults()">Défaut du rôle</button>
-        </div>
-
-        <div class="permissions-grid">
-          <div *ngFor="let group of availablePermissions" class="permission-group">
-            <div class="group-header">
-              <label class="permission-item">
-                <input 
-                  type="checkbox" 
-                  [checked]="isPermissionSelected(group.featureKey)"
-                  (change)="togglePermission(group.featureKey)">
-                <span class="permission-label main-permission">{{ group.label }}</span>
-              </label>
-            </div>
-            
-            <div class="group-children" *ngIf="group.children.length > 0">
-              <label 
-                *ngFor="let child of group.children" 
-                class="permission-item child-permission">
-                <input 
-                  type="checkbox" 
-                  [checked]="isPermissionSelected(child.featureKey)"
-                  (change)="togglePermission(child.featureKey)">
-                <span class="permission-label">{{ child.label }}</span>
-              </label>
-            </div>
-          </div>
-        </div>
-      </div>
+      <ul class="permissions-list">
+        <li *ngFor="let permission of availablePermissions">
+          <label>
+            <input type="checkbox"
+                   [checked]="isPermissionSelected(permission.id)"
+                   (change)="togglePermission(permission.id)" />
+            {{ permission.nom }}
+          </label>
+        </li>
+      </ul>
 
       <div class="modal-footer">
-        <div class="selected-count">
-          {{ selectedPermissions.length }} permissions sélectionnées
-        </div>
-        <button class="btn btn-secondary" (click)="closePermissionModal()">Annuler</button>
-        <button class="btn btn-primary" (click)="savePermissions()">Sauvegarder</button>
+        <button (click)="savePermissions()">Enregistrer</button>
+        <button (click)="closePermissionModal()">Annuler</button>
       </div>
     </div>
   </div>
-</div>
 
+  
+</div>

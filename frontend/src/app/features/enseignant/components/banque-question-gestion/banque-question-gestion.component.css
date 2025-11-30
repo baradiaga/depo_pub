@@ -1,0 +1,84 @@
+/* Couleur dominante */
+:root {
+  --main-color: #1c5980;
+}
+
+/* Titres */
+h2 {
+  color: var(--main-color);
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+/* Cartes */
+.card {
+  border: 1px solid var(--main-color);
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(28, 89, 128, 0.15);
+}
+
+.card-header {
+  background-color: var(--main-color) !important;
+  color: #fff !important;
+  font-weight: 500;
+}
+
+/* Boutons */
+.btn-success {
+  background-color: var(--main-color);
+  border-color: var(--main-color);
+}
+
+.btn-success:hover {
+  background-color: #14425f;
+  border-color: #14425f;
+}
+
+.btn-outline-primary {
+  color: var(--main-color);
+  border-color: var(--main-color);
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--main-color);
+  color: #fff;
+}
+
+.btn-outline-danger {
+  border-color: #dc3545;
+  color: #dc3545;
+}
+
+.btn-outline-danger:hover {
+  background-color: #dc3545;
+  color: #fff;
+}
+
+/* Inputs et selects */
+.form-control:focus {
+  border-color: var(--main-color);
+  box-shadow: 0 0 0 0.2rem rgba(28, 89, 128, 0.25);
+}
+
+/* Badges */
+.badge {
+  background-color: var(--main-color) !important;
+  color: #fff;
+  font-size: 0.75rem;
+  margin-right: 4px;
+}
+
+/* Liste des questions */
+.list-group-item {
+  border-left: 4px solid var(--main-color);
+  transition: background-color 0.2s ease;
+}
+
+.list-group-item:hover {
+  background-color: rgba(28, 89, 128, 0.05);
+}
+
+/* Spinner */
+.spinner-border {
+  color: #fff;
+}

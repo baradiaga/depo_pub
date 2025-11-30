@@ -82,7 +82,6 @@ public Test creerTestDepuisQuestionnaire(Long questionnaireId) {
     if (questionnaire.getChapitre() == null) {
         throw new IllegalStateException("Impossible de créer un test : le questionnaire n'a pas de chapitre.");
     }
-
     if (questionnaire.getQuestions().isEmpty()) {
         throw new EntityNotFoundException("Le questionnaire ne contient aucune question.");
     }
@@ -93,11 +92,13 @@ public Test creerTestDepuisQuestionnaire(Long questionnaireId) {
     test.setQuestionnaire(questionnaire);
     test.setQuestions(new ArrayList<>(questionnaire.getQuestions()));
 
+    // 🔥 mise à jour de la relation bidirectionnelle
+    questionnaire.addTest(test);
+
     return testRepository.save(test);
 }
 
-
-    @Transactional
+        @Transactional
     public ResultatTestDto calculerEtSauvegarderResultat(Long chapitreId, Long utilisateurId, Map<String, Object> reponsesUtilisateur) {
         Utilisateur etudiant = utilisateurRepository.findById(utilisateurId)
                 .orElseThrow(() -> new EntityNotFoundException("Aucun utilisateur (étudiant) trouvé pour l'ID: " + utilisateurId));
@@ -172,7 +173,7 @@ public Test creerTestDepuisQuestionnaire(Long questionnaireId) {
                 .collect(Collectors.toList());
     }
 
-    private static final int NOMBRE_QUESTIONS_DIAGNOSTIC = 10;
+    private static final int NOMBRE_QUESTIONS_DIAGNOSTIC = 3;
 
     public List<QuestionDiagnosticDto> genererTestDiagnosticPourMatiere(Long matiereId) {
         log.info("[DIAGNOSTIC] Génération d'un test de diagnostic pour la matière ID: {}", matiereId);
@@ -305,4 +306,46 @@ public Test creerTestDepuisQuestionnaire(Long questionnaireId) {
         if (den == 0) return 0.0;
         return ((double) num / den) * 100.0;
     }
+    // ====================================================================
+// === MÉTHODES POUR GÉRER LES TESTS                                 ===
+// ====================================================================
+
+/**
+ * Récupère tous les tests liés à un questionnaire donné.
+ */
+public List<Test> findByQuestionnaireId(Long questionnaireId) {
+    return testRepository.findByQuestionnaireId(questionnaireId);
+}
+
+/**
+ * Sauvegarde un nouveau test ou met à jour un test existant.
+ */
+public Test save(Test test) {
+    return testRepository.save(test);
+}
+
+/**
+ * Met à jour un test existant avec de nouvelles données.
+ */
+public Test update(Long testId, Test testData) {
+    Test existing = testRepository.findById(testId)
+            .orElseThrow(() -> new EntityNotFoundException("Test non trouvé avec l'ID: " + testId));
+
+    existing.setTitre(testData.getTitre());
+    existing.setDuree(testData.getDuree());
+    existing.setDescription(testData.getDescription());
+
+    return testRepository.save(existing);
+}
+
+/**
+ * Supprime un test par son ID.
+ */
+public void deleteById(Long testId) {
+    if (!testRepository.existsById(testId)) {
+        throw new EntityNotFoundException("Test non trouvé avec l'ID: " + testId);
+    }
+    testRepository.deleteById(testId);
+}
+
 }

@@ -1,191 +1,90 @@
+// Fichier : src/app/features/admin/components/gestion-parcours/gestion-parcours.component.ts (Mise à jour)
+
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-
-interface Etudiant {
-  nomComplet: string;
-  email: string;
-  numero: string;
-  niveau: string;
-  classe: string;
-}
-
-interface Chapitre {
-  titre: string;
-  etudiants: Etudiant[];
-}
-
-interface Matiere {
-  nom: string;
-  chapitres: Chapitre[];
-}
-
-interface Parcours {
-  id: number;
-  type: 'RECOMMANDE' | 'CHOISI' | 'MIXTE';
-  titre: string;
-  description: string;
-  dateCreation: string;
-  matieres: Matiere[];
-}
-
+import {  StudentJourneyService } from '../services/student-journey.service';
+import { StudentJourney } from '../models/student-journey.model';
 @Component({
   selector: 'app-gestion-parcours',
   templateUrl: './gestion-parcours.component.html',
   styleUrls: ['./gestion-parcours.component.css']
 })
 export class GestionParcoursComponent implements OnInit {
-  parcoursList: Parcours[] = [];
-  filteredParcours: Parcours[] = [];
-  typeParcours: 'RECOMMANDE' | 'CHOISI' | 'MIXTE' | '' = '';
+  studentsOverview: StudentJourney[] = [];
+  selectedStudentJourney: StudentJourney | null = null;
+  loading: boolean = false;
+  errorMessage: string | null = null;
 
-  
-  showEtudiants: { [matiereNom: string]: boolean } = {};
+  // Propriétés pour afficher le type de parcours actuel
+  currentParcoursType: string = '';
+  parcoursTypeLabel: string = '';
 
-  constructor(private route: ActivatedRoute) {}
+  constructor(
+    private journeyService: StudentJourneyService,
+    private route: ActivatedRoute
+  ) { }
 
   ngOnInit(): void {
-    // Simulation de données
-    this.parcoursList = [ {
-    id: 1,
-    type: 'RECOMMANDE',
-    titre: 'Parcours Intelligence Artificielle',
-    description: 'Parcours recommandé par le système basé sur l’analyse des résultats.',
-    dateCreation: '2025-05-15',
-    matieres: [
-      {
-        nom: 'Machine Learning',
-        chapitres: [
-          {
-            titre: 'Introduction au ML',
-            etudiants: [
-              {
-                nomComplet: 'Fatou Ndiaye',
-                email: 'fatou.ndiaye@example.com',
-                numero: 'ETU100',
-                niveau: 'Master 1',
-                classe: 'M1-IA'
-              },
-              {
-                nomComplet: 'Cheikh Diallo',
-                email: 'cheikh.diallo@example.com',
-                numero: 'ETU101',
-                niveau: 'Master 1',
-                classe: 'M1-IA'
-              }
-            ]
-          },
-          {
-            titre: 'Réseaux de neurones',
-            etudiants: []
-          }
-        ]
-      }
-    ]
-  },
-  {
-    id: 2,
-    type: 'CHOISI',
-    titre: 'Parcours Développement Mobile',
-    description: 'Parcours choisi par l’étudiant selon ses préférences.',
-    dateCreation: '2025-06-10',
-    matieres: [
-      {
-        nom: 'Android',
-        chapitres: [
-          {
-            titre: 'Kotlin de base',
-            etudiants: [
-              {
-                nomComplet: 'Aminata Sow',
-                email: 'aminata.sow@example.com',
-                numero: 'ETU200',
-                niveau: 'Licence 3',
-                classe: 'L3-DM'
-              }
-            ]
-          }
-        ]
-      },
-      {
-        nom: 'iOS',
-        chapitres: [
-          {
-            titre: 'Swift avancé',
-            etudiants: []
-          }
-        ]
-      }
-    ]
-  },
-  {
-    id: 3,
-    type: 'MIXTE',
-    titre: 'Parcours Data Science et Web',
-    description: 'Combinaison mixte entre parcours recommandé et choisi.',
-    dateCreation: '2025-07-05',
-    matieres: [
-      {
-        nom: 'Data Science',
-        chapitres: [
-          {
-            titre: 'Analyse de données',
-            etudiants: [
-              {
-                nomComplet: 'Mamadou Ba',
-                email: 'mamadou.ba@example.com',
-                numero: 'ETU300',
-                niveau: 'Master 2',
-                classe: 'M2-DS'
-              }
-            ]
-          }
-        ]
-      },
-      {
-        nom: 'Développement Web',
-        chapitres: [
-          {
-            titre: 'Angular avancé',
-            etudiants: [ {
-                nomComplet: 'Mariama Faye',
-                email: 'mariama.faye@example.com',
-                numero: 'ETU301',
-                niveau: 'Master 2',
-                classe: 'M2-DS'
-              }]
-          },
-          {
-            titre: 'Node.js',
-            etudiants: [
-              {
-                nomComplet: 'Mariama Faye',
-                email: 'mariama.faye@example.com',
-                numero: 'ETU301',
-                niveau: 'Master 2',
-                classe: 'M2-DS'
-              }
-            ]
-          }
-        ]
-      }
-    ]
-  }];
-
+    // Écouter les changements de paramètres de requête
     this.route.queryParams.subscribe(params => {
-      this.typeParcours = params['type']?.toUpperCase() ?? '';
-      this.filteredParcours = this.typeParcours
-        ? this.parcoursList.filter(p => p.type === this.typeParcours)
-        : this.parcoursList;
+      this.currentParcoursType = params['type'] || '';
+      this.setParcoursTypeLabel();
+      this.loadStudentsOverview();
     });
   }
 
-  toggleEtudiants(matiereNom: string): void {
-    this.showEtudiants[matiereNom] = !this.showEtudiants[matiereNom];
+  private setParcoursTypeLabel() {
+    switch (this.currentParcoursType) {
+      case 'RECOMMANDE':
+        this.parcoursTypeLabel = 'Parcours Recommandés';
+        break;
+      case 'CHOISI':
+        this.parcoursTypeLabel = 'Parcours Choisis';
+        break;
+      case 'MIXTE':
+        this.parcoursTypeLabel = 'Parcours Mixtes';
+        break;
+      default:
+       // this.parcoursTypeLabel = 'Tous les Parcours';
+    }
   }
 
-  isEtudiantsVisible(matiereNom: string): boolean {
-    return !!this.showEtudiants[matiereNom];
+  loadStudentsOverview() {
+    this.loading = true;
+    this.errorMessage = null;
+    
+    this.journeyService.getAllStudentsOverview(this.currentParcoursType).subscribe({
+      next: (data) => {
+        this.studentsOverview = data;
+        this.loading = false;
+      },
+      error: (err) => {
+        this.errorMessage = "Erreur lors du chargement de la vue d'ensemble des étudiants. (Accès ADMIN requis)";
+        this.loading = false;
+        console.error(err);
+      }
+    });
   }
 
-  
+  viewStudentDetail(studentId: number) {
+    this.loading = true;
+    this.errorMessage = null;
+    this.selectedStudentJourney = null;
+
+    this.journeyService.getStudentJourneyDetail(studentId).subscribe({
+      next: (data) => {
+        this.selectedStudentJourney = data;
+        this.loading = false;
+      },
+      error: (err) => {
+        this.errorMessage = `Erreur lors du chargement du parcours de l'étudiant ${studentId}.`;
+        this.loading = false;
+        console.error(err);
+      }
+    });
+  }
+
+  closeDetailView() {
+    this.selectedStudentJourney = null;
+  }
 }

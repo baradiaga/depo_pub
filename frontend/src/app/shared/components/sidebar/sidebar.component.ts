@@ -1,7 +1,8 @@
-// Fichier : src/app/shared/components/sidebar/sidebar.component.ts (Version finale et corrigée)
+// Fichier : src/app/shared/components/sidebar/sidebar.component.ts
 
 import { Component, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
+import { Router } from '@angular/router';
 
 import { SidebarService } from '../../../core/services/sidebar.service';
 import { Fonctionnalite } from '../../../models/fonctionnalite.model';
@@ -15,8 +16,11 @@ export class SidebarComponent implements OnInit {
 
   public menuItems$!: Observable<Fonctionnalite[]>;
   public activeMenu: number | null = null;
-  
-  constructor(private sidebarService: SidebarService) {}
+
+  constructor(
+    private sidebarService: SidebarService,
+    private router: Router          // ✅ AJOUT OBLIGATOIRE
+  ) {}
 
   ngOnInit(): void {
     this.menuItems$ = this.sidebarService.visibleMenuItems$;
@@ -28,27 +32,51 @@ export class SidebarComponent implements OnInit {
   }
 
   /**
-   * Retourne un objet de queryParams en fonction du feature_key du lien.
-   * @param featureKey La clé unique de la sous-fonctionnalité.
+   * Navigation centralisée pour TOUS les sous menus.
+   * Appelée depuis le HTML.
+   */
+  navigateTo(child: any): void {
+    if (!child) return;
+
+    const queryParams = this.getQueryParamsFor(child.featureKey);
+
+    this.router.navigate([child.route], {
+      queryParams: queryParams ?? undefined
+    });
+  }
+
+  /**
+   * Retourne les bons query params en fonction du featureKey
    */
   getQueryParamsFor(featureKey: string | undefined): { [key: string]: string } | null {
-    if (!featureKey) {
-      return null;
-    }
 
-    // ====================================================================
-    // === CORRECTION APPLIQUÉE ICI                                     ===
-    // === On utilise maintenant les clés exactes de votre base de données. ===
-    // ====================================================================
+    if (!featureKey) return null;
+
     switch (featureKey) {
+
+      // === ETUDIANT ===
       case 'parcours_recommandes_etudiant':
         return { type: 'recommandes' };
+
       case 'parcours_choisis_etudiant':
         return { type: 'choisis' };
+
       case 'parcours_mixtes_etudiant':
         return { type: 'mixtes' };
+
+      // === ADMIN (tu utilisais déjà RECOMMANDE / CHOISI / MIXTE) ===
+      case 'parcours_recommandes_admin':
+        return { type: 'RECOMMANDE' };
+
+      case 'parcours_choisis_admin':
+        return { type: 'CHOISI' };
+
+      case 'parcours_mixtes_admin':
+        return { type: 'MIXTE' };
+
       default:
         return null;
     }
   }
+
 }

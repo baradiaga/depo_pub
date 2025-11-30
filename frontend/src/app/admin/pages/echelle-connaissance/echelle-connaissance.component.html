@@ -1,35 +1,104 @@
-<div class="container">
-  <h2 class="title">Gestion de l'Échelle de Connaissance</h2>
+<!-- Fichier : src/app/features/admin/components/echelle-connaissance/echelle-connaissance.component.html -->
 
-  <!-- Formulaire -->
-  <form (ngSubmit)="addOrUpdateEchelle()" class="form">
-    <input type="text" placeholder="Intervalle (ex: 0% - 33%)" [(ngModel)]="newEchelle.intervalle" name="intervalle" required>
-    <input type="text" placeholder="Description" [(ngModel)]="newEchelle.description" name="description" required>
-    <input type="text" placeholder="Recommandation" [(ngModel)]="newEchelle.recommandation" name="recommandation" required>
-    <button type="submit">{{ editingId ? 'Modifier' : 'Ajouter' }}</button>
-    <button type="button" (click)="resetForm()" *ngIf="editingId">Annuler</button>
-  </form>
+<div class="container mt-4">
+  <h2>Gestion des Échelles de Connaissance</h2>
+  <p class="text-muted">Définissez les seuils de maîtrise et les recommandations associées pour l'évaluation des étudiants.</p>
 
-  <!-- Tableau -->
-  <table class="knowledge-table">
-    <thead>
-      <tr>
-        <th>Intervalle</th>
-        <th>Description</th>
-        <th>Recommandation</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let echelle of echelles">
-        <td>{{ echelle.intervalle }}</td>
-        <td>{{ echelle.description }}</td>
-        <td>{{ echelle.recommandation }}</td>
-        <td>
-          <button (click)="editEchelle(echelle)">Modifier</button>
-          <button (click)="deleteEchelle(echelle.id)">Supprimer</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <!-- Message d'erreur -->
+  <div *ngIf="errorMessage" class="alert alert-danger" role="alert">
+    <strong>Erreur :</strong> {{ errorMessage }}
+  </div>
+
+  <!-- Formulaire d'ajout/modification -->
+  <div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+      {{ editingId ? 'Modifier l\'Échelle (ID: ' + editingId + ')' : 'Ajouter une nouvelle Échelle' }}
+    </div>
+    <div class="card-body">
+      <form (ngSubmit)="addOrUpdateEchelle()">
+        <div class="row">
+          <!-- Intervalle -->
+          <div class="col-md-3 mb-3">
+            <label for="intervalle" class="form-label">Intervalle (%)</label>
+            <input type="text" class="form-control" id="intervalle" name="intervalle"
+                   [(ngModel)]="newEchelle.intervalle" required placeholder="Ex: [0% - 34%]">
+          </div>
+
+          <!-- Description -->
+          <div class="col-md-4 mb-3">
+            <label for="description" class="form-label">Description</label>
+            <input type="text" class="form-control" id="description" name="description"
+                   [(ngModel)]="newEchelle.description" required placeholder="Ex: Faible maîtrise">
+          </div>
+
+          <!-- Recommandation -->
+          <div class="col-md-5 mb-3">
+            <label for="recommandation" class="form-label">Recommandation</label>
+            <input type="text" class="form-control" id="recommandation" name="recommandation"
+                   [(ngModel)]="newEchelle.recommandation" required placeholder="Ex: Chapitre recommandé automatiquement">
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end">
+          <button type="submit" class="btn btn-success me-2" [disabled]="loading">
+            <span *ngIf="loading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            {{ editingId ? 'Mettre à jour' : 'Ajouter' }}
+          </button>
+          <button type="button" class="btn btn-secondary" (click)="resetForm()" [disabled]="loading">
+            Annuler
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Liste des Échelles existantes -->
+  <div class="card">
+    <div class="card-header">
+      Liste des Échelles de Connaissance
+    </div>
+    <div class="card-body p-0">
+      <div *ngIf="loading && echelles.length === 0" class="text-center p-4">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Chargement...</span>
+        </div>
+        <p class="mt-2">Chargement des échelles...</p>
+      </div>
+
+      <table *ngIf="!loading || echelles.length > 0" class="table table-striped table-hover mb-0">
+        <thead>
+          <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Intervalle (%)</th>
+            <th scope="col">Description</th>
+            <th scope="col">Recommandation</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let echelle of echelles">
+            <td>{{ echelle.id }}</td>
+            <td>{{ echelle.intervalle }}</td>
+            <td>{{ echelle.description }}</td>
+            <td>{{ echelle.recommandation }}</td>
+            <td>
+              <button class="btn btn-sm btn-info me-2" (click)="editEchelle(echelle)">
+                <i class="bi bi-pencil"></i> Modifier
+              </button>
+              <button class="btn btn-sm btn-danger" (click)="deleteEchelle(echelle.id!)">
+                <i class="bi bi-trash"></i> Supprimer
+              </button>
+            </td>
+          </tr>
+        </tbody>
+        <tfoot *ngIf="echelles.length === 0 && !loading">
+          <tr>
+            <td colspan="5" class="text-center text-muted">
+              Aucune échelle de connaissance définie. Veuillez en ajouter une.
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
 </div>

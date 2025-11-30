@@ -41,6 +41,16 @@ public class Questionnaire {
     @JsonManagedReference
     private List<Question> questions = new ArrayList<>();
 
+    // 🔥 Nouveau : relation avec les tests
+    @OneToMany(
+        mappedBy = "questionnaire",
+        cascade = CascadeType.ALL,
+        orphanRemoval = true,
+        fetch = FetchType.LAZY
+    )
+    @JsonManagedReference
+    private List<Test> tests = new ArrayList<>();
+
     @PrePersist
     public void onPrePersist() {
         this.dateCreation = LocalDateTime.now();
@@ -54,6 +64,17 @@ public class Questionnaire {
     public void removeQuestion(Question question) {
         this.questions.remove(question);
         question.setQuestionnaire(null);
+    }
+
+    // 🔥 Nouveau : helpers pour les tests
+    public void addTest(Test test) {
+        this.tests.add(test);
+        test.setQuestionnaire(this);
+    }
+
+    public void removeTest(Test test) {
+        this.tests.remove(test);
+        test.setQuestionnaire(null);
     }
 
     // --- Getters et Setters ---
@@ -83,4 +104,7 @@ public class Questionnaire {
 
     public List<Question> getQuestions() { return questions; }
     public void setQuestions(List<Question> questions) { this.questions = questions; }
+
+    public List<Test> getTests() { return tests; }
+    public void setTests(List<Test> tests) { this.tests = tests; }
 }
