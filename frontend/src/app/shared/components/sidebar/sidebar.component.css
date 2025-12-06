@@ -4,6 +4,14 @@
   border-right: 1px solid #dee2e6;
   min-height: 100vh;
   padding: 1rem 0;
+  
+  position: sticky;
+  top: 0;
+  height: 100vh; /* garde la hauteur sur toute la fenêtre */
+  overflow-y: auto; /* permet au menu de scroller si contenu trop long */
+  z-index: 1000; /* reste au-dessus du reste */
+
+
 }
 
 .menu-item {

@@ -7,6 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/student-journey")
 @CrossOrigin(origins = "*")
@@ -39,21 +41,30 @@ public class StudentJourneyController {
      * Récupère le parcours complet d'un étudiant spécifique par ID (pour admin ou enseignant).
      */
     @GetMapping("/{studentId}")
-public ResponseEntity<StudentJourneyDto> getParcoursEtudiant(@PathVariable String studentId) {
-    if ("all".equalsIgnoreCase(studentId)) {
-        // Gérer le cas "all", par exemple renvoyer tous les étudiants
-        return ResponseEntity.badRequest().build(); // ou liste complète
+    public ResponseEntity<StudentJourneyDto> getParcoursEtudiant(@PathVariable String studentId) {
+        if ("all".equalsIgnoreCase(studentId)) {
+            return ResponseEntity.badRequest().build(); // utiliser /all pour tout récupérer
+        }
+
+        Long id;
+        try {
+            id = Long.parseLong(studentId);
+        } catch (NumberFormatException e) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        StudentJourneyDto parcours = studentJourneyService.getStudentJourney(id);
+        return ResponseEntity.ok(parcours);
     }
 
-    Long id;
-    try {
-        id = Long.parseLong(studentId);
-    } catch (NumberFormatException e) {
-        return ResponseEntity.badRequest().build();
+    /**
+     * Récupère tous les parcours étudiants (admin) avec filtrage optionnel par type.
+     */
+    @GetMapping("/all")
+    public ResponseEntity<List<StudentJourneyDto>> getAllParcours(
+            @RequestParam(required = false) String type
+    ) {
+        List<StudentJourneyDto> journeys = studentJourneyService.getAllJourneys(type);
+        return ResponseEntity.ok(journeys);
     }
-
-    StudentJourneyDto parcours = studentJourneyService.getStudentJourney(id);
-    return ResponseEntity.ok(parcours);
-}
-
 }

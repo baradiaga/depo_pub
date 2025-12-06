@@ -2,8 +2,6 @@ package com.moscepa.dto;
 
 import java.time.LocalDateTime;
 
-// Ce DTO représente les détails d'un questionnaire utiles pour le front-end
-// après sa création ou pour l'afficher dans une liste.
 public class QuestionnaireDetailDto {
 
     private Long id;
@@ -12,19 +10,25 @@ public class QuestionnaireDetailDto {
     private String description;
     private String nomChapitre;
     private String nomMatiere;
+    private Long chapitreId;
+    private Long matiereId; // <-- ajouté
     private int nombreQuestions;
     private LocalDateTime dateCreation;
-    private Long chapitreId;
 
-    // --- Constructeur utilisé par le service ---
-    public QuestionnaireDetailDto(Long id, String titre, String description,
-                                  LocalDateTime dateCreation, Long chapitreId) {
-        this.id = id;
-        this.titre = titre;
-        this.description = description;
-        this.dateCreation = dateCreation;
-        this.chapitreId = chapitreId;
-    }
+    // Constructeur
+    public QuestionnaireDetailDto(Long id, String titre, String description, LocalDateTime dateCreation,
+                              Long chapitreId, String nomChapitre, String nomMatiere, int nombreQuestions, Integer duree) {
+    this.id = id;
+    this.titre = titre;
+    this.description = description;
+    this.dateCreation = dateCreation;
+    this.chapitreId = chapitreId;
+    this.nomChapitre = nomChapitre;
+    this.nomMatiere = nomMatiere;
+    this.nombreQuestions = nombreQuestions;
+    this.duree = duree;
+}
+
 
     // --- Getters et Setters ---
     public Long getId() { return id; }
@@ -45,12 +49,15 @@ public class QuestionnaireDetailDto {
     public String getNomMatiere() { return nomMatiere; }
     public void setNomMatiere(String nomMatiere) { this.nomMatiere = nomMatiere; }
 
+    public Long getChapitreId() { return chapitreId; }
+    public void setChapitreId(Long chapitreId) { this.chapitreId = chapitreId; }
+
+    public Long getMatiereId() { return matiereId; }
+    public void setMatiereId(Long matiereId) { this.matiereId = matiereId; }
+
     public int getNombreQuestions() { return nombreQuestions; }
     public void setNombreQuestions(int nombreQuestions) { this.nombreQuestions = nombreQuestions; }
 
     public LocalDateTime getDateCreation() { return dateCreation; }
     public void setDateCreation(LocalDateTime dateCreation) { this.dateCreation = dateCreation; }
-
-    public Long getChapitreId() { return chapitreId; }
-    public void setChapitreId(Long chapitreId) { this.chapitreId = chapitreId; }
 }

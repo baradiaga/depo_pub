@@ -56,6 +56,14 @@ public class Utilisateur {
     private String sexe;
     private String adresse;
     private String telephone;
+    // Formation actuelle de l'étudiant (ex : Informatique, Droit...)
+    private String formationActuelle;
+
+// Niveau d'étude actuel (ex : L1, L2, L3, M1...)
+    private String niveauEtude;
+
+// Type de parcours (ex : Recommandé, Personnalisé)
+    private String parcoursType;
 
     // --- Informations Académiques ---
     @Column(name = "annee_academique")
@@ -123,4 +131,28 @@ public class Utilisateur {
     public void setDateModification(LocalDateTime dateModification) { this.dateModification = dateModification; }
     public Set<Permission> getPermissions() { return permissions; }
     public void setPermissions(Set<Permission> permissions) { this.permissions = permissions; }
+    public String getFormationActuelle() {
+    return formationActuelle;
+}
+
+public void setFormationActuelle(String formationActuelle) {
+    this.formationActuelle = formationActuelle;
+}
+
+public String getNiveauEtude() {
+    return niveauEtude;
+}
+
+public void setNiveauEtude(String niveauEtude) {
+    this.niveauEtude = niveauEtude;
+}
+
+public String getParcoursType() {
+    return parcoursType;
+}
+
+public void setParcoursType(String parcoursType) {
+    this.parcoursType = parcoursType;
+}
+
 }

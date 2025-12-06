@@ -162,4 +162,5 @@ public void deleteChapitre(Long chapitreId) {
             .flatMap(test -> test.getResultats().stream())
             .collect(Collectors.toList());
     }
+    
 }

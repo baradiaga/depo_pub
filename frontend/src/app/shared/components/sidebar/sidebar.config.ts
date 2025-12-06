@@ -169,7 +169,7 @@ export const COMPLETE_SIDEBAR_CONFIG: MenuItem[] = [
     defaultRoles: ['ADMIN', 'ENSEIGNANT', 'TECHNOPEDAGOGUE'],
     children: [
       { label: 'Créer questionnaires', route: '/app/enseignant/gestion-questionnaire', featureKey: 'liste_questionnaire' },
-      { label: 'liste de questionnaire', route: '/app/enseignant/gestion-questionnaire/create', featureKey: 'creer_questionnaire' },
+      { label: 'liste de questionnaire', route: '/app/enseignant/listequestionnaire', featureKey: 'creer_questionnaire' },
       { label: 'Banque de questions', route: '/app/enseignant/banque-questions', featureKey: 'banque_questions' }
     ]
   },

@@ -1,14 +1,18 @@
-// Fichier : src/app/features/enseignant/enseignant.module.ts (Version Finale avec ngx-quill)
+// Fichier : src/app/features/enseignant/enseignant.module.ts
 
 import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+
 import { EnseignantRoutingModule } from './enseignant-routing.module';
 
-// --- 1. Importez les modules partagés et l'éditeur de texte UNIQUE ---
-import { SharedModule } from '../../shared/shared.module'; 
+// Modules partagés
+import { SharedModule } from '../../shared/shared.module';
 import { NgbModalModule } from '@ng-bootstrap/ng-bootstrap';
-import { QuillModule } from 'ngx-quill'; // <-- On utilise UNIQUEMENT celui-ci
+import { QuillModule } from 'ngx-quill';
 
-// --- 2. Importez TOUS les composants qui appartiennent à ce module ---
+// Composants du module Enseignant
 import { GestionQuestionnaireComponent } from './components/gestion-questionnaire/gestion-questionnaire.component';
 import { SelectionMatiereGestionComponent } from './components/selection-matiere-gestion/selection-matiere-gestion.component';
 import { GestionContenuComponent } from './components/gestion-contenu/gestion-contenu.component';
@@ -19,9 +23,10 @@ import { BanqueQuestionGestionComponent } from './components/banque-question-ges
 import { QuestionnaireDetailsComponent } from './components/questionnaire-details/questionnaire-details.component';
 import { GestionRessourcesPedagogiquesComponent } from './components/gestion-ressources-pedagogiques/gestion-ressources-pedagogiques.component';
 import { GestionFormationsComponent } from './components/gestion-formations/gestion-formations.component';
+import { QuestionnaireListComponent } from './components/questionnaire-list-component/questionnaire-list-component.component';
+import { ListeFormationsComponent } from './liste-formations/liste-formations.component';
 
 @NgModule({
-  // --- 3. Déclarez TOUS les composants de ce module ---
   declarations: [
     GestionQuestionnaireComponent,
     SelectionMatiereGestionComponent,
@@ -33,15 +38,20 @@ import { GestionFormationsComponent } from './components/gestion-formations/gest
     QuestionnaireDetailsComponent,
     GestionRessourcesPedagogiquesComponent,
     GestionFormationsComponent,
-     
+    QuestionnaireListComponent,
+    ListeFormationsComponent,
   ],
-  // --- 4. Importez les modules nécessaires ---
+
   imports: [
-    SharedModule,          
+    CommonModule,        // Obligatoire
+    FormsModule,         // Obligatoire pour ngModel
+    ReactiveFormsModule, // Obligatoire pour formGroup et formControlName
+    RouterModule,
+
+    SharedModule,
     EnseignantRoutingModule,
     NgbModalModule,
     QuillModule.forRoot(),
-   
   ],
 })
-export class EnseignantModule { }
+export class EnseignantModule {}

@@ -1,0 +1,77 @@
+/* questionnaire-list-component.component.css */
+
+/* Conteneur des filtres */
+.filter-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.filter-container label {
+  font-weight: bold;
+}
+
+.filter-container select {
+  padding: 0.3rem 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Tableau */
+.questionnaire-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.5rem;
+}
+
+.questionnaire-table th,
+.questionnaire-table td {
+  padding: 0.5rem 0.8rem;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+.questionnaire-table th {
+  background-color: #f4f4f4;
+  font-weight: bold;
+}
+
+/* Lignes alternées */
+.questionnaire-table tbody tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
+/* Boutons */
+.questionnaire-table button {
+  padding: 0.3rem 0.6rem;
+  margin-right: 0.3rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.questionnaire-table button:hover {
+  opacity: 0.85;
+}
+
+/* Boutons spécifiques */
+.questionnaire-table button:first-child {
+  background-color: #4caf50;
+  color: white;
+}
+
+.questionnaire-table button:last-child {
+  background-color: #f44336;
+  color: white;
+}
+
+/* Message "Aucun questionnaire trouvé"
+import { Chapitre , ElementConstitutifResponse } from '../../../../models/models';
+ */
+.questionnaire-table td[colspan="7"] {
+  padding: 1rem;
+  font-style: italic;
+  color: #0d51e4;
+}

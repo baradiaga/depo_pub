@@ -1,0 +1,45 @@
+<div class="filter-section">
+  <label for="matiere">Matière :</label>
+  <select id="matiere" [(ngModel)]="selectedMatiere" (change)="onMatiereChange()">
+    <option [ngValue]="null">-- Toutes les matières --</option>
+    <option *ngFor="let m of matieres" [ngValue]="m.id">{{ m.nom }}</option>
+  </select>
+
+  <label for="chapitre">Chapitre :</label>
+  <select id="chapitre" [(ngModel)]="selectedChapitre" [disabled]="!chapitres.length">
+    <option [ngValue]="null">-- Tous les chapitres --</option>
+    <option *ngFor="let c of chapitres" [ngValue]="c.id">{{ c.nom }}</option>
+  </select>
+</div>
+
+<hr />
+
+<div class="questionnaire-list">
+  <h3>Liste des questionnaires</h3>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Titre</th>
+        <th>Matière</th>
+        <th>Chapitre</th>
+        <th>Date création</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let q of filteredQuestionnaires()">
+        <td>{{ q.titre }}</td>
+        <td>{{ q.nomMatiere }}</td>
+        <td>{{ q.nomChapitre }}</td>
+        <td>{{ q.dateCreation | date:'short' }}</td>
+        <td>
+          <button (click)="selectQuestionnaire(q)">Voir</button>
+          <button (click)="deleteQuestionnaire(q.id)">Supprimer</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p *ngIf="filteredQuestionnaires().length === 0">Aucun questionnaire trouvé.</p>
+</div>

@@ -51,7 +51,17 @@ public class ElementConstitutif {
     @JoinColumn(name = "formation_id") // Clé étrangère vers la table moscepa_formations
     private Formation formation;
 
-    
+    @OneToMany(mappedBy = "elementConstitutif", cascade = CascadeType.ALL, orphanRemoval = true)
+private List<Test> tests = new ArrayList<>();
+
+public List<Test> getTests() {
+    return tests;
+}
+
+public void setTests(List<Test> tests) {
+    this.tests = tests;
+}
+
 
     // --- Constructeurs ---
     public ElementConstitutif() {}

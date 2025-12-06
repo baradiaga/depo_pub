@@ -7,17 +7,19 @@ import java.util.List;
 @Entity
 @Table(name = "moscepa_tests")
 public class Test {
-    @Column
-    private Integer duree;
 
-    @Column(columnDefinition = "TEXT")
-    private String description;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)
     private String titre;
+
+    @Column
+    private Integer duree;
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
 
     // Relation avec Chapitre
     @ManyToOne(fetch = FetchType.LAZY)
@@ -42,6 +44,11 @@ public class Test {
     @OneToMany(mappedBy = "test", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
     private List<ResultatTest> resultats = new ArrayList<>();
 
+    // 🔥 Relation vers ElementConstitutif pour corriger le mappedBy
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "element_constitutif_id")
+    private ElementConstitutif elementConstitutif;
+
     // --- Helpers ---
     public void addQuestion(Question question) {
         this.questions.add(question);
@@ -64,16 +71,17 @@ public class Test {
     }
 
     // --- Getters et Setters ---
-    public Integer getDuree() { return duree; }
-    public void setDuree(Integer duree) { this.duree = duree; }
-
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
     public String getTitre() { return titre; }
     public void setTitre(String titre) { this.titre = titre; }
+
+    public Integer getDuree() { return duree; }
+    public void setDuree(Integer duree) { this.duree = duree; }
+
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 
     public Chapitre getChapitre() { return chapitre; }
     public void setChapitre(Chapitre chapitre) { this.chapitre = chapitre; }
@@ -86,4 +94,7 @@ public class Test {
 
     public List<ResultatTest> getResultats() { return resultats; }
     public void setResultats(List<ResultatTest> resultats) { this.resultats = resultats; }
+
+    public ElementConstitutif getElementConstitutif() { return elementConstitutif; }
+    public void setElementConstitutif(ElementConstitutif elementConstitutif) { this.elementConstitutif = elementConstitutif; }
 }

@@ -7,6 +7,7 @@ import com.moscepa.entity.StatutFormation;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+
 import java.util.List;
 
 public class FormationCreationDto {
@@ -25,10 +26,13 @@ public class FormationCreationDto {
     private StatutFormation statut;
 
     @NotNull
-    private NiveauEtude niveauEtude;
+    private NiveauEtude niveauEtude; // Cycle : LICENCE, MASTER, CERTIFICAT, DOCTORAT
 
     @NotNull
-    private Integer duree; // ✅ aligné avec l'entité Formation
+    private Integer annee; // Année dans le cycle (1,2,3...)
+
+    @NotNull
+    private Integer duree; // Durée en années
 
     private Long responsableId;
 
@@ -54,8 +58,11 @@ public class FormationCreationDto {
     public NiveauEtude getNiveauEtude() { return niveauEtude; }
     public void setNiveauEtude(NiveauEtude niveauEtude) { this.niveauEtude = niveauEtude; }
 
-    public Integer getDuree() { return duree; } // ✅ corrigé
-    public void setDuree(Integer duree) { this.duree = duree; } // ✅ corrigé
+    public Integer getAnnee() { return annee; }
+    public void setAnnee(Integer annee) { this.annee = annee; }
+
+    public Integer getDuree() { return duree; }
+    public void setDuree(Integer duree) { this.duree = duree; }
 
     public Long getResponsableId() { return responsableId; }
     public void setResponsableId(Long responsableId) { this.responsableId = responsableId; }

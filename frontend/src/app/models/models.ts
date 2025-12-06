@@ -9,6 +9,8 @@ export interface BanqueReponseCreation {
   texte: string;
   correcte: boolean;
 }
+
+
 export interface BanqueQuestionCreation {
   enonce: string;
   typeQuestion: TypeQuestion;
@@ -217,6 +219,8 @@ export interface FormationCreation {
   nom: string;
   code: string;
   description?: string;
+  annee: number;
+
 
   // métadonnées
   statut: 'ACTIF' | 'ARCHIVE' | 'EN_PREPARATION';

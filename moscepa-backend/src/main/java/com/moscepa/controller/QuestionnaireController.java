@@ -85,6 +85,21 @@ public class QuestionnaireController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    // ====================================================================
+    // === MISE À JOUR DU QUESTIONNAIRE                                    ===
+    // ====================================================================
+    @PutMapping("/{id}")
+    public ResponseEntity<Void> updateQuestionnaire(@PathVariable Long id, @RequestBody QuestionnairePayload payload) {
+        try {
+            log.info("Requête reçue pour MODIFIER le questionnaire ID: {}", id);
+            questionnaireService.updateQuestionnaire(id, payload);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            log.error("Erreur lors de la mise à jour du questionnaire ID: {}", id, e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
     // ====================================================================
 // === TESTS ASSOCIÉS AU QUESTIONNAIRE                               ===
 // ====================================================================

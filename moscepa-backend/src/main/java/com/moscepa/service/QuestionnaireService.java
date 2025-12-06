@@ -22,16 +22,16 @@ public class QuestionnaireService {
 
     private final QuestionnaireRepository questionnaireRepository;
     private final ChapitreRepository chapitreRepository;
-    private final BanqueQuestionRepository banqueQuestionRepository; // ✅ ajout
+    private final BanqueQuestionRepository banqueQuestionRepository; 
     private final TestService testService;
 
     public QuestionnaireService(QuestionnaireRepository questionnaireRepository,
                                 ChapitreRepository chapitreRepository,
-                                BanqueQuestionRepository banqueQuestionRepository, // ✅ ajout
+                                BanqueQuestionRepository banqueQuestionRepository, 
                                 TestService testService) {
         this.questionnaireRepository = questionnaireRepository;
         this.chapitreRepository = chapitreRepository;
-        this.banqueQuestionRepository = banqueQuestionRepository; // ✅ ajout
+        this.banqueQuestionRepository = banqueQuestionRepository; 
         this.testService = testService;
     }
 
@@ -88,6 +88,67 @@ public class QuestionnaireService {
 
         return questionnaireSauvegarde;
     }
+    // ====================================================================
+// === MISE À JOUR DU QUESTIONNAIRE                                    ===
+// ====================================================================
+@Transactional
+public Questionnaire updateQuestionnaire(Long id, QuestionnairePayload payload) {
+    log.info("Requête reçue pour MODIFIER le questionnaire ID: {}", id);
+
+    Questionnaire existingQuestionnaire = questionnaireRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Questionnaire non trouvé avec l'ID: " + id));
+
+    Chapitre chapitre = chapitreRepository.findById(payload.getChapitreId())
+            .orElseThrow(() -> new EntityNotFoundException(
+                    "Chapitre non trouvé avec l'ID: " + payload.getChapitreId()));
+
+    existingQuestionnaire.setTitre(payload.getTitre());
+    existingQuestionnaire.setDescription(payload.getDescription());
+    existingQuestionnaire.setChapitre(chapitre);
+    // Note: La date de création n'est pas modifiée
+
+    // Logique de mise à jour des questions et réponses
+    // Pour simplifier, on supprime les anciennes questions et on ajoute les nouvelles
+    // Dans un vrai projet, il faudrait gérer la mise à jour fine, mais pour un CRUD simple, c'est suffisant.
+    existingQuestionnaire.getQuestions().clear();
+    
+    List<Question> newQuestions = new ArrayList<>();
+    if (payload.getQuestions() != null) {
+        payload.getQuestions().forEach(qDto -> {
+            Question question = new Question();
+            question.setEnonce(qDto.getEnonce());
+            question.setTypeQuestion(qDto.getType());
+            question.setPoints(qDto.getPoints());
+            question.setQuestionnaire(existingQuestionnaire);
+            question.setChapitre(chapitre); // Le chapitre est le même que celui du questionnaire
+
+            List<Reponse> reponses = new ArrayList<>();
+            if (qDto.getReponses() != null) {
+                qDto.getReponses().forEach(rDto -> {
+                    Reponse reponse = new Reponse();
+                    reponse.setTexte(rDto.getTexte());
+                    reponse.setCorrecte(rDto.isCorrecte());
+                    reponse.setQuestion(question);
+                    reponses.add(reponse);
+                });
+            }
+            question.setReponses(reponses);
+            newQuestions.add(question);
+        });
+    }
+    existingQuestionnaire.setQuestions(newQuestions);
+
+    Questionnaire questionnaireSauvegarde = questionnaireRepository.save(existingQuestionnaire);
+    log.info("Questionnaire '{}' (ID: {}) a été mis à jour avec succès.",
+            questionnaireSauvegarde.getTitre(),
+            questionnaireSauvegarde.getId());
+
+    // On ne recrée pas de test ici, on suppose que la mise à jour du questionnaire n'affecte pas les tests existants.
+    // Si un nouveau test est nécessaire, il devra être créé manuellement.
+
+    return questionnaireSauvegarde;
+}
+
 
     // ====================================================================
     // === LISTE DES QUESTIONNAIRES                                      ===
@@ -179,16 +240,28 @@ public class QuestionnaireService {
     // ====================================================================
     // === MAPPER DTO                                                    ===
     // ====================================================================
-    private QuestionnaireDetailDto toDetailDto(Questionnaire q) {
-        Long chapitreId = q.getChapitre() != null ? q.getChapitre().getId() : null;
-        return new QuestionnaireDetailDto(
-                q.getId(),
-                q.getTitre(),
-                q.getDescription(),
-                q.getDateCreation(),
-                chapitreId
-        );
-    }
+   private QuestionnaireDetailDto toDetailDto(Questionnaire q) {
+    Long chapitreId = q.getChapitre() != null ? q.getChapitre().getId() : null;
+    String nomChapitre = q.getChapitre() != null ? q.getChapitre().getNom() : null;
+    String nomMatiere = q.getChapitre() != null && q.getChapitre().getElementConstitutif() != null
+            ? q.getChapitre().getElementConstitutif().getNom()
+            : null;
+    int nombreQuestions = q.getQuestions() != null ? q.getQuestions().size() : 0;
+    Integer duree = q.getDuree(); // si tu veux inclure la durée du questionnaire
+
+    return new QuestionnaireDetailDto(
+            q.getId(),
+            q.getTitre(),
+            q.getDescription(),
+            q.getDateCreation(),
+            chapitreId,
+            nomChapitre,
+            nomMatiere,
+            nombreQuestions,
+            duree
+    );
+}
+
 
     // ====================================================================
 // === TESTS ASSOCIÉS AU QUESTIONNAIRE                               ===

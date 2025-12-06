@@ -9,7 +9,6 @@ export interface Test {
   duree?: number;
   description?: string;
 }
-
 // Structure pour la création manuelle
 export interface QuestionnairePayload {
   titre: string;
@@ -18,6 +17,21 @@ export interface QuestionnairePayload {
   description: string;
   questions: any[];
 }
+// Interface correspondant au QuestionnaireDetailDto du back-end
+export interface QuestionnaireDetail {
+  id: number;
+  titre: string;
+  description: string;
+  dateCreation: string;     // correspond à LocalDateTime côté backend
+  chapitreId: number | null; 
+  matiereId: number | null;
+  nomChapitre?: string;
+  nomMatiere?: string;
+  nombreQuestions?: number;
+  duree?: number;
+}
+
+
 
 // Structure pour la génération automatique
 export interface ParametresGeneration {
@@ -27,16 +41,7 @@ export interface ParametresGeneration {
   chapitresIds: number[];
 }
 
-// Interface correspondant au QuestionnaireDetailDto du back-end
-export interface QuestionnaireDetail {
-  id: number;
-  titre: string;
-  duree: number;
-  description: string;
-  nomChapitre: string;
-  nomMatiere: string;
-  nombreQuestions: number;
-}
+
 
 @Injectable({
   providedIn: 'root'

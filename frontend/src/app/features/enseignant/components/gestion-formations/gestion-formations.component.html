@@ -1,135 +1,106 @@
 <div class="container mt-4">
-  <h2>Gestion des Formations (Niveau Universitaire)</h2>
+  <!-- Titre dynamique -->
+  <h2 *ngIf="!editingFormationId">Créer une Formation</h2>
+  <h2 *ngIf="editingFormationId">Éditer la Formation</h2>
 
-  <!-- Formulaire de Création / Edition -->
-  <div class="card mb-4">
-    <div class="card-header bg-primary text-white">
-      {{ editingFormationId ? 'Modifier la Formation' : 'Créer une Nouvelle Formation' }}
+  <!-- Formulaire principal -->
+  <form [formGroup]="formationForm" (ngSubmit)="submitFormation()">
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label for="nom" class="form-label">Nom</label>
+        <input id="nom" type="text" class="form-control" formControlName="nom">
+      </div>
+      <div class="col-md-6">
+        <label for="code" class="form-label">Code</label>
+        <input id="code" type="text" class="form-control" formControlName="code">
+      </div>
     </div>
-    <div class="card-body">
-      <form [formGroup]="formationForm" (ngSubmit)="submitFormation()">
 
-        <div class="row">
-          <!-- Colonne 1 : Infos de base -->
-          <div class="col-md-6">
-            <h5 class="mb-3">Informations Générales</h5>
+    <div class="mb-3">
+      <label for="description" class="form-label">Description</label>
+      <textarea id="description" class="form-control" formControlName="description"></textarea>
+    </div>
 
-            <div class="mb-3">
-              <label for="nom" class="form-label">Nom de la Formation *</label>
-              <input id="nom" type="text" class="form-control" formControlName="nom">
-              <div *ngIf="formationForm.get('nom')?.touched && formationForm.get('nom')?.invalid" class="text-danger">
-                Le nom est obligatoire.
-              </div>
-            </div>
+    <div class="row mb-3">
+      <div class="col-md-4">
+        <label for="statut" class="form-label">Statut</label>
+        <select id="statut" class="form-select" formControlName="statut">
+          <option *ngFor="let s of statuts" [value]="s">{{ s }}</option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label for="niveauEtude" class="form-label">Niveau d'étude</label>
+        <select id="niveauEtude" class="form-select" formControlName="niveauEtude">
+          <option *ngFor="let n of niveaux" [value]="n">{{ n }}</option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label for="anneeCycle" class="form-label">Année</label>
+        <select id="anneeCycle" class="form-select" formControlName="anneeCycle">
+          <option *ngFor="let a of anneesDisponibles" [value]="a.value">{{ a.label }}</option>
+        </select>
+      </div>
+    </div>
 
-            <div class="mb-3">
-              <label for="code" class="form-label">Code / Acronyme *</label>
-              <input id="code" type="text" class="form-control" formControlName="code">
-              <div *ngIf="formationForm.get('code')?.touched && formationForm.get('code')?.invalid" class="text-danger">
-                Le code est obligatoire.
-              </div>
-            </div>
+    <!-- Compétences -->
+    <div formArrayName="competences" class="mb-3">
+      <label class="form-label">Compétences</label>
+      <div *ngFor="let c of competences.controls; let i = index" class="input-group mb-2">
+        <input type="text" class="form-control" [formControlName]="i">
+        <button type="button" class="btn btn-outline-danger" (click)="supprimerCompetence(i)">Supprimer</button>
+      </div>
+      <button type="button" class="btn btn-outline-primary" (click)="ajouterCompetence()">Ajouter compétence</button>
+    </div>
 
-            <div class="mb-3">
-              <label for="description" class="form-label">Description</label>
-              <textarea id="description" class="form-control" formControlName="description" rows="3"></textarea>
-            </div>
-          </div>
+    <!-- Autres champs -->
+    <div class="mb-3">
+      <label for="prerequis" class="form-label">Prérequis</label>
+      <textarea id="prerequis" class="form-control" formControlName="prerequis"></textarea>
+    </div>
 
-          <!-- Colonne 2 : Métadonnées -->
-          <div class="col-md-6">
-            <h5 class="mb-3">Métadonnées et Organisation</h5>
+    <div class="mb-3">
+      <label for="debouches" class="form-label">Débouchés</label>
+      <textarea id="debouches" class="form-control" formControlName="debouches"></textarea>
+    </div>
 
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <label for="niveau" class="form-label">Niveau d'Étude</label>
-                <select id="niveau" class="form-select" formControlName="niveauEtude">
-                  <option *ngFor="let niveau of niveaux" [value]="niveau">{{ niveau }}</option>
-                </select>
-              </div>
+    <div class="mb-3">
+      <label for="evaluationModalites" class="form-label">Modalités d'évaluation</label>
+      <textarea id="evaluationModalites" class="form-control" formControlName="evaluationModalites"></textarea>
+    </div>
 
-              <div class="col-md-6 mb-3">
-                <label for="duree" class="form-label">Durée (en années)</label>
-                <input id="duree" type="number" class="form-control" formControlName="duree" min="1">
-              </div>
-            </div>
+    <!-- Boutons -->
+    <button type="submit" class="btn btn-success me-2" [disabled]="formationForm.invalid">
+      {{ editingFormationId ? 'Mettre à jour' : 'Créer' }}
+    </button>
+    <button type="button" class="btn btn-secondary" (click)="resetForm()">Annuler</button>
+  </form>
 
-            <div class="mb-3">
-              <label for="statut" class="form-label">Statut</label>
-              <select id="statut" class="form-select" formControlName="statut">
-                <option *ngFor="let statut of statuts" [value]="statut">{{ statut }}</option>
-              </select>
-            </div>
+  <hr class="my-4">
 
-            <div class="mb-3">
-              <label for="responsable" class="form-label">Responsable (ID)</label>
-              <input id="responsable" type="number" class="form-control" formControlName="responsableId" placeholder="ID de l'enseignant/admin">
-            </div>
-          </div>
-        </div>
+  <!-- Liste des formations -->
+  <h3>Liste des Formations</h3>
 
-        <!-- Section Compétences -->
-        <div class="mt-4">
-          <h5>Compétences</h5>
-          <div formArrayName="competences">
-            <div *ngFor="let c of competences.controls; let i = index" class="input-group mb-2">
-              <input [formControlName]="i" type="text" class="form-control">
-              <button type="button" class="btn btn-danger" (click)="supprimerCompetence(i)">Supprimer</button>
-            </div>
-          </div>
-          <button type="button" class="btn btn-outline-primary" (click)="ajouterCompetence()">Ajouter une compétence</button>
-        </div>
-
-        <!-- Section Matières -->
-        <div class="mt-4">
-          <h5>Matières (Éléments Constitutifs)</h5>
-          <div class="list-group" style="max-height: 200px; overflow-y: auto;">
-            <div *ngFor="let element of tousLesElementsConstitutifs" class="list-group-item d-flex justify-content-between align-items-center">
-              {{ element.nom }}
-              <input type="checkbox"
-                     [checked]="isElementSelected(element.id)"
-                     (change)="toggleElementConstitutif(element.id)">
-            </div>
-            <div *ngIf="tousLesElementsConstitutifs.length === 0" class="list-group-item text-center text-muted">
-              Aucune matière disponible.
-            </div>
-          </div>
-        </div>
-
-        <!-- Upload Documents -->
-        <div class="mt-4">
-          <label class="form-label">Documents / Ressources</label>
-          <input type="file" multiple (change)="onFileSelected($event)">
-          <div *ngIf="fichiersAUploader.length > 0" class="mt-2">
-            <ul>
-              <li *ngFor="let f of fichiersAUploader">{{ f.name }}</li>
-            </ul>
-          </div>
-        </div>
-
-        <button type="submit" class="btn btn-success mt-4">{{ editingFormationId ? 'Mettre à jour' : 'Créer' }}</button>
-        <button type="button" class="btn btn-secondary mt-4 ms-2" (click)="resetForm()">Annuler</button>
-      </form>
+  <div *ngIf="isLoading" class="text-center">
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Chargement...</span>
     </div>
   </div>
 
-  <!-- Liste des Formations -->
-  <div class="card">
-    <div class="card-header bg-info text-white">Formations Existantes ({{ formations.length }})</div>
-    <div class="card-body">
-      <div *ngIf="isLoading" class="text-center">Chargement...</div>
-      <ul class="list-group" *ngIf="!isLoading">
-        <li *ngFor="let f of formations" class="list-group-item d-flex justify-content-between align-items-center">
-          <div>
-            <strong>{{ f.nom }}</strong> - <small class="text-muted">{{ f.code }}</small>
-            <small class="text-muted d-block">Créée par {{ f.createurNom }} le {{ f.dateCreation | date:'shortDate' }}</small>
-          </div>
-          <div>
-            <button class="btn btn-sm btn-primary me-2" (click)="editerFormation(f)">Éditer</button>
-            <button class="btn btn-sm btn-outline-danger" (click)="supprimerFormation(f.id, f.nom)">Supprimer</button>
-          </div>
-        </li>
-      </ul>
-    </div>
+  <ul *ngIf="!isLoading && formations.length > 0" class="list-group">
+    <li *ngFor="let f of formations" class="list-group-item d-flex justify-content-between align-items-center">
+      <div>
+        <strong>{{ f.nom }}</strong>
+        <small class="text-muted"> - {{ f.code }}</small>
+        <div class="text-muted">{{ f.statut }}</div>
+      </div>
+      <div>
+        <button class="btn btn-sm btn-primary me-2" (click)="editerFormation(f)">Éditer</button>
+        <button class="btn btn-sm btn-danger" (click)="supprimerFormation(f.id)">Supprimer</button>
+      </div>
+    </li>
+  </ul>
+
+  <div *ngIf="!isLoading && formations.length === 0" class="alert alert-info">
+    Aucune formation trouvée.
   </div>
 </div>
