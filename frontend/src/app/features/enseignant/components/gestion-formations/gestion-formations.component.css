@@ -1,0 +1,160 @@
+/* --- Structure générale --- */
+.container {
+  max-width: 1200px;
+  margin: auto;
+  padding: 30px;
+  font-family: "Inter", Arial, sans-serif;
+}
+
+h1, h2, h3, h4 {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+/* --- Carte du formulaire --- */
+.form-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 25px;
+  margin-top: 20px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  border: 1px solid #e5e7eb;
+}
+
+.form-card h2 {
+  margin-bottom: 20px;
+  font-size: 1.45rem;
+  color: #1f2937;
+}
+
+/* --- Sections du formulaire --- */
+.form-section {
+  margin-top: 25px;
+  padding: 18px 22px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  background: #f9fafb;
+}
+
+.form-section legend {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #374151;
+  padding: 0 10px;
+}
+
+/* --- Champs de formulaire --- */
+.form-group {
+  margin-bottom: 15px;
+}
+
+label {
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 5px;
+  display: block;
+}
+
+input.form-control,
+textarea.form-control,
+select.form-control {
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  padding: 10px;
+  font-size: 0.95rem;
+  transition: 0.2s;
+}
+
+input.form-control:focus,
+textarea.form-control:focus,
+select.form-control:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 5px rgba(59,130,246,0.3);
+}
+
+textarea {
+  resize: vertical;
+}
+
+/* --- Sous-groupes (compétences et UE) --- */
+.nested-form-group {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  padding: 15px 20px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.ue-group h3 {
+  color: #2563eb;
+  font-weight: 600;
+}
+
+.nested-form-group h4 {
+  color: #4b5563;
+}
+
+/* --- Boutons --- */
+.btn-primary {
+  background: #2563eb;
+  border-color: #2563eb;
+  border-radius: 8px;
+  padding: 8px 18px;
+  font-weight: 500;
+}
+
+.btn-primary:hover {
+  background: #1d4ed8;
+}
+
+.btn-secondary {
+  background: #6b7280;
+  border-color: #6b7280;
+  border-radius: 8px;
+  padding: 8px 18px;
+}
+
+.btn-secondary:hover {
+  background: #4b5563;
+}
+
+.btn-danger {
+  border-radius: 8px;
+}
+
+button {
+  transition: 0.2s;
+}
+
+/* --- Table des formations --- */
+.table {
+  margin-top: 25px;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.table th {
+  background: #f3f4f6;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.table td {
+  vertical-align: middle;
+}
+
+/* --- Alertes --- */
+.alert-info {
+  background: #e0f2fe;
+  border-left: 4px solid #0ea5e9;
+  border-radius: 6px;
+  padding: 10px 15px;
+  margin-bottom: 20px;
+}
+
+.alert-warning {
+  background: #fef9c3;
+  border-left: 4px solid #facc15;
+}

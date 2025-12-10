@@ -4,16 +4,22 @@ import { Injectable } from '@angular/core'; // <-- L'import pour le décorateur
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-// L'interface reste la même
+// L'interface mise à jour pour inclure les volumes horaires et les éléments constitutifs
 export interface UniteEnseignement {
   id?: number;
   nom: string;
   code: string;
   description: string;
-  credit: number;
+  ects: number;
   semestre: number;
   responsable?: { id: number, nom: string, prenom: string };
   objectifs: string;
+  formationId: number | string | null;
+  // Nouveaux champs ajoutés pour la création de l'unité d'enseignement
+  volumeHoraireCours: number;
+  volumeHoraireTD: number;
+  volumeHoraireTP: number;
+  elementConstitutifIds: number[]; // Liste des IDs des éléments constitutifs
 }
 
 // ==========================================================

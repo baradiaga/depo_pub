@@ -49,6 +49,9 @@ export class DashboardComponent implements OnInit {
         { title: 'Utilisateurs', description: 'Gérer les utilisateurs', icon: '👤', route: '/app/admin/dashboard' },
         { title: 'Rôles', description: 'Gérer les rôles', icon: '🛡️', route: '/app/admin/roles' },
         { title: 'Permissions', description: 'Définir les accès', icon: '🔐', route: '/app/admin/permissions' },
+        { title: 'Utilisateurs', description: 'Gérer les utilisateurs', icon: '👤', route: '/app/admin/dashboard' },
+        { title: 'Rôles', description: 'Gérer les rôles', icon: '🛡️', route: '/app/admin/roles' },
+        { title: 'Permissions', description: 'Définir les accès', icon: '🔐', route: '/app/admin/permissions' },
       ],
       ENSEIGNANT: [
         { title: 'Cours', description: 'Gérer vos cours', icon: '📘', route: '/enseignant/dashboard' },

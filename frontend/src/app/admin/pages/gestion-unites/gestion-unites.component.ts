@@ -1,14 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http'; // <-- Import pour typer les erreurs
 
-// ==========================================================
-// === CORRECTION : CHEMINS D'IMPORT PROBABLEMENT CORRECTS ===
-// Si votre composant est dans 'src/app/pages/gestion-unites', ce chemin devrait être bon.
-// Sinon, ajustez-le.
+import { FormationService } from '../../../services/formation.service';
+import { ElementConstitutifService } from '../../../services/element-constitutif.service'; // Ajout du service pour les éléments constitutifs
 import { UniteEnseignement, UniteEnseignementService } from '../../../services/unite-enseignement.service';
+import { ElementConstitutifResponse } from '../../../models/models'; // Ajout de l'interface pour les éléments constitutifs (supposée)
 import { AuthService } from '../../../services/auth.service';
 // ==========================================================
-
+import { FormationDetail } from '../../../models/models';
 import { ToastrService } from 'ngx-toastr';
 
 @Component({
@@ -20,18 +19,25 @@ export class GestionUnitesComponent implements OnInit {
   
   uniteList: UniteEnseignement[] = [];
   ueEnCours: UniteEnseignement = this.initUe();
+  formations: FormationDetail[] = [];
+  tousLesElementsConstitutifs: ElementConstitutifResponse[] = []; // Ajout de la liste des éléments constitutifs
   afficherFormulaire = false;
   isLoading = true;
   isEditing = false;
 
   constructor(
     private ueService: UniteEnseignementService,
+    private formationService: FormationService,
+    private elementConstitutifService: ElementConstitutifService, // Ajout du service
+
     public authService: AuthService,
     private toastr: ToastrService
   ) {}
 
   ngOnInit(): void {
     this.loadUnites();
+    this.loadFormations();
+    this.chargerElementsConstitutifs(); // Chargement des éléments constitutifs
   }
 
   loadUnites(): void {
@@ -51,9 +57,46 @@ export class GestionUnitesComponent implements OnInit {
     });
     // ==========================================================
   }
+  // ===============================
+// === Chargement des formations
+// ===============================
+  loadFormations(): void {
+    this.formationService.getAllFormations().subscribe({
+      next: (data) => {
+        this.formations = data;
+      },
+      error: (err: HttpErrorResponse) => {
+        this.toastr.error("Erreur lors du chargement des formations.", "Erreur");
+        console.error(err);
+      }
+    });
+  }
+
+  // ===============================
+  // === Chargement des éléments constitutifs
+  // ===============================
+  chargerElementsConstitutifs(): void {
+    this.elementConstitutifService.findAll().subscribe({
+      next: data => this.tousLesElementsConstitutifs = data,
+      error: err => this.toastr.error("Erreur lors du chargement des éléments constitutifs.", "Erreur")
+    });
+  }
 
   initUe(): UniteEnseignement {
-    return { nom: '', code: '', description: '', credit: 0, semestre: 1, objectifs: '' };
+    // Mise à jour de la structure de l'UE pour inclure les volumes horaires et les éléments constitutifs
+    return {
+      nom: '',
+      code: '',
+      description: '',
+      ects: 0,
+      semestre: 1,
+      objectifs: '',
+      formationId: null,
+      volumeHoraireCours: 0, // Nouveau champ
+      volumeHoraireTD: 0, // Nouveau champ
+      volumeHoraireTP: 0, // Nouveau champ
+      elementConstitutifIds: [] // Nouveau champ
+    };
   }
 
   nouvelleUe(): void {
@@ -62,15 +105,39 @@ export class GestionUnitesComponent implements OnInit {
     this.afficherFormulaire = true;
   }
 
+  // Méthode pour préparer le payload avant l'envoi
+  private getPayload(): UniteEnseignement {
+  const payload = { ...this.ueEnCours };
+
+  if (!payload.formationId || payload.formationId === "") {
+    this.toastr.error("Veuillez sélectionner une formation.", "Erreur de validation");
+    throw new Error("Formation obligatoire");
+  }
+
+  payload.formationId = Number(payload.formationId);
+
+  return payload;
+}
+
+
   modifierUnite(ue: UniteEnseignement): void {
     this.isEditing = true;
     this.ueEnCours = { ...ue };
     this.afficherFormulaire = true;
   }
 
-  onSubmit(): void {
+  onSubmit(form: any): void { 
+      console.log("Valeur formationId :", this.ueEnCours.formationId);
+  console.log("Type formationId :", typeof this.ueEnCours.formationId);
+// Utilisation de 'any' car nous n'avons pas l'import de NgForm
+    if (form.invalid) {
+      this.toastr.error('Veuillez remplir tous les champs obligatoires.', 'Erreur de validation');
+      return;
+    }
+
+    console.log('UE envoyée :', this.ueEnCours);
     if (this.isEditing && this.ueEnCours.id) {
-      this.ueService.update(this.ueEnCours.id, this.ueEnCours).subscribe({
+      this.ueService.update(this.ueEnCours.id, this.getPayload()).subscribe({
         next: () => {
           this.toastr.success('Unité mise à jour avec succès !', 'Succès');
           this.onReset();
@@ -79,7 +146,7 @@ export class GestionUnitesComponent implements OnInit {
         error: (err: HttpErrorResponse) => this.toastr.error('Erreur lors de la mise à jour.', 'Erreur')
       });
     } else {
-      this.ueService.create(this.ueEnCours).subscribe({
+      this.ueService.create(this.getPayload()).subscribe({
         next: () => {
           this.toastr.success('Unité créée avec succès !', 'Succès');
           this.onReset();

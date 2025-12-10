@@ -12,7 +12,10 @@ import { QuestionnaireDetailsComponent } from './components/questionnaire-detail
 import { GestionRessourcesPedagogiquesComponent } from './components/gestion-ressources-pedagogiques/gestion-ressources-pedagogiques.component';
 import { GestionFormationsComponent } from './components/gestion-formations/gestion-formations.component';
 import { QuestionnaireListComponent } from './components/questionnaire-list-component/questionnaire-list-component.component';
-import { ListeFormationsComponent } from './liste-formations/liste-formations.component';
+import { ListeFormationsComponent } from './components/liste-formations/liste-formations.component';
+import { MesCoursComponentComponent } from './components/mes-cours-component/mes-cours-component.component';
+import { EvaluerEtudiantComponentComponent } from './components/evaluer-etudiant-component/evaluer-etudiant-component.component';
+
 const routes: Routes = [
 { path: 'gestion-questionnaire', component: GestionQuestionnaireComponent },
 { path: 'dashboard', component: DashboardComponent },
@@ -24,11 +27,10 @@ const routes: Routes = [
 { path: 'banques', component: GestionRessourcesPedagogiquesComponent },
 { path: 'formations', component: GestionFormationsComponent },
 { path: 'formations/:id/edit', component: GestionFormationsComponent },
-
-
-
 { path: 'listequestionnaire', component: QuestionnaireListComponent },
-{ path: 'listeformation', component: ListeFormationsComponent }
+{ path: 'listeformation', component: ListeFormationsComponent },
+{ path: 'MesCours', component: MesCoursComponentComponent },
+{ path: 'EvaluerEtudiant', component: EvaluerEtudiantComponentComponent },
 
 ];
 

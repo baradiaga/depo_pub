@@ -1,3 +1,5 @@
+<!-- Fichier : src/app/admin/pages/permissions/permissions.component.html -->
+
 <div class="permissions-container">
   <h2>Gestion des Permissions par Rôle</h2>
 
@@ -9,25 +11,28 @@
 
   <div *ngIf="selectedRole" class="permissions-table">
     <h3>Permissions pour le rôle : {{ selectedRole }}</h3>
+    <button class="btn btn-primary btn-sm mb-3" (click)="savePermissions(selectedRole)">
+        <i class="bi bi-save"></i> Sauvegarder les permissions
+    </button>
 
     <table>
       <thead>
         <tr>
-          <th>Table</th>
+          <th>Ressource (Table)</th>
           <th *ngFor="let action of actions" class="action-header">
             {{ action | titlecase }}
           </th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let table of tables">
-          <td>{{ table }}</td>
+        <tr *ngFor="let resource of resources">
+          <td>{{ resource | titlecase }}</td>
           <td *ngFor="let action of actions">
             <input
               type="checkbox"
-              [checked]="hasPermission(selectedRole, table, action)"
+              [checked]="hasPermission(selectedRole, resource, action)"
               [disabled]="isReadOnly(selectedRole)"
-              (change)="togglePermission(selectedRole, table, action)"
+              (change)="togglePermission(selectedRole, resource, action)"
             />
           </td>
         </tr>

@@ -1,106 +1,254 @@
-<div class="container mt-4">
-  <!-- Titre dynamique -->
-  <h2 *ngIf="!editingFormationId">Créer une Formation</h2>
-  <h2 *ngIf="editingFormationId">Éditer la Formation</h2>
+<div class="container">
+  <h1>Gestion des Formations Académiques </h1>
 
-  <!-- Formulaire principal -->
-  <form [formGroup]="formationForm" (ngSubmit)="submitFormation()">
-    <div class="row mb-3">
-      <div class="col-md-6">
-        <label for="nom" class="form-label">Nom</label>
-        <input id="nom" type="text" class="form-control" formControlName="nom">
+  <!-- Affichage des totaux calculés -->
+  <div class="alert alert-info" *ngIf="formationForm.valid">
+    <p><strong>Volume Horaire Total Calculé :</strong> {{ volumeHoraireTotal }} heures</p>
+    <p><strong>Total ECTS Calculé :</strong> {{ ectsTotal }} crédits</p>
+  </div>
+
+  <!-- Formulaire de Création/Modification -->
+  <form [formGroup]="formationForm" (ngSubmit)="submitFormation()" class="form-card">
+    <h2>{{ editingFormationId ? 'Modifier' : 'Créer' }} une Formation</h2>
+
+    <!-- Section 1: Informations Générales -->
+    <fieldset class="form-section">
+      <legend>Informations Générales</legend>
+      <div class="row">
+        <div class="col-md-6 form-group">
+          <label for="nom">Nom de la Formation *</label>
+          <input id="nom" type="text" formControlName="nom" class="form-control" required>
+          <div *ngIf="formationForm.get('nom')?.invalid && formationForm.get('nom')?.touched" class="text-danger">
+            Le nom est requis.
+          </div>
+        </div>
+        <div class="col-md-6 form-group">
+          <label for="code">Code *</label>
+          <input id="code" type="text" formControlName="code" class="form-control" required>
+        </div>
       </div>
-      <div class="col-md-6">
-        <label for="code" class="form-label">Code</label>
-        <input id="code" type="text" class="form-control" formControlName="code">
+
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea id="description" formControlName="description" class="form-control"></textarea>
       </div>
-    </div>
 
-    <div class="mb-3">
-      <label for="description" class="form-label">Description</label>
-      <textarea id="description" class="form-control" formControlName="description"></textarea>
-    </div>
-
-    <div class="row mb-3">
-      <div class="col-md-4">
-        <label for="statut" class="form-label">Statut</label>
-        <select id="statut" class="form-select" formControlName="statut">
-          <option *ngFor="let s of statuts" [value]="s">{{ s }}</option>
-        </select>
+      <div class="row">
+        <div class="col-md-4 form-group">
+          <label for="statut">Statut *</label>
+          <select id="statut" formControlName="statut" class="form-control" required>
+            <option *ngFor="let s of statuts" [value]="s">{{ s }}</option>
+          </select>
+        </div>
+        <div class="col-md-4 form-group">
+          <label for="niveauEtude">Cycle d'etude *</label>
+          <select id="niveauEtude" formControlName="niveauEtude" class="form-control" required>
+            <option *ngFor="let n of niveaux" [value]="n">{{ n }}</option>
+          </select>
+        </div>
+        <div class="col-md-4 form-group">
+          <label for="anneeCycle">Niveau d'etude *</label>
+          <select id="anneeCycle" formControlName="anneeCycle" class="form-control" required>
+            <option *ngFor="let a of anneesDisponibles" [value]="a.value">{{ a.label }}</option>
+          </select>
+        </div>
       </div>
-      <div class="col-md-4">
-        <label for="niveauEtude" class="form-label">Niveau d'étude</label>
-        <select id="niveauEtude" class="form-select" formControlName="niveauEtude">
-          <option *ngFor="let n of niveaux" [value]="n">{{ n }}</option>
-        </select>
+
+      <div class="form-group">
+        <label for="certificationProfessionnelle">Certification Professionnelle (RNCP/RS)</label>
+        <input id="certificationProfessionnelle" type="text" formControlName="certificationProfessionnelle" class="form-control">
       </div>
-      <div class="col-md-4">
-        <label for="anneeCycle" class="form-label">Année</label>
-        <select id="anneeCycle" class="form-select" formControlName="anneeCycle">
-          <option *ngFor="let a of anneesDisponibles" [value]="a.value">{{ a.label }}</option>
-        </select>
+    </fieldset>
+
+    <!-- Section 2: Objectifs et Débouchés -->
+    <fieldset class="form-section">
+      <legend>Objectifs, Prérequis et Débouchés</legend>
+      <div class="form-group">
+        <label for="objectifs">Objectifs Pédagogiques</label>
+        <textarea id="objectifs" formControlName="objectifs" class="form-control"></textarea>
       </div>
-    </div>
-
-    <!-- Compétences -->
-    <div formArrayName="competences" class="mb-3">
-      <label class="form-label">Compétences</label>
-      <div *ngFor="let c of competences.controls; let i = index" class="input-group mb-2">
-        <input type="text" class="form-control" [formControlName]="i">
-        <button type="button" class="btn btn-outline-danger" (click)="supprimerCompetence(i)">Supprimer</button>
+      <div class="form-group">
+        <label for="prerequis">Prérequis</label>
+        <textarea id="prerequis" formControlName="prerequis" class="form-control"></textarea>
       </div>
-      <button type="button" class="btn btn-outline-primary" (click)="ajouterCompetence()">Ajouter compétence</button>
-    </div>
+      <div class="form-group">
+        <label for="debouches">Débouchés Professionnels</label>
+        <textarea id="debouches" formControlName="debouches" class="form-control"></textarea>
+      </div>
+    </fieldset>
 
-    <!-- Autres champs -->
-    <div class="mb-3">
-      <label for="prerequis" class="form-label">Prérequis</label>
-      <textarea id="prerequis" class="form-control" formControlName="prerequis"></textarea>
-    </div>
+    <!-- Section 3: Compétences (FormArray) -->
+    <fieldset class="form-section">
+      <legend>Compétences Visées (Approche par Compétences)</legend>
+      <div formArrayName="competences">
+        <div *ngFor="let competenceGroup of competences.controls; let i = index" [formGroupName]="i" class="nested-form-group">
+          <h4>Compétence #{{ i + 1 }}
+            <button type="button" (click)="supprimerCompetence(i)" class="btn btn-sm btn-danger float-right">Supprimer</button>
+          </h4>
+          <div class="row">
+            <div class="col-md-6 form-group">
+              <label>Libellé *</label>
+              <input type="text" formControlName="libelle" class="form-control" required>
+            </div>
+            <div class="col-md-6 form-group">
+              <label>Niveau d'Acquisition Visé *</label>
+              <select formControlName="niveauAcquisition" class="form-control" required>
+                <option *ngFor="let n of niveauxAcquisition" [value]="n">{{ n }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Indicateurs d'Évaluation (Séparés par des virgules)</label>
+            <textarea formControlName="indicateursEvaluation" class="form-control"></textarea>
+          </div>
+        </div>
+      </div>
+      <button type="button" (click)="ajouterCompetence()" class="btn btn-secondary mt-2">Ajouter une Compétence</button>
+    </fieldset>
 
-    <div class="mb-3">
-      <label for="debouches" class="form-label">Débouchés</label>
-      <textarea id="debouches" class="form-control" formControlName="debouches"></textarea>
-    </div>
+    <!-- Section 4: Unités d'Enseignement (UE) / Modules (FormArray) -->
+    <fieldset class="form-section">
+      <legend>Unités d'Enseignement (UE) / Modules</legend>
+      <div formArrayName="unitesEnseignement">
+        <div *ngFor="let ueGroup of unitesEnseignement.controls; let j = index" [formGroupName]="j" class="nested-form-group ue-group">
+          <h3>UE / Module #{{ j + 1 }}
+            <button type="button" (click)="supprimerUniteEnseignement(j)" class="btn btn-sm btn-danger float-right">Supprimer</button>
+          </h3>
+          <div class="row">
+            <div class="col-md-6 form-group">
+              <label>Nom de l'UE *</label>
+              <input type="text" formControlName="nom" class="form-control" required>
+            </div>
+            <div class="col-md-3 form-group">
+              <label>Code *</label>
+              <input type="text" formControlName="code" class="form-control" required>
+            </div>
+            <div class="col-md-3 form-group">
+              <label>ECTS *</label>
+              <input type="number" formControlName="ects" class="form-control" min="0" required>
+            </div>
+            <div class="col-md-3 form-group">
+          <label>Semestre *</label>
+           <input type="number" formControlName="semestre" class="form-control" min="1" required>
+           </div>
 
-    <div class="mb-3">
-      <label for="evaluationModalites" class="form-label">Modalités d'évaluation</label>
-      <textarea id="evaluationModalites" class="form-control" formControlName="evaluationModalites"></textarea>
-    </div>
+          </div>
+          <div class="form-group">
+            <label>Description de l'UE</label>
+            <textarea formControlName="description" class="form-control"></textarea>
+          </div>
 
-    <!-- Boutons -->
-    <button type="submit" class="btn btn-success me-2" [disabled]="formationForm.invalid">
-      {{ editingFormationId ? 'Mettre à jour' : 'Créer' }}
-    </button>
-    <button type="button" class="btn btn-secondary" (click)="resetForm()">Annuler</button>
+          <!-- Volume Horaire Détaillé -->
+          <div class="row">
+            <div class="col-md-4 form-group">
+              <label>Volume Horaire CM (Cours Magistraux) *</label>
+              <input type="number" formControlName="volumeHoraireCours" class="form-control" min="0" required>
+            </div>
+            <div class="col-md-4 form-group">
+              <label>Volume Horaire TD (Travaux Dirigés) *</label>
+              <input type="number" formControlName="volumeHoraireTD" class="form-control" min="0" required>
+            </div>
+            <div class="col-md-4 form-group">
+              <label>Volume Horaire TP (Travaux Pratiques) *</label>
+              <input type="number" formControlName="volumeHoraireTP" class="form-control" min="0" required>
+            </div>
+          </div>
+
+          <!-- Sélection des Éléments Constitutifs (Matières) -->
+          <div class="form-group">
+            <label>Éléments Constitutifs Rattachés (Matières)</label>
+            <!-- NOTE: Ceci est une implémentation simplifiée. Dans une vraie application, un composant de sélection multiple serait utilisé. -->
+            <select formControlName="elementConstitutifIds" class="form-control" multiple>
+              <option *ngFor="let ec of tousLesElementsConstitutifs" [value]="ec.id">{{ ec.nom }} ({{ ec.code }})</option>
+            </select>
+            <small class="form-text text-muted">Sélectionnez les matières qui composent cette UE/Module.</small>
+          </div>
+        </div>
+      </div>
+      <button type="button" (click)="ajouterUniteEnseignement()" class="btn btn-secondary mt-2">Ajouter une Unité d'Enseignement (UE)</button>
+    </fieldset>
+
+    <!-- Section 5: Modalités et Logistique -->
+    <fieldset class="form-section">
+      <legend>Modalités et Logistique</legend>
+      <div class="row">
+        <div class="col-md-4 form-group">
+          <label for="modaliteEnseignement">Modalité d'Enseignement *</label>
+          <select id="modaliteEnseignement" formControlName="modaliteEnseignement" class="form-control" required>
+            <option *ngFor="let m of modalites" [value]="m">{{ m }}</option>
+          </select>
+        </div>
+        <div class="col-md-4 form-group">
+          <label for="duree">Durée (en années/semestres) *</label>
+          <input id="duree" type="number" formControlName="duree" class="form-control" min="1" required>
+        </div>
+        <div class="col-md-4 form-group">
+          <label for="capacite">Capacité d'Accueil</label>
+          <input id="capacite" type="number" formControlName="capacite" class="form-control" min="1">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6 form-group">
+          <label for="dateDebut">Date de Début</label>
+          <input id="dateDebut" type="date" formControlName="dateDebut" class="form-control">
+        </div>
+        <div class="col-md-6 form-group">
+          <label for="dateFin">Date de Fin</label>
+          <input id="dateFin" type="date" formControlName="dateFin" class="form-control">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="evaluationModalites">Modalités d'Évaluation</label>
+        <textarea id="evaluationModalites" formControlName="evaluationModalites" class="form-control"></textarea>
+      </div>
+    </fieldset>
+
+    <!-- Boutons d'action -->
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary" [disabled]="formationForm.invalid">
+        {{ editingFormationId ? 'Mettre à jour' : 'Créer la Formation' }}
+      </button>
+      <button type="button" (click)="resetForm()" class="btn btn-secondary">Annuler / Nouveau</button>
+    </div>
   </form>
 
-  <hr class="my-4">
+  <hr>
 
-  <!-- Liste des formations -->
-  <h3>Liste des Formations</h3>
-
-  <div *ngIf="isLoading" class="text-center">
-    <div class="spinner-border" role="status">
-      <span class="visually-hidden">Chargement...</span>
+  <!-- Liste des Formations Existantes (Simplifiée) -->
+  <div class="formations-list">
+    <h2>Formations Existantes</h2>
+    <div *ngIf="isLoading" class="text-center">Chargement des formations...</div>
+    <table class="table table-striped" *ngIf="!isLoading && formations.length > 0">
+      <thead>
+        <tr>
+          <th>Nom</th>
+          <th>Code</th>
+          <th>Niveau</th>
+          <th>Statut</th>
+          <th>ECTS</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let f of formations">
+          <td>{{ f.nom }}</td>
+          <td>{{ f.code }}</td>
+          <td>{{ f.niveauEtude }} - {{ f.anneeCycle }}</td>
+          <td>{{ f.statut }}</td>
+          <td>{{ f.ectsTotal }}</td>
+          <td>
+            <button (click)="editerFormation(f)" class="btn btn-sm btn-info">Éditer</button>
+            <button (click)="supprimerFormation(f.id)" class="btn btn-sm btn-danger ml-2">Supprimer</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div *ngIf="!isLoading && formations.length === 0" class="alert alert-warning">
+      Aucune formation trouvée.
     </div>
   </div>
-
-  <ul *ngIf="!isLoading && formations.length > 0" class="list-group">
-    <li *ngFor="let f of formations" class="list-group-item d-flex justify-content-between align-items-center">
-      <div>
-        <strong>{{ f.nom }}</strong>
-        <small class="text-muted"> - {{ f.code }}</small>
-        <div class="text-muted">{{ f.statut }}</div>
-      </div>
-      <div>
-        <button class="btn btn-sm btn-primary me-2" (click)="editerFormation(f)">Éditer</button>
-        <button class="btn btn-sm btn-danger" (click)="supprimerFormation(f.id)">Supprimer</button>
-      </div>
-    </li>
-  </ul>
-
-  <div *ngIf="!isLoading && formations.length === 0" class="alert alert-info">
-    Aucune formation trouvée.
-  </div>
 </div>
+
+

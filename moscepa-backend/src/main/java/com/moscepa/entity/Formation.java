@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Set;
 
 @Entity
@@ -50,6 +52,42 @@ public class Formation {
     @OneToMany(mappedBy = "formation", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ElementConstitutif> elementsConstitutifs = new HashSet<>();
 
+    // Nouveaux champs pour la structure académique professionnelle
+    @Column(columnDefinition = "TEXT")
+    private String objectifs;
+
+    @Column(columnDefinition = "TEXT")
+    private String prerequis;
+
+    @Column(columnDefinition = "TEXT")
+    private String debouches;
+
+    @Column(columnDefinition = "TEXT")
+    private String evaluationModalites;
+
+    @Column(length = 50)
+    private String modaliteEnseignement; // PRESENTIEL, DISTANCIEL, HYBRIDE
+
+    @Column(length = 255)
+    private String lieu;
+
+    private LocalDateTime dateDebut;
+    private LocalDateTime dateFin;
+
+    private Integer capacite;
+    private Double tarif;
+
+    @Column(length = 255)
+    private String certificationProfessionnelle; // RNCP/RS
+
+    // Relation OneToMany pour les Compétences
+    @OneToMany(mappedBy = "formation", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CompetenceDetail> competences = new ArrayList<>();
+
+    // Relation OneToMany pour les Unités d'Enseignement
+    @OneToMany(mappedBy = "formation", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UniteEnseignement> unitesEnseignement = new ArrayList<>();
+
     // ========================
     // Constructeurs
     // ========================
@@ -93,8 +131,48 @@ public class Formation {
         this.elementsConstitutifs = elementsConstitutifs; 
     }
 
+    // --- Getters et Setters pour les nouveaux champs ---
+    public String getObjectifs() { return objectifs; }
+    public void setObjectifs(String objectifs) { this.objectifs = objectifs; }
+
+    public String getPrerequis() { return prerequis; }
+    public void setPrerequis(String prerequis) { this.prerequis = prerequis; }
+
+    public String getDebouches() { return debouches; }
+    public void setDebouches(String debouches) { this.debouches = debouches; }
+
+    public String getEvaluationModalites() { return evaluationModalites; }
+    public void setEvaluationModalites(String evaluationModalites) { this.evaluationModalites = evaluationModalites; }
+
+    public String getModaliteEnseignement() { return modaliteEnseignement; }
+    public void setModaliteEnseignement(String modaliteEnseignement) { this.modaliteEnseignement = modaliteEnseignement; }
+
+    public String getLieu() { return lieu; }
+    public void setLieu(String lieu) { this.lieu = lieu; }
+
+    public LocalDateTime getDateDebut() { return dateDebut; }
+    public void setDateDebut(LocalDateTime dateDebut) { this.dateDebut = dateDebut; }
+
+    public LocalDateTime getDateFin() { return dateFin; }
+    public void setDateFin(LocalDateTime dateFin) { this.dateFin = dateFin; }
+
+    public Integer getCapacite() { return capacite; }
+    public void setCapacite(Integer capacite) { this.capacite = capacite; }
+
+    public Double getTarif() { return tarif; }
+    public void setTarif(Double tarif) { this.tarif = tarif; }
+
+    public String getCertificationProfessionnelle() { return certificationProfessionnelle; }
+    public void setCertificationProfessionnelle(String certificationProfessionnelle) { this.certificationProfessionnelle = certificationProfessionnelle; }
+
+    public List<CompetenceDetail> getCompetences() { return competences; }
+    public void setCompetences(List<CompetenceDetail> competences) { this.competences = competences; }
+
+    public List<UniteEnseignement> getUnitesEnseignement() { return unitesEnseignement; }
+    public void setUnitesEnseignement(List<UniteEnseignement> unitesEnseignement) { this.unitesEnseignement = unitesEnseignement; }
+
     // ========================
-    // Helpers
+    // Helpers (Conservés pour la compatibilité EC)
     // ========================
     public void addElementConstitutif(ElementConstitutif ec) {
         elementsConstitutifs.add(ec);

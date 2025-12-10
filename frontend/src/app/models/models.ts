@@ -1,51 +1,49 @@
-// Fichier : src/app/models/models.ts (Version mise à jour pour le compte à rebours)
+// src/app/models/models.ts
+
+// ====================================================================
+// === TYPES GÉNÉRAUX (Fournis par l'utilisateur)
+// ====================================================================
 export type TypeQuestion = 'QCM' | 'QCU' | 'VRAI_FAUX' | 'TEXTE_LIBRE';
 export type Difficulte = 'FACILE' | 'MOYEN' | 'DIFFICILE';
 export type StatutQuestion = 'BROUILLON' | 'VALIDEE' | 'ARCHIVEE';
+
 // ====================================================================
-// ===                MODÈLES POUR LES ENTITÉS DE BASE              ===
+// === TYPES SPÉCIFIQUES À LA FORMATION ACADÉMIQUE (Perfectionnement)
 // ====================================================================
-export interface BanqueReponseCreation {
-  texte: string;
-  correcte: boolean;
+export type StatutFormation = 'ACTIF' | 'ARCHIVE' | 'EN_PREPARATION' | 'EN_VALIDATION';
+export type NiveauEtude = 'LICENCE' | 'MASTER' | 'CERTIFICAT' | 'DOCTORAT' | 'BACHELOR' | 'MS';
+export type ModaliteEnseignement = 'PRESENTIEL' | 'DISTANCIEL' | 'HYBRIDE';
+export type NiveauAcquisition = 'INITIATION' | 'MAITRISE' | 'EXPERTISE';
+
+/**
+ * Représente une compétence détaillée avec son niveau visé et ses indicateurs d'évaluation.
+ */
+export interface CompetenceDetail {
+  libelle: string;
+  niveauAcquisition: NiveauAcquisition;
+  indicateursEvaluation: string; // Simplifié en string pour le formulaire
 }
 
+/**
+ * Représente une Unité d'Enseignement (UE) ou un Module.
+ * C'est l'unité de base de la structure académique.
+ */
+export interface UniteEnseignement {
+  id?: number;
+  nom: string;
+  code: string; // Ex: "UEF1"
+  description: string;
+  ects: number; // Crédits ECTS alloués à cette UE
+  volumeHoraireCours: number; // CM (Cours Magistraux)
+  volumeHoraireTD: number; // TD (Travaux Dirigés)
+  volumeHoraireTP: number; // TP (Travaux Pratiques)
+  elementConstitutifIds: number[]; // IDs des matières/cours rattachés
+}
 
-export interface BanqueQuestionCreation {
-  enonce: string;
-  typeQuestion: TypeQuestion;
-  points: number;
-  difficulte: Difficulte;
-  chapitreId: number;
-  reponses: BanqueReponseCreation[];
-  tags: string[]; // Noms des tags
-}
-export interface BanqueReponseDetail {
-  id: number;
-  texte: string;
-  correcte: boolean;
-}
-export interface BanqueQuestionDetail {
-  id: number;
-  enonce: string;
-  typeQuestion: TypeQuestion;
-  points: number;
-  difficulte: Difficulte;
-  chapitreId: number;
-  chapitreNom: string;
-  auteurNom: string;
-  dateCreation: string; // LocalDateTime en Java -> string en TS
-  noteQualite: number;
-  nombreUtilisations: number;
-  reponses: BanqueReponseDetail[];
-  tags: string[];
-  chapitres: Chapitre[];
-  statut: StatutQuestion;
-}
-export interface EvaluationQuestion {
-  note: number;
-  commentaire?: string;
-}
+// ====================================================================
+// === MODÈLES DE CONTENU PÉDAGOGIQUE (Fournis par l'utilisateur)
+// ====================================================================
+
 /**
  * Représente une Section de chapitre.
  */
@@ -70,7 +68,8 @@ export interface Chapitre {
 }
 
 /**
- * Représente un Élément Constitutif (Matière).
+ * Représente un Élément Constitutif (Matière/Cours).
+ * Le champ 'credit' est conservé tel que fourni par l'utilisateur.
  */
 export interface ElementConstitutifResponse {
   id: number;
@@ -86,11 +85,6 @@ export interface ElementConstitutifResponse {
   chapitres?: Chapitre[];
 }
 
-
-// ====================================================================
-// ===                  MODÈLES POUR LES PAYLOADS (DTOs)              ===
-// ====================================================================
-
 /**
  * Payload pour la création d'un Élément Constitutif.
  */
@@ -102,105 +96,6 @@ export interface ElementConstitutifRequest {
   enseignantId: number | null;
 }
 
-/**
- * Payload pour la création d'un Chapitre.
- */
-export interface ChapitrePayload {
-  matiere: string;
-  titre: string;
-  niveau: number;
-  objectif: string;
-  sections: { titre: string }[];
-}
-
-/**
- * Payload pour la mise à jour d'une Section.
- */
-export interface SectionUpdatePayload {
-  titre: string;
-  contenu: string;
-}
-
-
-// ====================================================================
-// ===                  MODÈLES SPÉCIFIQUES AUX TESTS               ===
-// ====================================================================
-
-/**
- * Représente les détails d'un chapitre nécessaires pour la page de test.
- */
-export interface ChapitreDetail {
-  id: number;
-  nom: string;
-  elementConstitutifId: number;
-}
-
-/**
- * Représente une option de réponse pour une question de test (version publique).
- */
-export interface Reponse {
-  id: number;
-  texte: string;
-}
-
-/**
- * Représente une question de test (version envoyée au frontend).
- */
-export interface Question {
-  id: number;
-  enonce: string;
-  type: 'QCU' | 'QCM' | 'VRAI_FAUX' | 'TEXTE_LIBRE';
-  reponses: Reponse[];
-  // ====================================================================
-  // === CHAMP AJOUTÉ POUR LE COMPTE À REBOURS                        ===
-  // ====================================================================
-  dureeTest?: number; // Durée totale du test en minutes. Optionnel pour la compatibilité.
-}
-
-/**
- * Représente le résultat d'un test après soumission.
- */
-export interface ResultatTest {
-  scoreObtenu: number;
-  totalPointsPossible: number;
-  message: string;
-}
-
-
-// ====================================================================
-// ===     MODÈLES POUR LA CRÉATION MANUELLE DE QUESTIONNAIRES      ===
-// ====================================================================
-
-/**
- * Représente une question lors de sa création par un enseignant.
- */
-export interface QuestionPourCreation {
-  type: 'qcm' | 'qcu' | 'vrai_faux' | 'texte_libre';
-  enonce: string;
-  points: number;
-  difficulte: 'facile' | 'moyen' | 'difficile';
-  reponses?: { texte: string; correcte: boolean; }[];
-  reponseVraiFaux?: boolean;
-}
-
-/**
- * Représente le payload complet pour la création manuelle d'un questionnaire.
- */
-export interface CreateTestRequest {
-  titre: string;
-  chapitreId: number;
-  questionIds: number[];
-}
-export interface QuestionnaireManuel {
-  titre: string;
-  matiereId: number | null;
-  chapitreId: number | null;
-  duree: number;
-  description: string;
-  questions: QuestionPourCreation[];
-}
-// Fichier : src/app/models/models.ts (Ajout)
-
 export interface RessourcePedagogique {
   id: number;
   titre: string;
@@ -211,77 +106,173 @@ export interface RessourcePedagogique {
   tailleOctets: number;
   dateTeleversement: string;
   chapitreId: number;
-  // Ajoutez d'autres champs si nécessaire (auteur, tags, etc.)
 }
-// --- FormationCreation (payload envoyé au backend) ---
+
+// ====================================================================
+// === MODÈLES DE FORMATION (Fusion du perfectionnement et des champs utilisateur)
+// ====================================================================
+
+/**
+ * Interface pour la création/modification d'une formation (Payload).
+ * Intègre la nouvelle structure modulaire (UEs) et les compétences détaillées.
+ */
 export interface FormationCreation {
-  // informations générales
+  // Informations Générales
   nom: string;
   code: string;
-  description?: string;
-  annee: number;
-
-
-  // métadonnées
-  statut: 'ACTIF' | 'ARCHIVE' | 'EN_PREPARATION';
-  duree: number; // en années (ou fraction)
-  niveauEtude: 'LICENCE' | 'MASTER' | 'CERTIFICAT' | 'DOCTORAT';
+  description: string;
+  statut: StatutFormation;
+  duree: number;
+  niveauEtude: NiveauEtude;
+  anneeCycle: number; // Remplace 'annee'
   responsableId: number | null;
 
-  // pédagogique
-  objectifs?: string;
-  competences?: string[];      // tableau de compétences
-  prerequis?: string;
-  debouches?: string;
-  evaluationModalites?: string;
-  volumeHoraireTotal?: number; // en heures
+  // Pédagogique
+  objectifs: string;
+  competences: CompetenceDetail[]; // Nouvelle structure
+  prerequis: string;
+  debouches: string;
+  evaluationModalites: string;
 
-  // organisation / admin
-  modaliteEnseignement?: 'PRESENTIEL' | 'DISTANCIEL' | 'HYBRIDE';
-  lieu?: string;
-  dateDebut?: string; // ISO date string
-  dateFin?: string;   // ISO date string
-  capacite?: number;
-  tarif?: number;
+  // Organisation / Admin
+  modaliteEnseignement: ModaliteEnseignement;
+  lieu: string;
+  dateDebut: string;
+  dateFin: string;
+  capacite: number | null;
+  tarif: number | null;
+  certificationProfessionnelle: string; // Nouveau champ
 
-  // structure
-  elementsConstitutifsIds: number[]; // <-- tableau
+  // Structure Académique
+  unitesEnseignement: UniteEnseignement[]; // Nouvelle structure
 
-  // ressources humaines / documents
-  intervenantsIds?: number[];
-  documentsIds?: number[];
+  // Ressources Humaines / Documents
+  intervenantsIds: number[];
+  documentsIds: number[];
 }
 
-// --- FormationDetail (retour du backend, avec plus de détails) ---
-export interface FormationDetail {
+/**
+ * Interface pour la lecture (détail) d'une formation.
+ * Inclut les champs calculés (volume horaire, ECTS) et les détails des relations.
+ */
+export interface FormationDetail extends FormationCreation {
   id: number;
-  nom: string;
-  code?: string;
-  description?: string;
-
-  statut?: 'ACTIF' | 'ARCHIVE' | 'EN_PREPARATION';
-  duree?: number;
-  niveauEtude?: 'LICENCE' | 'MASTER' | 'CERTIFICAT' | 'DOCTORAT';
-
-  responsableNom?: string; // ou responsableId?: number
+  volumeHoraireTotal: number; // Calculé
+  ectsTotal: number; // Calculé
+  responsableNom?: string;
   createurNom?: string;
   dateCreation?: string;
+  // Les détails des relations (éléments constitutifs, intervenants, documents)
+  // sont gérés via les IDs dans FormationCreation, mais le backend pourrait
+  // renvoyer les objets complets ici si nécessaire.
+}
 
-  objectifs?: string;
-  competences?: string[];
-  prerequis?: string;
-  debouches?: string;
-  evaluationModalites?: string;
-  volumeHoraireTotal?: number;
+// ====================================================================
+// === MODÈLES BANQUE DE QUESTIONS / TESTS (Fournis par l'utilisateur)
+// ====================================================================
 
-  modaliteEnseignement?: string;
-  lieu?: string;
-  dateDebut?: string;
-  dateFin?: string;
-  capacite?: number;
-  tarif?: number;
+export interface BanqueReponseCreation {
+  texte: string;
+  correcte: boolean;
+}
 
-  elementsConstitutifs?: ElementConstitutifResponse[]; // liaison
-  intervenants?: { id: number; nom: string; prenom?: string }[];
-  documents?: { id: number; nomFichier: string; url?: string }[];
+export interface BanqueQuestionCreation {
+  enonce: string;
+  typeQuestion: TypeQuestion;
+  points: number;
+  difficulte: Difficulte;
+  chapitreId: number;
+  reponses: BanqueReponseCreation[];
+  tags: string[];
+}
+
+export interface BanqueReponseDetail {
+  id: number;
+  texte: string;
+  correcte: boolean;
+}
+
+export interface BanqueQuestionDetail {
+  id: number;
+  enonce: string;
+  typeQuestion: TypeQuestion;
+  points: number;
+  difficulte: Difficulte;
+  chapitreId: number;
+  chapitreNom: string;
+  auteurNom: string;
+  dateCreation: string;
+  noteQualite: number;
+  nombreUtilisations: number;
+  reponses: BanqueReponseDetail[];
+  tags: string[];
+  chapitres: Chapitre[];
+  statut: StatutQuestion;
+}
+
+export interface EvaluationQuestion {
+  note: number;
+  commentaire?: string;
+}
+
+export interface ChapitrePayload {
+  matiere: string;
+  titre: string;
+  niveau: number;
+  objectif: string;
+  sections: { titre: string }[];
+}
+
+export interface SectionUpdatePayload {
+  titre: string;
+  contenu: string;
+}
+
+export interface ChapitreDetail {
+  id: number;
+  nom: string;
+  elementConstitutifId: number;
+}
+
+export interface Reponse {
+  id: number;
+  texte: string;
+}
+
+export interface Question {
+  id: number;
+  enonce: string;
+  type: 'QCU' | 'QCM' | 'VRAI_FAUX' | 'TEXTE_LIBRE';
+  reponses: Reponse[];
+  dureeTest?: number;
+}
+
+export interface ResultatTest {
+  scoreObtenu: number;
+  totalPointsPossible: number;
+  message: string;
+}
+
+export interface QuestionPourCreation {
+  type: 'qcm' | 'qcu' | 'vrai_faux' | 'texte_libre';
+  enonce: string;
+  points: number;
+  difficulte: 'facile' | 'moyen' | 'difficile';
+  reponses?: { texte: string; correcte: boolean; }[];
+  reponseVraiFaux?: boolean;
+}
+
+export interface CreateTestRequest {
+  titre: string;
+  chapitreId: number;
+  questionIds: number[];
+}
+
+export interface QuestionnaireManuel {
+  titre: string;
+  matiereId: number | null;
+  chapitreId: number | null;
+  duree: number;
+  description: string;
+  questions: QuestionPourCreation[];
 }

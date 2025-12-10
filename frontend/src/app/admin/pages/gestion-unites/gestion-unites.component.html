@@ -1,112 +1,144 @@
-<div class="gestion-container">
-  <h1>Gestion des Unités d'Enseignement</h1>
+<div class="container mt-4">
+    <h2>Gestion des Unités d'Enseignement</h2>
 
-  <!-- Bouton pour afficher le formulaire de création, visible seulement si le formulaire n'est pas déjà affiché -->
-  <div class="header-actions" *ngIf="!afficherFormulaire">
-    <!-- Ce bouton ne s'affiche que pour les rôles autorisés à créer -->
-    <button *ngIf="authService.getUserRole() === 'ADMIN' || authService.getUserRole() === 'RESPONSABLE_FORMATION' || authService.getUserRole() === 'ENSEIGNANT'" 
-        (click)="nouvelleUe()" class="btn btn-primary">
-  Ajouter une UE
-</button>
-    <br>
+    <!-- Bouton Nouvelle UE -->
+    <button *ngIf="!afficherFormulaire" class="btn btn-primary mb-3" (click)="nouvelleUe()">
+        <i class="fas fa-plus"></i> Nouvelle Unité d'Enseignement
+    </button>
+
+    <!-- Formulaire de Création/Modification -->
+    <div *ngIf="afficherFormulaire" class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            {{ isEditing ? 'Modifier' : 'Créer' }} une Unité d'Enseignement
+        </div>
+        <div class="card-body">
+            <!-- Utilisation d'un formulaire Template-Driven (ngForm) -->
+            <form #ueForm="ngForm" (ngSubmit)="onSubmit(ueForm)">
+                
+                <!-- Champs de base -->
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="nom">Nom de l'UE</label>
+                        <input type="text" class="form-control" id="nom" name="nom" [(ngModel)]="ueEnCours.nom" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="code">Code de l'UE</label>
+                        <input type="text" class="form-control" id="code" name="code" [(ngModel)]="ueEnCours.code" required>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="ects">ECTS</label>
+                        <input type="number" class="form-control" id="ects" name="ects" [(ngModel)]="ueEnCours.ects" required min="0">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="semestre">Semestre</label>
+                        <input type="number" class="form-control" id="semestre" name="semestre" [(ngModel)]="ueEnCours.semestre" required min="1">
+                    </div>
+                    <div class="col-md-4 mb-3">
+  <label for="formationId">Formation associée</label>
+  <select class="form-control" id="formationId" name="formationId"
+        [(ngModel)]="ueEnCours.formationId" required #formationId="ngModel">
+  <option [ngValue]="null">-- Sélectionner une formation --</option>
+  <option *ngFor="let f of formations" [ngValue]="f.id">{{ f.nom }}</option>
+</select>
+
+  <div *ngIf="formationId.invalid && formationId.touched" class="text-danger">
+    La formation est obligatoire.
   </div>
+</div>
 
-  <!-- ========================================================== -->
-  <!-- === LE FORMULAIRE COMPLET (pour création ou modification) === -->
-  <!-- ========================================================== -->
-  <div *ngIf="afficherFormulaire" class="form-container">
-    <h3>{{ isEditing ? 'Modifier l\'Unité d\'Enseignement' : 'Nouvelle Unité d\'Enseignement' }}</h3>
-    
-    <form (ngSubmit)="onSubmit()" #ueForm="ngForm">
-      <div class="form-group">
-        <label for="nom">Nom de l'unité</label>
-        <input type="text" id="nom" class="form-control" [(ngModel)]="ueEnCours.nom" name="nom" required>
-      </div>
+                </div>
 
-      <div class="form-group">
-        <label for="code">Code</label>
-        <input type="text" id="code" class="form-control" [(ngModel)]="ueEnCours.code" name="code" required>
-      </div>
+                <div class="mb-3">
+                    <label for="description">Description</label>
+                    <textarea class="form-control" id="description" name="description" [(ngModel)]="ueEnCours.description" rows="3"></textarea>
+                </div>
 
-      <div class="form-group">
-        <label for="credit">Crédits ECTS</label>
-        <input type="number" id="credit" class="form-control" [(ngModel)]="ueEnCours.credit" name="credit" required min="0">
-      </div>
+                <div class="mb-3">
+                    <label for="objectifs">Objectifs</label>
+                    <textarea class="form-control" id="objectifs" name="objectifs" [(ngModel)]="ueEnCours.objectifs" rows="3"></textarea>
+                </div>
 
-      <div class="form-group">
-        <label for="semestre">Semestre</label>
-        <input type="number" id="semestre" class="form-control" [(ngModel)]="ueEnCours.semestre" name="semestre" required min="1">
-      </div>
+                <!-- Nouveaux Champs de Volume Horaire -->
+                <h5 class="mt-4">Volumes Horaires</h5>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="volumeHoraireCours">Cours (h)</label>
+                        <input type="number" class="form-control" id="volumeHoraireCours" name="volumeHoraireCours" [(ngModel)]="ueEnCours.volumeHoraireCours" required min="0">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="volumeHoraireTD">TD (h)</label>
+                        <input type="number" class="form-control" id="volumeHoraireTD" name="volumeHoraireTD" [(ngModel)]="ueEnCours.volumeHoraireTD" required min="0">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="volumeHoraireTP">TP (h)</label>
+                        <input type="number" class="form-control" id="volumeHoraireTP" name="volumeHoraireTP" [(ngModel)]="ueEnCours.volumeHoraireTP" required min="0">
+                    </div>
+                </div>
+                
+                <!-- Champ Element Constitutif (Sélection Multiple) -->
+                <div class="mb-3">
+                    <label for="elementConstitutifIds">Éléments Constitutifs (Sélection multiple)</label>
+                    <!-- Note: La sélection multiple nécessite une gestion spécifique de [(ngModel)] pour les tableaux d'IDs -->
+                    <select multiple class="form-control" id="elementConstitutifIds" name="elementConstitutifIds" [(ngModel)]="ueEnCours.elementConstitutifIds">
+                        <option *ngFor="let ec of tousLesElementsConstitutifs" [ngValue]="ec.id">{{ ec.nom }} ({{ ec.code }})</option>
+                    </select>
+                    <small class="form-text text-muted">Maintenez la touche Ctrl (ou Cmd) pour sélectionner plusieurs éléments.</small>
+                </div>
 
-
-
-      <div class="form-group">
-        <label for="description">Description</label>
-        <textarea id="description" class="form-control" [(ngModel)]="ueEnCours.description" name="description" rows="4"></textarea>
-      </div>
-
-      <div class="form-group">
-        <label for="objectifs">Objectifs</label>
-        <textarea id="objectifs" class="form-control" [(ngModel)]="ueEnCours.objectifs" name="objectifs" rows="4"></textarea>
-      </div>
-
-      <div class="form-actions">
-        <button type="submit" class="btn btn-success" [disabled]="!ueForm.form.valid">
-          {{ isEditing ? 'Mettre à jour' : 'Créer' }}
-        </button>
-        <button type="button" (click)="onReset()" class="btn btn-secondary">
-          Annuler
-        </button>
-      </div>
-    </form>
-  </div>
-
-  <!-- ========================================================== -->
-  <!-- === LE TABLEAU QUI AFFICHE LA LISTE DES UE === -->
-  <!-- ========================================================== -->
-  <div *ngIf="!afficherFormulaire" class="table-container">
-    <!-- Message de chargement -->
-    <div *ngIf="isLoading" class="loading-message">Chargement des données...</div>
-    
-    <!-- Le tableau s'affiche si le chargement est fini et qu'il y a des données -->
-    <table *ngIf="!isLoading && uniteList.length > 0">
-      <thead>
-        <tr>
-          <th>Nom</th>
-          <th>Code</th>
-          <th>Crédits</th>
-          <th>semestre</th>
-          <th>Responsable</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let ue of uniteList">
-          <td>{{ ue.nom }}</td>
-          <td>{{ ue.code }}</td>
-          <td>{{ ue.credit }}</td>
-          
-          <td>{{ ue.semestre }}</td>
-          <td>{{ ue.responsable ? ue.responsable.prenom + ' ' + ue.responsable.nom : 'Non assigné' }}</td>
-          <td class="actions-cell">
-            <!-- Bouton Modifier (conditionnel) -->
-            <button *ngIf="authService.getUserRole() === 'ADMIN' || authService.getUserRole() === 'RESPONSABLE_FORMATION'|| authService.getUserRole() === 'ENSEIGNANT'" 
-                    (click)="modifierUnite(ue)" class="btn btn-warning">
-              Modifier
-            </button>
-            <!-- Bouton Supprimer (conditionnel) -->
-            <button *ngIf="authService.getUserRole() === 'ADMIN'" 
-                    (click)="supprimerUnite(ue.id)" class="btn btn-danger">
-              Supprimer
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <!-- Message si aucune donnée n'est trouvée -->
-    <div *ngIf="!isLoading && uniteList.length === 0" class="no-data-message">
-      Aucune unité d'enseignement trouvée. Cliquez sur "Ajouter une UE" pour commencer.
+                <!-- Boutons d'action -->
+                <div class="d-flex justify-content-end">
+                    <button type="button" class="btn btn-secondary me-2" (click)="onReset()">Annuler</button>
+                    <button type="submit" class="btn btn-success" [disabled]="ueForm.invalid">
+                        <i class="fas fa-save"></i> {{ isEditing ? 'Modifier' : 'Créer' }}
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
-  </div>
+
+    <!-- Liste des Unités d'Enseignement -->
+    <div *ngIf="!afficherFormulaire">
+        <div *ngIf="isLoading" class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Chargement...</span>
+            </div>
+        </div>
+
+        <div *ngIf="!isLoading && uniteList.length === 0" class="alert alert-info">
+            Aucune unité d'enseignement trouvée.
+        </div>
+
+        <table *ngIf="!isLoading && uniteList.length > 0" class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Nom</th>
+                    <th>Code</th>
+                    <th>ECTS</th>
+                    <th>Semestre</th>
+                    <th>Volume Total (h)</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let ue of uniteList">
+                    <td>{{ ue.nom }}</td>
+                    <td>{{ ue.code }}</td>
+                    <td>{{ ue.ects }}</td>
+                    <td>{{ ue.semestre }}</td>
+                    <td>{{ (ue.volumeHoraireCours || 0) + (ue.volumeHoraireTD || 0) + (ue.volumeHoraireTP || 0) }}</td>
+                    <td>
+                        <button class="btn btn-sm btn-info me-2" (click)="modifierUnite(ue)">
+                            <i class="fas fa-edit"></i> Modifier
+                        </button>
+                        <button class="btn btn-sm btn-danger" (click)="supprimerUnite(ue.id)">
+                            <i class="fas fa-trash"></i> Supprimer
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </div>

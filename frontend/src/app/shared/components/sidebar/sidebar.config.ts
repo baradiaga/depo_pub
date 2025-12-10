@@ -232,9 +232,9 @@ export const COMPLETE_SIDEBAR_CONFIG: MenuItem[] = [
     icon: 'graduation-cap',
     defaultRoles: ['ENSEIGNANT'],
     children: [
-      { label: 'Mes cours', route: '/app/enseignant/mes-cours', featureKey: 'mes_cours' },
-      { label: 'Créer contenu', route: 'app/enseignant/gestion-questionnaire', featureKey: 'creer_contenu' },
-      { label: 'Évaluer étudiants', route: '/app/enseignant/evaluer-etudiants', featureKey: 'evaluer_etudiants' }
+      { label: 'Mes cours', route: '/app/enseignant/MesCours', featureKey: 'mes_cours' },
+      { label: 'Créer contenu', route: '/app/enseignant/formations', featureKey: 'creer_contenu' },
+      { label: 'Évaluer étudiants', route: '/app/enseignant/EvaluerEtudiant', featureKey: 'evaluer_etudiants' }
     ]
   },
   // --- ID 18 (premier): Mes parcours (Étudiant) (Routes corrigées) ---
