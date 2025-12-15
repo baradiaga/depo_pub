@@ -73,12 +73,14 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/etudiants/inscrire").permitAll()
                 .requestMatchers("/error").permitAll()
                 
+
                 // ====================================================================
                 // === CORRECTION APPLIQUÉE ICI                                     ===
                 // ====================================================================
                 // On autorise l'accès public au dossier des fichiers uploadés.
                 .requestMatchers("/uploads/**").permitAll()
-                
+                // Dans SecurityConfig.java - modifiez temporairement :
+                .requestMatchers("/api/questionnaires/**").permitAll() // ← Ajoutez cette ligne
                 // Pour TOUT LE RESTE, exiger une authentification.
                 .anyRequest().authenticated()
             );

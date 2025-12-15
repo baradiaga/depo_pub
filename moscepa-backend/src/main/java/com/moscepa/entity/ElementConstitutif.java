@@ -34,7 +34,14 @@ public class ElementConstitutif {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "enseignant_id")
     private Utilisateur enseignant;
-    
+    @Column(name = "volume_horaire_cours", nullable = false)
+private Integer volumeHoraireCours = 0;
+
+@Column(name = "volume_horaire_td", nullable = false)
+private Integer volumeHoraireTD = 0;
+
+@Column(name = "volume_horaire_tp", nullable = false)
+private Integer volumeHoraireTP = 0;
     @OneToMany(
         mappedBy = "elementConstitutif",
         cascade = CascadeType.ALL,
@@ -100,6 +107,29 @@ public void setTests(List<Test> tests) {
 
 public void setFormation(Formation formation) {
     this.formation = formation;
+}
+public Integer getVolumeHoraireCours() {
+    return volumeHoraireCours;
+}
+
+public void setVolumeHoraireCours(Integer volumeHoraireCours) {
+    this.volumeHoraireCours = volumeHoraireCours;
+}
+
+public Integer getVolumeHoraireTD() {
+    return volumeHoraireTD;
+}
+
+public void setVolumeHoraireTD(Integer volumeHoraireTD) {
+    this.volumeHoraireTD = volumeHoraireTD;
+}
+
+public Integer getVolumeHoraireTP() {
+    return volumeHoraireTP;
+}
+
+public void setVolumeHoraireTP(Integer volumeHoraireTP) {
+    this.volumeHoraireTP = volumeHoraireTP;
 }
 
 }

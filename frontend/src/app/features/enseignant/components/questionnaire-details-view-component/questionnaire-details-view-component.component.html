@@ -1,0 +1,335 @@
+<div class="container-fluid py-4">
+  
+  <!-- =========================================== -->
+  <!-- ÉTAT DE CHARGEMENT DU QUESTIONNAIRE -->
+  <!-- =========================================== -->
+  <div *ngIf="loadingQuestionnaire" class="text-center py-5">
+    <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+      <span class="visually-hidden">Chargement...</span>
+    </div>
+    <p class="mt-3 fs-5">Chargement du questionnaire...</p>
+  </div>
+
+  <!-- =========================================== -->
+  <!-- ERREUR DE CHARGEMENT -->
+  <!-- =========================================== -->
+  <div *ngIf="errorLoadingQuestionnaire && !loadingQuestionnaire" class="alert alert-danger">
+    <h4 class="alert-heading">❌ Erreur de chargement</h4>
+    <p>Impossible de charger le questionnaire. Veuillez réessayer.</p>
+    <button class="btn btn-outline-danger" (click)="refreshData()">
+      <i class="bi bi-arrow-clockwise"></i> Réessayer
+    </button>
+  </div>
+
+  <!-- =========================================== -->
+  <!-- CONTENU PRINCIPAL (QUAND CHARGÉ) -->
+  <!-- =========================================== -->
+  <div *ngIf="questionnaire && !loadingQuestionnaire">
+    
+    <!-- ==================== -->
+    <!-- EN-TÊTE DU QUESTIONNAIRE -->
+    <!-- ==================== -->
+    <div class="card shadow-sm mb-4 border-0">
+      <div class="card-header bg-primary text-white">
+        <div class="d-flex justify-content-between align-items-center">
+          <h1 class="h3 mb-0">
+            <i class="bi bi-card-checklist me-2"></i>
+            {{ questionnaire.titre }}
+          </h1>
+          <button class="btn btn-light btn-sm" (click)="refreshData()" title="Rafraîchir">
+            <i class="bi bi-arrow-clockwise"></i>
+          </button>
+        </div>
+      </div>
+      
+      <div class="card-body">
+        <!-- Description (HTML supporté) -->
+        <div *ngIf="questionnaire.description" class="mb-3">
+          <h5 class="text-muted mb-2">Description :</h5>
+          <div class="border rounded p-3 bg-light" [innerHTML]="questionnaire.description"></div>
+        </div>
+        
+        <!-- Métadonnées -->
+        <div class="row mt-4">
+          <div class="col-md-6">
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item d-flex justify-content-between">
+                <span><i class="bi bi-clock me-2"></i>Durée</span>
+                <span class="fw-bold">{{ formatDuree(questionnaire.duree) }}</span>
+              </li>
+              <li class="list-group-item d-flex justify-content-between">
+                <span><i class="bi bi-question-circle me-2"></i>Nombre de questions</span>
+                <span class="badge bg-primary rounded-pill">{{ questions.length }}</span>
+              </li>
+              <li class="list-group-item d-flex justify-content-between" *ngIf="questionnaire.dateCreation">
+                <span><i class="bi bi-calendar me-2"></i>Créé le</span>
+                <span>{{ questionnaire.dateCreation | date:'dd/MM/yyyy HH:mm' }}</span>
+              </li>
+            </ul>
+          </div>
+          
+          <div class="col-md-6">
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item d-flex justify-content-between" *ngIf="questionnaire.nomChapitre">
+                <span><i class="bi bi-book me-2"></i>Chapitre</span>
+                <span>{{ questionnaire.nomChapitre }}</span>
+              </li>
+              <li class="list-group-item d-flex justify-content-between" *ngIf="questionnaire.nomMatiere">
+                <span><i class="bi bi-journals me-2"></i>Matière</span>
+                <span>{{ questionnaire.nomMatiere }}</span>
+              </li>
+              <li class="list-group-item d-flex justify-content-between">
+                <span><i class="bi bi-list-check me-2"></i>Statut</span>
+                <span class="badge bg-success rounded-pill">Complet</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== -->
+    <!-- SECTION DES QUESTIONS -->
+    <!-- ==================== -->
+    <div class="card shadow-sm mb-4">
+      <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+        <h2 class="h4 mb-0">
+          <i class="bi bi-question-circle me-2"></i>
+          Questions ({{ questions.length }})
+        </h2>
+        <span class="badge bg-light text-dark">{{ hasQuestions ? '✓ Prêt' : 'Vide' }}</span>
+      </div>
+      
+      <div class="card-body">
+        <!-- Message si pas de questions -->
+        <div *ngIf="!hasQuestions" class="alert alert-info">
+          <i class="bi bi-info-circle me-2"></i>
+          Aucune question n'a été ajoutée à ce questionnaire.
+        </div>
+
+        <!-- Liste des questions -->
+        <div *ngIf="hasQuestions" class="questions-container">
+          <div *ngFor="let question of questions; let i = index" class="question-card mb-4 p-4 border rounded shadow-sm">
+            
+            <!-- En-tête de la question -->
+            <div class="question-header d-flex justify-content-between align-items-start mb-3">
+              <div>
+                <h3 class="h5 mb-1">
+                  <span class="badge bg-secondary me-2">#{{ i + 1 }}</span>
+                  {{ question.enonce }}
+                </h3>
+                <div class="mt-1">
+                  <span [class]="getQuestionTypeClass(question.type)" class="me-2">
+                    {{ getQuestionTypeLabel(question.type) }}
+                  </span>
+                  <span class="badge bg-success">
+                    <i class="bi bi-star-fill me-1"></i>{{ question.points }} point(s)
+                  </span>
+                  <span class="badge bg-info ms-2" *ngIf="hasReponses(question)">
+                    <i class="bi bi-check2-circle me-1"></i>{{ countCorrectAnswers(question) }} correcte(s)
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Contenu selon le type de question -->
+            <div class="question-content">
+              
+              <!-- QCM / QCU : Liste de réponses avec cases à cocher -->
+              <div *ngIf="question.type === 'QCM' || question.type === 'QCU'" class="mb-3">
+                <h6 class="text-muted mb-2">
+                  <i class="bi bi-list-check me-1"></i>
+                  Réponses ({{ question.reponses.length }}) :
+                </h6>
+                <div class="answers-list">
+                  <div *ngFor="let reponse of question.reponses; let ri = index" 
+                       class="answer-item p-3 mb-2 border rounded"
+                       [class.border-success]="reponse.correcte"
+                       [class.bg-success-subtle]="reponse.correcte">
+                    <div class="form-check">
+                      <input class="form-check-input" 
+                             [type]="question.type === 'QCU' ? 'radio' : 'checkbox'" 
+                             [name]="'q' + question.id"
+                             [id]="'q' + question.id + 'r' + ri"
+                             [checked]="reponse.correcte"
+                             disabled>
+                      <label class="form-check-label w-100" [for]="'q' + question.id + 'r' + ri">
+                        <div class="d-flex justify-content-between align-items-center">
+                          <span>{{ reponse.texte }}</span>
+                          <span *ngIf="reponse.correcte" class="badge bg-success">
+                            <i class="bi bi-check-circle me-1"></i>Correcte
+                          </span>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Résumé pour QCU -->
+                <div *ngIf="question.type === 'QCU' && getCorrectAnswer(question)" 
+                     class="alert alert-light border mt-3">
+                  <i class="bi bi-lightbulb text-warning me-2"></i>
+                  <strong>Réponse unique attendue :</strong> 
+                  <span class="fst-italic">{{ getCorrectAnswer(question) }}</span>
+                </div>
+              </div>
+
+              <!-- VRAI_FAUX : Radio buttons -->
+              <div *ngIf="question.type === 'VRAI_FAUX'" class="mb-3">
+                <h6 class="text-muted mb-2">Choisissez la réponse :</h6>
+                <div class="row">
+                  <div class="col-md-3">
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" disabled>
+                      <label class="form-check-label">Vrai</label>
+                    </div>
+                  </div>
+                  <div class="col-md-3">
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" disabled>
+                      <label class="form-check-label">Faux</label>
+                    </div>
+                  </div>
+                </div>
+                <div *ngIf="getCorrectAnswer(question)" class="mt-3 alert alert-light border">
+                  <i class="bi bi-lightbulb text-warning me-2"></i>
+                  <strong>Réponse correcte :</strong> 
+                  <span class="fst-italic">{{ getCorrectAnswer(question) }}</span>
+                </div>
+              </div>
+
+              <!-- TEXTE_LIBRE : Zone de texte -->
+              <div *ngIf="question.type === 'TEXTE_LIBRE'" class="mb-3">
+                <h6 class="text-muted mb-2">Votre réponse :</h6>
+                <textarea class="form-control" rows="3" placeholder="Zone de réponse..." disabled></textarea>
+                <div *ngIf="getCorrectAnswer(question)" class="mt-3">
+                  <div class="alert alert-light border">
+                    <i class="bi bi-lightbulb text-warning me-2"></i>
+                    <strong>Réponse attendue :</strong> 
+                    <span class="fst-italic">{{ getCorrectAnswer(question) }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Message si aucune réponse -->
+              <div *ngIf="!hasReponses(question)" class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                Aucune réponse prédéfinie pour cette question.
+              </div>
+            </div>
+
+            <!-- Footer avec ID technique -->
+            <div class="question-footer mt-3 pt-3 border-top text-end">
+              <small class="text-muted">
+                ID: {{ question.id }} 
+                <span class="ms-2">| Type: {{ question.type }}</span>
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== -->
+    <!-- ACTIONS -->
+    <!-- ==================== -->
+    <div class="card shadow-sm mt-4">
+  <div class="card-header bg-light">
+    <h5 class="mb-0">
+      <i class="bi bi-gear me-2"></i>Actions
+    </h5>
+  </div>
+  
+  <div class="card-body">
+    <div class="row g-3">
+      
+      <!-- MODIFIER (Bouton principal) -->
+      <div class="col-md-3">
+        <button class="btn btn-primary w-100" (click)="navigateToEdit()">
+          <i class="bi bi-pencil-square me-2"></i>Modifier
+        </button>
+      </div>
+      
+      <!-- DUPLIQUER -->
+      <div class="col-md-3">
+        <button class="btn btn-outline-info w-100" (click)="duplicateQuestionnaire()">
+          <i class="bi bi-files me-2"></i>Dupliquer
+        </button>
+      </div>
+      
+      <!-- CRÉER UN TEST -->
+      <div class="col-md-3">
+        <button class="btn btn-outline-success w-100" (click)="createTestFromQuestionnaire()">
+          <i class="bi bi-clipboard-plus me-2"></i>Créer un test
+        </button>
+      </div>
+      
+      <!-- RETOUR À LA LISTE -->
+      <div class="col-md-3">
+        <button class="btn btn-outline-secondary w-100" (click)="navigateToList()">
+          <i class="bi bi-arrow-left me-2"></i>Retour
+        </button>
+      </div>
+      
+    </div>
+    
+    <!-- SUPPRIMER (séparé pour plus de sécurité) -->
+    <div class="row mt-4">
+      <div class="col-12">
+        <div class="d-grid">
+          <button class="btn btn-outline-danger" 
+                  (click)="deleteQuestionnaire()"
+                  [disabled]="isDeleting">
+            <span *ngIf="!isDeleting">
+              <i class="bi bi-trash me-2"></i>Supprimer le questionnaire
+            </span>
+            <span *ngIf="isDeleting">
+              <span class="spinner-border spinner-border-sm me-2"></span>
+              Suppression...
+            </span>
+          </button>
+          <small class="text-muted mt-1 d-block text-center">
+            <i class="bi bi-exclamation-triangle me-1"></i>
+            Cette action est irréversible
+          </small>
+        </div>
+      </div>
+    </div>
+    
+    <!-- STATISTIQUES RAPIDES -->
+    <div class="row mt-4 pt-3 border-top">
+      <div class="col-12">
+        <h6 class="text-muted mb-3">
+          <i class="bi bi-bar-chart me-2"></i>Statistiques
+        </h6>
+        <div class="row text-center">
+          <div class="col-md-3 mb-2">
+            <div class="border rounded p-2 bg-light">
+              <div class="h5 mb-1">{{ questions.length }}</div>
+              <small class="text-muted">Questions</small>
+            </div>
+          </div>
+          <div class="col-md-3 mb-2">
+            <div class="border rounded p-2 bg-light">
+              <div class="h5 mb-1">{{ countTotalReponses() }}</div>
+              <small class="text-muted">Réponses totales</small>
+            </div>
+          </div>
+          <div class="col-md-3 mb-2">
+            <div class="border rounded p-2 bg-light">
+              <div class="h5 mb-1">{{ countQCMQuestions() }}</div>
+              <small class="text-muted">QCM/QCU</small>
+            </div>
+          </div>
+          <div class="col-md-3 mb-2">
+            <div class="border rounded p-2 bg-light">
+              <div class="h5 mb-1">{{ calculateTotalPoints() }}</div>
+              <small class="text-muted">Points totaux</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+</div>

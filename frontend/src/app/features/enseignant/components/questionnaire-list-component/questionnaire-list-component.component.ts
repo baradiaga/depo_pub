@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { Router,ActivatedRoute } from '@angular/router';
+
 import { QuestionnaireService, QuestionnaireDetail } from '../../../../services/questionnaire.service';
 import { ElementConstitutifService } from '../../../../services/element-constitutif.service';
 import { ChapitreService } from '../../../../services/chapitre.service';
@@ -19,9 +21,13 @@ export class QuestionnaireListComponent implements OnInit {
   selectedChapitre: number | null = null;
 
   constructor(
+    private router: Router,
+     
+    private route: ActivatedRoute,
     private questionnaireService: QuestionnaireService,
     private elementService: ElementConstitutifService,
-    private chapitreService: ChapitreService
+    private chapitreService: ChapitreService,
+    
   ) {}
 
   ngOnInit(): void {
@@ -77,10 +83,14 @@ export class QuestionnaireListComponent implements OnInit {
   // --------------------------
   // Actions CRUD
   // --------------------------
-  selectQuestionnaire(q: QuestionnaireDetail) {
-    console.log('Questionnaire sélectionné :', q);
+  selectQuestionnaire(q: QuestionnaireDetail) { this.router.navigate(['/app/enseignant/questionnaires', q.id]); }  deleteQuestionnaire(id: number): void {
+    if (!confirm('Voulez-vous vraiment supprimer ce questionnaire ?')) return;
+    this.questionnaireService.supprimerQuestionnaire(id).subscribe({
+      next: () => this.loadQuestionnaires(),
+      error: (err) => console.error('Erreur lors de la suppression', err)
+    });
   }
-
+/*
   deleteQuestionnaire(id: number): void {
     if (!confirm('Voulez-vous vraiment supprimer ce questionnaire ?')) return;
     this.questionnaireService.supprimerQuestionnaire(id).subscribe({
@@ -88,7 +98,7 @@ export class QuestionnaireListComponent implements OnInit {
       error: (err) => console.error('Erreur lors de la suppression', err)
     });
   }
-
+     */
   // --------------------------
   // Filtrage
   // --------------------------

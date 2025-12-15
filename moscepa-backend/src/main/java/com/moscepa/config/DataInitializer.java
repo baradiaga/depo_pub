@@ -67,10 +67,15 @@ public class DataInitializer implements CommandLineRunner {
                     createSousFonctionnalite("Attribuer une fonctionnalité", "attribuer_fonctionnalite", "/app/admin/feature-assignment"),
                     createSousFonctionnalite("Liste des fonctionnalités", "liste_fonctionnalites", "/app/admin/permssionsManegement"),
                     createSousFonctionnalite("Gestion des Permissions", "gestion_permissions_admin", "/app/admin/permissions")),
-                createFonctionnalite("Gestion des formations", "gestion_formations", "book",
-                    createSousFonctionnalite("Créer formation", "creer_formation", "/app/enseignant/formations"),
-                    createSousFonctionnalite("Liste des formations", "liste_formations", "/app/enseignant/listeformation"),
-                    createSousFonctionnalite("Gérer inscriptions", "gerer_inscriptions", "/app/admin/inscriptions")),
+               createFonctionnalite("Gestion des formations", "gestion_formations", "book",
+    createSousFonctionnalite("Etablissement", "etablissement", "/app/enseignant/etablissements"),
+    createSousFonctionnalite("UEFR", "uefr", "/app/enseignant/uefr"),
+    createSousFonctionnalite("Département", "departement", "/app/enseignant/departements"),
+
+    createSousFonctionnalite("offre de formations", "liste_formations", "/app/admin/formations"),
+    createSousFonctionnalite("liste formation", "gerer_inscriptions", "/app/enseignant/listeformation")
+),
+
                 createFonctionnalite("Gestion des maquettes", "gestion_maquettes", "layout",
                     createSousFonctionnalite("Unité d'enseignement", "gestion_unites", "/app/admin/unites-enseignement"),
                     createSousFonctionnalite("Éléments constitutifs", "gestion_elements", "/app/admin/elements-constitutifs"),

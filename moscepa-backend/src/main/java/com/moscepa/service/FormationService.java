@@ -142,6 +142,18 @@ public class FormationService {
     // ====================================================================
     // === LECTURE
     // ====================================================================
+    
+    /**
+     * Récupère toutes les formations créées par un utilisateur spécifique.
+     * @param createurId L'ID de l'utilisateur (enseignant) créateur.
+     * @return La liste des formations créées par cet utilisateur.
+     */
+    public List<FormationDetailDto> getFormationsByCreateurId(Long createurId) {
+        return formationRepository.findAllByCreateurId(createurId).stream()
+                .map(FormationDetailDto::new)
+                .collect(Collectors.toList());
+    }
+
     public List<FormationDetailDto> getAllFormations() {
         return formationRepository.findAll().stream()
                 .map(FormationDetailDto::new)
@@ -251,49 +263,26 @@ public class FormationService {
                 formation.getUnitesEnseignement().add(ue);
             });
         }
-
-	    // ============================================================
-	    //   🔥 Ancienne logique EC : RETRAIT
-	    // ============================================================
-	    // if (dto.getElementsConstitutifsIds() != null) {
-	    //     // Charger les nouveaux EC
-	    //     List<ElementConstitutif> nouveauxEC =
-	    //             elementConstitutifRepository.findAllById(dto.getElementsConstitutifsIds());
-        //
-	    //     // Nettoyer la relation précédente sans supprimer les EC
-	    //     formation.getElementsConstitutifs().clear();
-        //
-	    //     // Associer les nouveaux EC à la formation
-	    //     nouveauxEC.forEach(ec -> ec.setFormation(formation));
-        //
-	    //     formation.getElementsConstitutifs().addAll(nouveauxEC);
-	    // }
-
-	    Formation updated = formationRepository.save(formation);
-	    return new FormationDetailDto(updated);
-	}
-
+        
+        Formation updated = formationRepository.save(formation);
+        return new FormationDetailDto(updated);
+    }
 
     // ====================================================================
     // === SUPPRESSION
     // ====================================================================
-@Transactional
-public void supprimerFormation(Long id) {
-    Formation formation = formationRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Formation non trouvée."));
+    @Transactional
+    public void supprimerFormation(Long id) {
+        Formation formation = formationRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Formation non trouvée."));
 
-    // Détacher les éléments constitutifs de la formation
-    if (formation.getElementsConstitutifs() != null) {
-        for (ElementConstitutif ec : formation.getElementsConstitutifs()) {
-            ec.setFormation(null);  // détache l'EC de la formation
-            // NE PAS supprimer les chapitres pour éviter les contraintes FK
+        // Détacher les éléments constitutifs de la formation
+        if (formation.getElementsConstitutifs() != null) {
+            formation.getElementsConstitutifs().forEach(ec -> ec.setFormation(null));
+            formation.getElementsConstitutifs().clear();
         }
-        formation.getElementsConstitutifs().clear();
+
+        // Supprimer la formation
+        formationRepository.delete(formation);
     }
-
-    // Supprimer la formation bon
-    formationRepository.delete(formation);
-}
-
-
 }

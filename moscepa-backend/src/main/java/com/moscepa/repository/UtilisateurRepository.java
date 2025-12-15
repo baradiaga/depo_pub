@@ -51,4 +51,7 @@ public interface UtilisateurRepository extends JpaRepository<Utilisateur, Long> 
     @Query("SELECT u FROM Utilisateur u WHERE u.role = 'ADMIN'")
     List<Utilisateur> findAllAdmins();
      List<Utilisateur> findByRole(String role);
+     
+     // AJOUTÉ : Recherche des utilisateurs par leur formation actuelle
+     List<Utilisateur> findAllByFormationActuelle(String formationActuelle);
 }

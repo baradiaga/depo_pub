@@ -15,6 +15,9 @@ public class ElementConstitutifResponseDto {
     private String description;
     private int credit;
     private EnseignantDto enseignant; // Suppose que vous avez déjà ce DTO
+    private Integer volumeHoraireCours;
+    private Integer volumeHoraireTD;
+    private Integer volumeHoraireTP;
 
     // ====================================================================
     // === CHAMP MANQUANT AJOUTÉ ICI                                    ===
@@ -44,4 +47,12 @@ public class ElementConstitutifResponseDto {
     // --- GETTER ET SETTER POUR LE NOUVEAU CHAMP ---
     public List<ChapitreDto> getChapitres() { return chapitres; }
     public void setChapitres(List<ChapitreDto> chapitres) { this.chapitres = chapitres; }
+    public Integer getVolumeHoraireCours() { return volumeHoraireCours; }
+    public void setVolumeHoraireCours(Integer volumeHoraireCours) { this.volumeHoraireCours = volumeHoraireCours; }
+
+    public Integer getVolumeHoraireTD() { return volumeHoraireTD; }
+    public void setVolumeHoraireTD(Integer volumeHoraireTD) { this.volumeHoraireTD = volumeHoraireTD; }
+
+    public Integer getVolumeHoraireTP() { return volumeHoraireTP; }
+    public void setVolumeHoraireTP(Integer volumeHoraireTP) { this.volumeHoraireTP = volumeHoraireTP; }
 }

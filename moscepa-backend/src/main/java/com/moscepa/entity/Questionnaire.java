@@ -38,17 +38,16 @@ public class Questionnaire {
         orphanRemoval = true,
         fetch = FetchType.LAZY
     )
-    @JsonManagedReference
+    @JsonManagedReference("questionnaire-questions")
     private List<Question> questions = new ArrayList<>();
 
-    // 🔥 Nouveau : relation avec les tests
     @OneToMany(
         mappedBy = "questionnaire",
         cascade = CascadeType.ALL,
         orphanRemoval = true,
         fetch = FetchType.LAZY
     )
-    @JsonManagedReference
+    @JsonManagedReference("questionnaire-tests")
     private List<Test> tests = new ArrayList<>();
 
     @PrePersist
@@ -66,7 +65,6 @@ public class Questionnaire {
         question.setQuestionnaire(null);
     }
 
-    // 🔥 Nouveau : helpers pour les tests
     public void addTest(Test test) {
         this.tests.add(test);
         test.setQuestionnaire(this);
@@ -107,4 +105,32 @@ public class Questionnaire {
 
     public List<Test> getTests() { return tests; }
     public void setTests(List<Test> tests) { this.tests = tests; }
+
+    // --- Méthodes utilitaires ---
+    @Override
+    public String toString() {
+        return "Questionnaire{" +
+                "id=" + id +
+                ", titre='" + titre + '\'' +
+                ", matiere='" + matiere + '\'' +
+                ", duree=" + duree +
+                ", description='" + description + '\'' +
+                ", dateCreation=" + dateCreation +
+                ", auteur='" + auteur + '\'' +
+                // Ne pas inclure les relations dans toString() pour éviter les boucles
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Questionnaire that = (Questionnaire) o;
+        return id != null && id.equals(that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

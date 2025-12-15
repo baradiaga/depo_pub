@@ -70,4 +70,7 @@ export class ChapitreService {
     console.log(`[ChapitreService] Appel de l'URL pour le détail complet : ${url}`);
     return this.http.get<ChapitreAvecSections>(url );
   }
+  getChapitreById(id: number): Observable<Chapitre> {
+    return this.http.get<Chapitre>(`${this.apiUrl}/${id}`);
+  }
 }

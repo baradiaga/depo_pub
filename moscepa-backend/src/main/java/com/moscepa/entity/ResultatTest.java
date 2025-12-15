@@ -1,7 +1,6 @@
-// Fichier : src/main/java/com/moscepa/entity/ResultatTest.java (Version finale et correcte)
-
 package com.moscepa.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -14,18 +13,19 @@ public class ResultatTest {
     private Long id;
 
     // ====================================================================
-    // === RELATION CORRIGÉE ET CLARIFIÉE                               ===
+    // === RELATION AVEC ETUDIANT (Utilisateur)                         ===
     // ====================================================================
-    // Le champ 'etudiant' est de type 'Utilisateur'.
-    // La colonne dans la base de données s'appelle 'etudiant_id'.
-    // Hibernate va maintenant créer une nouvelle clé étrangère correcte qui
-    // lie 'etudiant_id' à la table 'moscepa_utilisateurs'.
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "etudiant_id", nullable = false)
+    @JsonBackReference("utilisateur-resultats")  // Si Utilisateur a une liste de résultats
     private Utilisateur etudiant;
 
+    // ====================================================================
+    // === RELATION AVEC TEST                                           ===
+    // ====================================================================
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "test_id", nullable = false)
+    @JsonBackReference("test-resultats")  // Même nom que dans Test
     private Test test;
 
     @Column(name = "score", nullable = false)
@@ -43,13 +43,27 @@ public class ResultatTest {
     @Column(name = "total_questions", nullable = false)
     private int totalQuestions;
 
+    // ====================================================================
+    // === CALCUL DU POURCENTAGE                                        ===
+    // ====================================================================
+    @Transient  // Champ non persisté en base
+    private Double pourcentage;
+
+    public Double getPourcentage() {
+        if (scoreTotal != null && scoreTotal > 0) {
+            return (score / scoreTotal) * 100;
+        }
+        return 0.0;
+    }
+
     // Constructeur
     public ResultatTest() {
         this.dateTest = LocalDateTime.now();
     }
 
-    // --- Getters et Setters (Confirmés corrects) ---
-
+    // ====================================================================
+    // === Getters et Setters                                           ===
+    // ====================================================================
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -73,4 +87,32 @@ public class ResultatTest {
 
     public int getTotalQuestions() { return totalQuestions; }
     public void setTotalQuestions(int totalQuestions) { this.totalQuestions = totalQuestions; }
+
+    // ====================================================================
+    // === Méthodes toString, equals, hashCode                          ===
+    // ====================================================================
+    @Override
+    public String toString() {
+        return "ResultatTest{" +
+                "id=" + id +
+                ", score=" + score +
+                ", scoreTotal=" + scoreTotal +
+                ", dateTest=" + dateTest +
+                ", bonnesReponses=" + bonnesReponses +
+                ", totalQuestions=" + totalQuestions +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ResultatTest that = (ResultatTest) o;
+        return id != null && id.equals(that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

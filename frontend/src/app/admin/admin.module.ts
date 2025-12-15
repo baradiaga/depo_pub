@@ -1,14 +1,10 @@
-// Fichier : src/app/admin/admin.module.ts (Version refactorisée)
-
 import { NgModule } from '@angular/core';
-import { SharedModule } from '../shared/shared.module'; // <-- 1. L'import le plus important
-import { AdminRoutingModule } from './admin-routing.module'; // <-- 2. Notre nouveau routing
+import { SharedModule } from '../shared/shared.module';
+import { AdminRoutingModule } from './admin-routing.module';
+import { CommonModule, DatePipe } from '@angular/common';
+import { QuillModule } from 'ngx-quill';
 
-// Modules externes spécifiques à ce module (si nécessaire)
-import { QuillModule } from 'ngx-quill'; // <-- On utilise UNIQUEMENT celui-ci
-
-// --- 3. Importez TOUS les composants qui appartiennent à ce module ---
-
+// --- Composants importés ---
 import { UserListComponent } from '../features/admin/components/user-list/user-list.component';
 import { GestionRolesComponent } from './pages/gestion-roles/gestion-roles.component';
 import { PermissionsComponent } from './pages/permissions/permissions.component';
@@ -24,13 +20,14 @@ import { GestionUnitesComponent } from './pages/gestion-unites/gestion-unites.co
 import { ParametrageChapitreComponent } from './pages/parametrage-chapitre/parametrage-chapitre.component';
 import { ListeMatieresComponent } from './pages/liste-matieres/liste-matieres.component';
 import { GestionDesInscriptionComponent } from './pages/gestiondesinscription/gestiondesinscription.component';
-import { EnseignantModule } from '../features/enseignant/enseignant.module';
-import { FormulaireInscriptionComponent } from './pages/formulaire-inscription/formulaire-inscription.component'; // <-- Importer le module
+//import { EnseignantModule } from '../features/enseignant/enseignant.module';
+import { FormulaireInscriptionComponent } from './pages/formulaire-inscription/formulaire-inscription.component';
 import { PermissionManagementComponent } from './permission-management/permission-management.component';
+import { ValiderInscriptionComponent } from './pages/validerinscription/validerinscription.component';
+import { StudentDetailComponent } from './pages/student-detail/student-detail.component';
+
 @NgModule({
   declarations: [
-    // --- 4. Déclarez TOUS ces composants ici ---
-    
     UserListComponent,
     GestionRolesComponent,
     PermissionsComponent,
@@ -48,13 +45,18 @@ import { PermissionManagementComponent } from './permission-management/permissio
     GestionDesInscriptionComponent,
     FormulaireInscriptionComponent,
     PermissionManagementComponent,
+    ValiderInscriptionComponent,
+    StudentDetailComponent,
   ],
   imports: [
-    // --- 5. La liste d'imports est maintenant simple et propre ---
-    SharedModule, // Fournit CommonModule, FormsModule, ReactiveFormsModule, etc.
+    SharedModule,
     AdminRoutingModule,
-    QuillModule, // Module externe utilisé par ce feature module
-    EnseignantModule,
+    QuillModule,
+   // EnseignantModule,
+    CommonModule,
+  ],
+  providers: [
+    DatePipe   // <-- Ajoute ceci
   ]
 })
 export class AdminModule { }

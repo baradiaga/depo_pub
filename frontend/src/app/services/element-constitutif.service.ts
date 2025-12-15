@@ -87,4 +87,7 @@ export class ElementConstitutifService {
       })
     );
   }
+   getElementById(id: number): Observable<ElementConstitutifResponse> {
+    return this.http.get<ElementConstitutifResponse>(`${this.apiUrl}/${id}`);
+  }
 }

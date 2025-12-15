@@ -65,11 +65,13 @@ export const COMPLETE_SIDEBAR_CONFIG: MenuItem[] = [
     featureKey: 'gestion_formations',
     icon: 'book',
     defaultRoles: ['ADMIN', 'RESPONSABLE_FORMATION'],
-    children: [
-      { label: 'Créer formation', route: '/app/enseignant/formations', featureKey: 'creer_formation' },
-      { label: 'Liste des formations', route: '/app/admin/formations', featureKey: 'liste_formations' },
-      { label: 'Gérer inscriptions', route: '/app/admin/inscriptions', featureKey: 'gerer_inscriptions' }
-    ]
+    children:  [
+    { label: 'Etablissements', route: '/app/enseignant/etablissements', featureKey: 'etablissement' },
+    { label: 'UEFR', route: '/app/enseignant/uefr', featureKey: 'uefr' },
+    { label: 'Départements', route: '/app/enseignant/etablissements', featureKey: 'departement' },
+    { label: 'Liste des formations', route: '/app/admin/formations', featureKey: 'liste_formations' },
+    { label: 'Gérer inscriptions', route: '/app/admin/inscriptions', featureKey: 'gerer_inscriptions' }
+  ]
   },
   // --- ID 5: Gestion des maquettes (Routes corrigées) ---
   {
@@ -288,7 +290,10 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, string[]> = {
     'tutorat',
     'enseignement',
     'mes_parcours_etudiant',
-    'innovation_pedagogique'
+    'innovation_pedagogique',
+    'etablissement',
+    'uefr',
+    'departement'
   ],
 
   // L'ETUDIANT a accès à ses fonctionnalités d'apprentissage.

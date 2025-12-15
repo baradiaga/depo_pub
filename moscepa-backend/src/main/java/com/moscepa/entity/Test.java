@@ -1,5 +1,8 @@
 package com.moscepa.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,11 +27,13 @@ public class Test {
     // Relation avec Chapitre
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chapitre_id", nullable = false)
+    @JsonBackReference("chapitre-tests")  // Si Chapitre a une liste de tests
     private Chapitre chapitre;
 
     // Relation avec Questionnaire
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "questionnaire_id")
+    @JsonBackReference("questionnaire-tests")  // Même nom que dans Questionnaire
     private Questionnaire questionnaire;
 
     // Relation ManyToMany avec Question
@@ -38,21 +43,26 @@ public class Test {
         joinColumns = @JoinColumn(name = "test_id"),
         inverseJoinColumns = @JoinColumn(name = "question_id")
     )
+    @JsonManagedReference("test-questions")  // Gère les questions côté test
     private List<Question> questions = new ArrayList<>();
 
     // 🔥 Relation avec ResultatTest (sans cascade REMOVE)
     @OneToMany(mappedBy = "test", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
+    @JsonManagedReference("test-resultats")  // Gère les résultats côté test
     private List<ResultatTest> resultats = new ArrayList<>();
 
     // 🔥 Relation vers ElementConstitutif pour corriger le mappedBy
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "element_constitutif_id")
+    @JsonBackReference("elementConstitutif-tests")  // Si ElementConstitutif a une liste de tests
     private ElementConstitutif elementConstitutif;
 
     // --- Helpers ---
     public void addQuestion(Question question) {
         this.questions.add(question);
-        question.getTests().add(this);
+        if (!question.getTests().contains(this)) {
+            question.getTests().add(this);
+        }
     }
 
     public void removeQuestion(Question question) {
@@ -97,4 +107,28 @@ public class Test {
 
     public ElementConstitutif getElementConstitutif() { return elementConstitutif; }
     public void setElementConstitutif(ElementConstitutif elementConstitutif) { this.elementConstitutif = elementConstitutif; }
+
+    // --- Méthodes toString, equals, hashCode ---
+    @Override
+    public String toString() {
+        return "Test{" +
+                "id=" + id +
+                ", titre='" + titre + '\'' +
+                ", duree=" + duree +
+                ", description='" + description + '\'' +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Test test = (Test) o;
+        return id != null && id.equals(test.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

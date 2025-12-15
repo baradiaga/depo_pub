@@ -20,6 +20,7 @@ import { ListeMatieresComponent } from './pages/liste-matieres/liste-matieres.co
 import { GestionDesInscriptionComponent } from './pages/gestiondesinscription/gestiondesinscription.component';
 import { FormulaireInscriptionComponent } from './pages/formulaire-inscription/formulaire-inscription.component';
 import { PermissionManagementComponent } from './permission-management/permission-management.component';
+import { ValiderInscriptionComponent } from './pages/validerinscription/validerinscription.component';
 
 // --- 2. Définissez les routes internes à la section admin ---
 const routes: Routes = [
@@ -47,6 +48,7 @@ const routes: Routes = [
   { path: 'echelles', component: EchelleConnaissanceComponent },
   { path: 'parametrage-chapitre', component: ParametrageChapitreComponent },
   { path: 'permssionsManegement', component: PermissionManagementComponent},
+  { path: 'validation-inscriptions', component: ValiderInscriptionComponent},
 
   // Route par défaut pour la section admin : redirige vers le tableau de bord
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' }

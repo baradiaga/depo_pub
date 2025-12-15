@@ -1,63 +1,94 @@
 package com.moscepa.dto;
 
-import java.time.LocalDateTime;
+import com.moscepa.entity.Questionnaire;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class QuestionnaireDetailDto {
 
     private Long id;
     private String titre;
-    private Integer duree;
     private String description;
-    private String nomChapitre;
-    private String nomMatiere;
-    private Long chapitreId;
-    private Long matiereId; // <-- ajouté
-    private int nombreQuestions;
-    private LocalDateTime dateCreation;
+    private int duree;
+    private Long chapitreId; // ⚡ CHAMP CRITIQUE
+    private String nomChapitre; // Optionnel: pour affichage
+    private List<QuestionDto> questions;
 
-    // Constructeur
-    public QuestionnaireDetailDto(Long id, String titre, String description, LocalDateTime dateCreation,
-                              Long chapitreId, String nomChapitre, String nomMatiere, int nombreQuestions, Integer duree) {
-    this.id = id;
-    this.titre = titre;
-    this.description = description;
-    this.dateCreation = dateCreation;
-    this.chapitreId = chapitreId;
-    this.nomChapitre = nomChapitre;
-    this.nomMatiere = nomMatiere;
-    this.nombreQuestions = nombreQuestions;
-    this.duree = duree;
-}
+    // --- Constructeur vide ---
+    public QuestionnaireDetailDto() {
+        // Pour la désérialisation JSON
+    }
 
+    // --- Constructeur depuis l'entité ---
+    public QuestionnaireDetailDto(Questionnaire q) {
+        this.id = q.getId();
+        this.titre = q.getTitre();
+        this.description = q.getDescription();
+        this.duree = q.getDuree();
+        
+        // ⚡ MAPPING CRITIQUE DU CHAPITRE
+        if (q.getChapitre() != null) {
+            this.chapitreId = q.getChapitre().getId();
+            this.nomChapitre = q.getChapitre().getNom();
+        }
+        
+        // Mapper les questions
+        if (q.getQuestions() != null) {
+            this.questions = q.getQuestions().stream()
+                    .map(QuestionDto::new)
+                    .collect(Collectors.toList());
+        }
+    }
 
-    // --- Getters et Setters ---
+    // --- Convertir DTO en entité (MODIFIÉ) ---
+    public Questionnaire toEntity() {
+        Questionnaire q = new Questionnaire();
+        q.setId(this.id);
+        q.setTitre(this.titre);
+        q.setDescription(this.description);
+        q.setDuree(this.duree);
+        
+        // ⚡ IMPORTANT: NE PAS DÉFINIR LE CHAPITRE ICI
+        // Le chapitre sera défini dans le service avec le repository
+        // Pour éviter les problèmes de session Hibernate
+        
+        return q;
+    }
+
+    // --- Getters / Setters ---
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
     public String getTitre() { return titre; }
     public void setTitre(String titre) { this.titre = titre; }
 
-    public Integer getDuree() { return duree; }
-    public void setDuree(Integer duree) { this.duree = duree; }
-
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+
+    public int getDuree() { return duree; }
+    public void setDuree(int duree) { this.duree = duree; }
+
+    // ⚡ GETTER/SETTER POUR CHAPITREID (ESSENTIEL)
+    public Long getChapitreId() { return chapitreId; }
+    public void setChapitreId(Long chapitreId) { this.chapitreId = chapitreId; }
 
     public String getNomChapitre() { return nomChapitre; }
     public void setNomChapitre(String nomChapitre) { this.nomChapitre = nomChapitre; }
 
-    public String getNomMatiere() { return nomMatiere; }
-    public void setNomMatiere(String nomMatiere) { this.nomMatiere = nomMatiere; }
-
-    public Long getChapitreId() { return chapitreId; }
-    public void setChapitreId(Long chapitreId) { this.chapitreId = chapitreId; }
-
-    public Long getMatiereId() { return matiereId; }
-    public void setMatiereId(Long matiereId) { this.matiereId = matiereId; }
-
-    public int getNombreQuestions() { return nombreQuestions; }
-    public void setNombreQuestions(int nombreQuestions) { this.nombreQuestions = nombreQuestions; }
-
-    public LocalDateTime getDateCreation() { return dateCreation; }
-    public void setDateCreation(LocalDateTime dateCreation) { this.dateCreation = dateCreation; }
+    public List<QuestionDto> getQuestions() { return questions; }
+    public void setQuestions(List<QuestionDto> questions) { this.questions = questions; }
+    
+    // --- Méthode toString pour debug ---
+    @Override
+    public String toString() {
+        return "QuestionnaireDetailDto{" +
+                "id=" + id +
+                ", titre='" + titre + '\'' +
+                ", description='" + description + '\'' +
+                ", duree=" + duree +
+                ", chapitreId=" + chapitreId +
+                ", nomChapitre='" + nomChapitre + '\'' +
+                ", questions=" + (questions != null ? questions.size() : 0) +
+                '}';
+    }
 }

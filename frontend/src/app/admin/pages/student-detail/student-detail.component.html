@@ -1,0 +1,33 @@
+<div class="student-detail-container" *ngIf="studentJourney">
+  <h3>Parcours de {{ studentJourney.nomComplet }}</h3>
+  <p><strong>Email:</strong> {{ studentJourney.email }}</p>
+  <p><strong>Formation actuelle:</strong> {{ studentJourney.formationActuelle }}</p>
+  <p><strong>Niveau d'étude:</strong> {{ studentJourney.niveauEtude }}</p>
+  <p><strong>Type de parcours:</strong> {{ studentJourney.parcoursType }}</p>
+  <p><strong>Moyenne générale:</strong> {{ studentJourney.moyenneGeneraleTests | number:'1.0-2' }}</p>
+  <p><strong>Tests passés:</strong> {{ studentJourney.testsPasses }}</p>
+
+  <h4>Progression par cours:</h4>
+  <table class="course-table">
+    <thead>
+      <tr>
+        <th>Code</th>
+        <th>Nom du cours</th>
+        <th>Moyenne</th>
+        <th>Tests passés</th>
+        <th>Statut</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let course of getCourseProgressList()">
+        <td>{{ course.courseCode }}</td>
+        <td>{{ course.courseName }}</td>
+        <td>{{ course.scoreMoyen | number:'1.0-2' }}%</td>
+        <td>{{ course.testsPasses }}</td>
+        <td>{{ course.statutRecommandation }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <button (click)="closeDetail()">Fermer</button>
+</div>

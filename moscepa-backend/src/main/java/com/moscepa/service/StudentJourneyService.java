@@ -6,6 +6,7 @@ import com.moscepa.entity.ResultatTest;
 import com.moscepa.entity.Test;
 import com.moscepa.entity.Utilisateur;
 import com.moscepa.entity.Role;
+import com.moscepa.entity.Formation;
 import com.moscepa.repository.ResultatTestRepository;
 import com.moscepa.repository.UtilisateurRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
@@ -42,12 +44,10 @@ public class StudentJourneyService {
         journey.setEmail(etudiant.getEmail());
         journey.setFormationActuelle(etudiant.getFormationActuelle());
         journey.setNiveauEtude(etudiant.getNiveauEtude());
-        journey.setParcoursType(etudiant.getParcoursType());
+        journey.setParcoursType(etudiant.getParcoursType() != null ? etudiant.getParcoursType() : "NON DEFINI");
 
         // Calcul de la progression par cours
-        List<ResultatTest> allResults =
-                resultatTestRepository.findByEtudiantIdOrderByDateTestDesc(etudiantId);
-
+        List<ResultatTest> allResults = resultatTestRepository.findByEtudiantIdOrderByDateTestDesc(etudiantId);
         List<CourseProgressDto> progression = new ArrayList<>();
 
         allResults.stream()
@@ -93,15 +93,35 @@ public class StudentJourneyService {
      */
     public List<StudentJourneyDto> getAllJourneys(String type) {
         List<Utilisateur> etudiants = utilisateurRepository.findByRole(Role.ETUDIANT);
-        List<StudentJourneyDto> journeys = new ArrayList<>();
 
-        for (Utilisateur etudiant : etudiants) {
-            StudentJourneyDto dto = getStudentJourney(etudiant.getId());
-            if (type == null || type.isEmpty() || dto.getParcoursType().equalsIgnoreCase(type)) {
-                journeys.add(dto);
-            }
-        }
+        return etudiants.stream()
+        .map(etudiant -> getStudentJourney(etudiant.getId())) // <-- passer l'ID ici
+        .filter(dto -> type == null || type.isEmpty() ||
+                (dto.getParcoursType() != null && dto.getParcoursType().equalsIgnoreCase(type)))
+        .collect(Collectors.toList());
 
-        return journeys;
+    }
+
+    /**
+     * Récupère les parcours étudiants pour les étudiants inscrits à une formation gérée par l'enseignant.
+     */
+    public List<StudentJourneyDto> getStudentsForTeacher(Long teacherId) {
+        // 1. Formations créées par l’enseignant
+        List<Formation> formations = utilisateurRepository.findById(teacherId)
+                .orElseThrow(() -> new EntityNotFoundException("Enseignant non trouvé."))
+                .getFormationsCrees();
+
+        // 2. Étudiants inscrits à ces formations
+        List<Utilisateur> etudiants = formations.stream()
+                .flatMap(f -> utilisateurRepository.findAllByFormationActuelle(f.getNom()).stream()
+                        .filter(u -> u.getRoles().stream().anyMatch(r -> r.equals(Role.ETUDIANT.name())))
+                )
+                .distinct()
+                .collect(Collectors.toList());
+
+        // 3. Construire les DTO
+        return etudiants.stream()
+                .map(etudiant -> getStudentJourney(etudiant.getId()))
+                .collect(Collectors.toList());
     }
 }

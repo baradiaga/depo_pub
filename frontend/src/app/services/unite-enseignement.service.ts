@@ -15,6 +15,7 @@ export interface UniteEnseignement {
   responsable?: { id: number, nom: string, prenom: string };
   objectifs: string;
   formationId: number | string | null;
+  niveauEtude?: string; 
   // Nouveaux champs ajoutés pour la création de l'unité d'enseignement
   volumeHoraireCours: number;
   volumeHoraireTD: number;

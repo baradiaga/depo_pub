@@ -1,0 +1,149 @@
+.mes-cours-container {
+  padding: 20px;
+  background-color: #f9f9f9;
+}
+
+.mes-cours-container h2 {
+  color: #333;
+  margin-bottom: 20px;
+}
+
+/* Barre de recherche */
+.search-bar {
+  margin-bottom: 15px;
+}
+
+.search-bar input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+/* Filtre */
+.filters {
+  margin-bottom: 20px;
+}
+
+.filters select {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+/* Conteneur des cartes */
+.cards-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+/* Carte individuelle */
+.card {
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* En-tête de carte */
+.card-header {
+  padding: 15px 20px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-header h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.card-header .badge {
+  background-color: #4caf50;
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+/* Corps de la carte */
+.card-body {
+  padding: 15px 20px;
+  font-size: 14px;
+  color: #555;
+}
+
+.card-body p {
+  margin-bottom: 12px;
+}
+
+.card-body ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 12px 0;
+}
+
+.card-body ul li {
+  margin-bottom: 6px;
+}
+
+.competences {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.competence-badge {
+  background-color: #2196f3;
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+/* Pied de carte / boutons */
+.card-footer {
+  display: flex;
+  justify-content: flex-start;
+  gap: 12px; /* espace entre les boutons */
+  padding: 12px 20px;
+  border-top: 1px solid #eee;
+}
+
+.card-footer button {
+  background-color: #4caf50;
+  color: #fff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: 0.2s;
+}
+
+.card-footer button:hover {
+  background-color: #45a049;
+}
+
+.card-footer button:nth-child(2) {
+  background-color: #2196f3;
+}
+
+.card-footer button:nth-child(2):hover {
+  background-color: #1976d2;
+}

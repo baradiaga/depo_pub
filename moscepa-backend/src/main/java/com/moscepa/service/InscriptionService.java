@@ -1,8 +1,8 @@
-// Fichier : src/main/java/com/moscepa/service/InscriptionService.java
-
 package com.moscepa.service;
 
-import com.moscepa.dto.InscriptionRequestDto; // On va créer ce DTO
+import com.moscepa.dto.InscriptionRequestDto;
+import com.moscepa.dto.InscriptionResponseDto;
+import com.moscepa.dto.InscriptionValidationRequest;
 import com.moscepa.entity.ElementConstitutif;
 import com.moscepa.entity.Inscription;
 import com.moscepa.entity.Utilisateur;
@@ -13,6 +13,9 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 @Service
 public class InscriptionService {
 
@@ -20,29 +23,137 @@ public class InscriptionService {
     private final UtilisateurRepository utilisateurRepository;
     private final ElementConstitutifRepository ecRepository;
 
-    public InscriptionService(InscriptionRepository inscriptionRepository, UtilisateurRepository utilisateurRepository, ElementConstitutifRepository ecRepository) {
+    public InscriptionService(
+            InscriptionRepository inscriptionRepository,
+            UtilisateurRepository utilisateurRepository,
+            ElementConstitutifRepository ecRepository
+    ) {
         this.inscriptionRepository = inscriptionRepository;
         this.utilisateurRepository = utilisateurRepository;
         this.ecRepository = ecRepository;
     }
 
+
+    // ===============================================================
+    // 🔹 MAPPER — Convertit une entité Inscription en DTO complet
+    // ===============================================================
+    private InscriptionResponseDto mapToDto(Inscription inscription) {
+
+        InscriptionResponseDto dto = new InscriptionResponseDto();
+
+        dto.setId(inscription.getId());
+        dto.setStatut(inscription.getStatut());
+        dto.setActif(inscription.isActif());
+        dto.setDateInscription(
+                inscription.getDateInscription() != null ? inscription.getDateInscription().toString() : null
+        );
+        dto.setDateValidation(
+                inscription.getDateValidation() != null ? inscription.getDateValidation().toString() : null
+        );
+
+        // --- Étudiant ---
+        Utilisateur etu = inscription.getEtudiant();
+        if (etu != null) {
+            dto.setEtudiantId(etu.getId());
+            dto.setEtudiantNomComplet(etu.getPrenom() + " " + etu.getNom());
+            dto.setEtudiantEmail(etu.getEmail());
+        }
+
+        // --- Matière ---
+        ElementConstitutif ec = inscription.getMatiere();
+        if (ec != null) {
+            dto.setEcId(ec.getId());
+            dto.setEcCode(ec.getCode());
+            dto.setEcNom(ec.getNom());
+        }
+
+        return dto;
+    }
+
+
+    // ===============================================================
+    // 🔹 INSCRIPTION D'UN ÉTUDIANT
+    // ===============================================================
     @Transactional
-    public Inscription inscrireEtudiant(InscriptionRequestDto request) {
+    public InscriptionResponseDto inscrireEtudiant(InscriptionRequestDto request) {
+
         Utilisateur etudiant = utilisateurRepository.findById(request.getEtudiantId())
-                .orElseThrow(() -> new EntityNotFoundException("Étudiant non trouvé avec l'ID: " + request.getEtudiantId()));
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Étudiant non trouvé avec l'ID: " + request.getEtudiantId()));
 
         ElementConstitutif matiere = ecRepository.findById(request.getEcId())
-                .orElseThrow(() -> new EntityNotFoundException("Matière non trouvée avec l'ID: " + request.getEcId()));
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Matière non trouvée avec l'ID: " + request.getEcId()));
 
-        
-         if (inscriptionRepository.existsByEtudiantIdAndMatiereId(etudiant.getId(), matiere.getId())) {
+        // Vérifier si déjà inscrit
+        if (inscriptionRepository.existsByEtudiantIdAndMatiereId(etudiant.getId(), matiere.getId())) {
             throw new IllegalStateException("L'étudiant est déjà inscrit à cette matière.");
         }
 
-        Inscription nouvelleInscription = new Inscription();
-        nouvelleInscription.setEtudiant(etudiant);
-        nouvelleInscription.setMatiere(matiere);
+        // Nouvelle inscription
+        Inscription inscription = new Inscription();
+        inscription.setEtudiant(etudiant);
+        inscription.setMatiere(matiere);
+        inscription.setStatut("EN_ATTENTE");
+        inscription.setActif(true);
+        inscription.setDateInscription(LocalDateTime.now());
 
-        return inscriptionRepository.save(nouvelleInscription);
+        return mapToDto(inscriptionRepository.save(inscription));
+    }
+
+
+    // ===============================================================
+    // 🔹 VALIDER / REJETER UNE INSCRIPTION
+    // ===============================================================
+    @Transactional
+    public InscriptionResponseDto validerInscription(InscriptionValidationRequest request) {
+
+        Inscription inscription = inscriptionRepository.findById(request.getInscriptionId())
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Inscription non trouvée avec l'ID: " + request.getInscriptionId()));
+
+        String nouveauStatut = request.getStatut();
+
+        if (!"VALIDE".equals(nouveauStatut) && !"REJETE".equals(nouveauStatut)) {
+            throw new IllegalArgumentException(
+                    "Statut invalide. Utiliser VALIDE ou REJETE.");
+        }
+
+        if (!"EN_ATTENTE".equals(inscription.getStatut())) {
+            throw new IllegalStateException(
+                    "Inscription déjà traitée. Statut actuel: " + inscription.getStatut());
+        }
+
+        inscription.setStatut(nouveauStatut);
+        inscription.setDateValidation(LocalDateTime.now());
+
+        return mapToDto(inscriptionRepository.save(inscription));
+    }
+
+
+    // ===============================================================
+    // 🔹 ACTIVER / DÉSACTIVER UNE INSCRIPTION
+    // ===============================================================
+    @Transactional
+    public InscriptionResponseDto changerStatutActif(Long inscriptionId, boolean actif) {
+
+        Inscription inscription = inscriptionRepository.findById(inscriptionId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Inscription non trouvée avec l'ID: " + inscriptionId));
+
+        inscription.setActif(actif);
+
+        return mapToDto(inscriptionRepository.save(inscription));
+    }
+
+
+    // ===============================================================
+    // 🔹 LISTE DES INSCRIPTIONS EN ATTENTE
+    // ===============================================================
+    public List<InscriptionResponseDto> getInscriptionsEnAttente() {
+        return inscriptionRepository.findByStatut("EN_ATTENTE")
+                .stream()
+                .map(this::mapToDto)
+                .toList();
     }
 }

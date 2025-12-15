@@ -1,0 +1,122 @@
+<div class="container">
+  <h2>{{ editingId ? 'Modifier l\'établissement' : 'Nouvel établissement' }}</h2>
+  
+  <form [formGroup]="etablissementForm" (ngSubmit)="onSubmit()">
+    <div class="form-group">
+      <label for="nom">Nom de l'établissement *</label>
+      <input 
+        type="text" 
+        id="nom" 
+        formControlName="nom"
+        class="form-control"
+        placeholder="Ex: Université Numerique cheikh hamidou kane "
+      >
+      <div *ngIf="etablissementForm.get('nom')?.invalid && etablissementForm.get('nom')?.touched" class="error">
+        Le nom est requis et doit comporter au moins 2 caractères.
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="sigle">Sigle *</label>
+      <input 
+        type="text" 
+        id="sigle" 
+        formControlName="sigle"
+        class="form-control"
+        placeholder="Ex: UNCHK"
+      >
+      <div *ngIf="etablissementForm.get('sigle')?.invalid && etablissementForm.get('sigle')?.touched" class="error">
+        Le sigle est requis (2 à 10 caractères).
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="adresse">Adresse *</label>
+      <textarea 
+        id="adresse" 
+        formControlName="adresse"
+        class="form-control"
+        rows="3"
+        placeholder="Ex: MBOUR GRAND MBOUR "
+      ></textarea>
+      <div *ngIf="etablissementForm.get('adresse')?.invalid && etablissementForm.get('adresse')?.touched" class="error">
+        L'adresse est requise.
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="contact">Contact *</label>
+      <input 
+        type="text" 
+        id="contact" 
+        formControlName="contact"
+        class="form-control"
+        placeholder="Ex: Ex: https://www.unchk.edu.sn ou +221 77 410 XX XX"
+      >
+      <div *ngIf="etablissementForm.get('contact')?.invalid && etablissementForm.get('contact')?.touched" class="error">
+        Les informations de contact sont requises.
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="logo">Logo (URL)</label>
+      <input 
+        type="text" 
+        id="logo" 
+        formControlName="logo"
+        class="form-control"
+        placeholder="Ex: https://example.com/logo.png"
+      >
+    </div>
+
+    <div class="form-group">
+      <label for="lien">Site Web</label>
+      <input 
+        type="url" 
+        id="lien" 
+        formControlName="lien"
+        class="form-control"
+        placeholder="Ex: Ex: https://www.unchk.edu.sn"
+      >
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary" [disabled]="etablissementForm.invalid">
+        {{ editingId ? 'Modifier' : 'Créer' }}
+      </button>
+      <button type="button" class="btn btn-secondary" (click)="cancelEdit()">
+        Annuler
+      </button>
+    </div>
+  </form>
+
+  <div class="list-section">
+    <h3>Liste des établissements</h3>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nom</th>
+          <th>Sigle</th>
+          <th>Contact</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="etablissements.length === 0">
+          <td colspan="5" class="text-center">Aucun établissement trouvé</td>
+        </tr>
+        <tr *ngFor="let etab of etablissements">
+          <td>{{ etab.id }}</td>
+          <td>{{ etab.nom }}</td>
+          <td>{{ etab.sigle }}</td>
+          <td>{{ etab.contact }}</td>
+          <td>
+            <button class="btn btn-sm btn-warning" (click)="editEtablissement(etab)">Modifier</button>
+            <button class="btn btn-sm btn-danger" *ngIf="etab.id !== undefined" (click)="deleteEtablissement(etab.id)">Supprimer</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

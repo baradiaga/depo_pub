@@ -75,6 +75,10 @@ export interface ElementConstitutifResponse {
   id: number;
   nom: string;
   code: string;
+  volumeHoraireCours: number;
+  volumeHoraireTD: number;
+  volumeHoraireTP: number;
+  uniteEnseignementId: number;
   description: string;
   credit: number;
   enseignant: {
@@ -94,6 +98,10 @@ export interface ElementConstitutifRequest {
   credit: number;
   description: string;
   enseignantId: number | null;
+  volumeHoraireCours: number;
+  volumeHoraireTD: number;
+  volumeHoraireTP: number;
+  uniteEnseignementId: number;
 }
 
 export interface RessourcePedagogique {

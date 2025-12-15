@@ -1,0 +1,143 @@
+<div class="container">
+  <h2>{{ editingId ? 'Modifier la UEFR' : 'Nouvelle UEFR' }}</h2>
+  
+  <form [formGroup]="uefrForm" (ngSubmit)="onSubmit()">
+    <div class="form-group">
+      <label for="etablissement_id">Établissement *</label>
+      <select 
+        id="etablissement_id" 
+        formControlName="etablissement_id"
+        class="form-control"
+      >
+        <option value="">Sélectionner un établissement</option>
+        <option *ngFor="let etab of etablissements" [value]="etab.id">
+          {{ etab.nom }} ({{ etab.sigle }})
+        </option>
+      </select>
+      <div *ngIf="uefrForm.get('etablissement_id')?.invalid && uefrForm.get('etablissement_id')?.touched" class="error">
+        Veuillez sélectionner un établissement.
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="nom">Nom de la UEFR *</label>
+      <input 
+        type="text" 
+        id="nom" 
+        formControlName="nom"
+        class="form-control"
+        placeholder="Ex: Faculté des Sciences"
+      >
+      <div *ngIf="uefrForm.get('nom')?.invalid && uefrForm.get('nom')?.touched" class="error">
+        Le nom est requis et doit comporter au moins 2 caractères.
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="sigle">Sigle *</label>
+      <input 
+        type="text" 
+        id="sigle" 
+        formControlName="sigle"
+        class="form-control"
+        placeholder="Ex: FS"
+      >
+      <div *ngIf="uefrForm.get('sigle')?.invalid && uefrForm.get('sigle')?.touched" class="error">
+        Le sigle est requis (2 à 10 caractères).
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="adresse">Adresse *</label>
+      <textarea 
+        id="adresse" 
+        formControlName="adresse"
+        class="form-control"
+        rows="3"
+        placeholder="Ex: mbour grand mbour"
+      ></textarea>
+      <div *ngIf="uefrForm.get('adresse')?.invalid && uefrForm.get('adresse')?.touched" class="error">
+        L'adresse est requise.
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="contact">Contact *</label>
+      <input 
+        type="text" 
+        id="contact" 
+        formControlName="contact"
+        class="form-control"
+        placeholder="Ex: Ex: https://www.unchk.edu.sn"
+      >
+      <div *ngIf="uefrForm.get('contact')?.invalid && uefrForm.get('contact')?.touched" class="error">
+        Les informations de contact sont requises.
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="logo">Logo (URL)</label>
+      <input 
+        type="text" 
+        id="logo" 
+        formControlName="logo"
+        class="form-control"
+        placeholder="Ex: https://example.com/logo.png"
+      >
+    </div>
+
+    <div class="form-group">
+      <label for="lien">Site Web</label>
+      <input 
+        type="url" 
+        id="lien" 
+        formControlName="lien"
+        class="form-control"
+        placeholder="Ex: https://www.unchk.edu.sn"
+      >
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary" [disabled]="uefrForm.invalid">
+        {{ editingId ? 'Modifier' : 'Créer' }}
+      </button>
+      <button type="button" class="btn btn-secondary" (click)="cancelEdit()">
+        Annuler
+      </button>
+    </div>
+  </form>
+
+  <div class="list-section">
+    <h3>Liste des UEFR</h3>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nom</th>
+          <th>Sigle</th>
+          <th>Établissement</th>
+          <th>Contact</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="uefrs.length === 0">
+          <td colspan="6" class="text-center">Aucune UEFR trouvée</td>
+        </tr>
+        <tr *ngFor="let uefr of uefrs">
+          <td>{{ uefr.id }}</td>
+          <td>{{ uefr.nom }}</td>
+          <td>{{ uefr.sigle }}</td>
+          <td>{{ getEtablissementName(uefr.etablissement_id) }}</td>
+          <td>{{ uefr.contact }}</td>
+          <td>
+            <button class="btn btn-sm btn-warning" (click)="editUefr(uefr)">Modifier</button>
+<button class="btn btn-sm btn-danger" (click)="deleteUefr(uefr)">
+  Supprimer
+</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

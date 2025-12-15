@@ -1,14 +1,10 @@
-// Fichier : src/main/java/com/moscepa/controller/QuestionnaireController.java
-
 package com.moscepa.controller;
 
-import com.moscepa.dto.GenerateurPayload;
 import com.moscepa.dto.QuestionnaireDetailDto;
-import com.moscepa.dto.QuestionnairePayload;
 import com.moscepa.service.QuestionnaireService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,162 +12,68 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/questionnaires")
-@CrossOrigin(origins = "*")
+@CrossOrigin("*")
 public class QuestionnaireController {
 
-    private static final Logger log = LoggerFactory.getLogger(QuestionnaireController.class);
-    private final QuestionnaireService questionnaireService;
+    private static final Logger logger = LoggerFactory.getLogger(QuestionnaireController.class);
+    
+    @Autowired
+    private QuestionnaireService questionnaireService;
 
-    public QuestionnaireController(QuestionnaireService questionnaireService) {
-        this.questionnaireService = questionnaireService;
-    }
-
-    // ====================================================================
-    // === CRÉATION DE QUESTIONNAIRE                                     ===
-    // ====================================================================
-    @PostMapping
-    public ResponseEntity<Void> createQuestionnaire(@RequestBody QuestionnairePayload payload) {
-        try {
-            log.info("Requête reçue pour CRÉER un questionnaire : {}", payload.getTitre());
-            questionnaireService.sauvegarderQuestionnaire(payload);
-            return new ResponseEntity<>(HttpStatus.CREATED);
-        } catch (Exception e) {
-            log.error("Erreur lors de la création du questionnaire", e);
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    // ====================================================================
-    // === LISTE DE TOUS LES QUESTIONNAIRES                              ===
-    // ====================================================================
+    // --- Récupérer tous les questionnaires avec leurs questions ---
     @GetMapping
     public ResponseEntity<List<QuestionnaireDetailDto>> getAllQuestionnaires() {
+        logger.info("📥 GET /api/questionnaires");
+        List<QuestionnaireDetailDto> questionnaires = questionnaireService.getAllQuestionnairesDetail();
+        logger.info("📤 Retourne {} questionnaires", questionnaires.size());
+        return ResponseEntity.ok(questionnaires);
+    }
+
+    // --- Récupérer un questionnaire par son ID avec ses questions ---
+    @GetMapping("/{id}")
+    public ResponseEntity<QuestionnaireDetailDto> getQuestionnaireById(@PathVariable Long id) {
+        logger.info("📥 GET /api/questionnaires/{}", id);
+        QuestionnaireDetailDto questionnaire = questionnaireService.getQuestionnaireDetailById(id);
+        return ResponseEntity.ok(questionnaire);
+    }
+
+    // --- Créer un nouveau questionnaire ---
+    @PostMapping
+    public ResponseEntity<?> createQuestionnaire(@RequestBody QuestionnaireDetailDto dto) {
+        logger.info("📥 POST /api/questionnaires");
+        logger.info("Données reçues: titre={}, chapitreId={}", dto.getTitre(), dto.getChapitreId());
+        
         try {
-            log.info("Requête reçue pour LISTER tous les questionnaires.");
-            List<QuestionnaireDetailDto> questionnaires = questionnaireService.findAllQuestionnaires();
-            return ResponseEntity.ok(questionnaires);
+            QuestionnaireDetailDto created = questionnaireService.createQuestionnaire(dto);
+            logger.info("✅ Questionnaire créé avec ID: {}", created.getId());
+            return ResponseEntity.ok(created);
+        } catch (IllegalArgumentException e) {
+            logger.error("❌ Erreur validation: {}", e.getMessage());
+            return ResponseEntity.badRequest().body("Erreur: " + e.getMessage());
         } catch (Exception e) {
-            log.error("Erreur lors de la récupération des questionnaires", e);
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            logger.error("❌ Erreur création questionnaire: {}", e.getMessage(), e);
+            return ResponseEntity.status(500).body("Erreur serveur: " + e.getMessage());
         }
     }
 
-    // ====================================================================
-    // === GÉNÉRATION AUTOMATIQUE DE QUESTIONNAIRE                       ===
-    // ====================================================================
-    @PostMapping("/generer-depuis-banque")
-    public ResponseEntity<QuestionnaireDetailDto> genererQuestionnaire(@RequestBody GenerateurPayload params) {
-        try {
-            log.info("Requête reçue pour GÉNÉRER un questionnaire : {}", params.getTitre());
-            QuestionnaireDetailDto questionnaireGenere = questionnaireService.genererQuestionnaireDepuisBanque(params);
-            return ResponseEntity.ok(questionnaireGenere);
-        } catch (Exception e) {
-            log.error("Erreur lors de la génération automatique", e);
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    // --- Mettre à jour un questionnaire existant ---
+    @PutMapping("/{id}")
+    public ResponseEntity<QuestionnaireDetailDto> updateQuestionnaire(@PathVariable Long id,
+                                                                       @RequestBody QuestionnaireDetailDto dto) {
+        logger.info("📥 PUT /api/questionnaires/{}", id);
+        QuestionnaireDetailDto updated = questionnaireService.updateQuestionnaire(id, dto);
+        return ResponseEntity.ok(updated);
     }
 
-    // ====================================================================
-    // === SUPPRESSION DE QUESTIONNAIRE                                  ===
-    // ====================================================================
+    // --- Supprimer un questionnaire ---
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteQuestionnaire(@PathVariable Long id) {
-        try {
-            log.info("Requête reçue pour SUPPRIMER le questionnaire ID: {}", id);
-            questionnaireService.deleteQuestionnaireById(id);
+        logger.info("📥 DELETE /api/questionnaires/{}", id);
+        boolean deleted = questionnaireService.deleteQuestionnaire(id);
+        if (deleted) {
             return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            log.error("Erreur lors de la suppression du questionnaire ID: {}", id, e);
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        } else {
+            return ResponseEntity.notFound().build();
         }
     }
-
-    // ====================================================================
-    // === MISE À JOUR DU QUESTIONNAIRE                                    ===
-    // ====================================================================
-    @PutMapping("/{id}")
-    public ResponseEntity<Void> updateQuestionnaire(@PathVariable Long id, @RequestBody QuestionnairePayload payload) {
-        try {
-            log.info("Requête reçue pour MODIFIER le questionnaire ID: {}", id);
-            questionnaireService.updateQuestionnaire(id, payload);
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            log.error("Erreur lors de la mise à jour du questionnaire ID: {}", id, e);
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-    // ====================================================================
-// === TESTS ASSOCIÉS AU QUESTIONNAIRE                               ===
-// ====================================================================
-
-/**
- * Récupérer tous les tests liés à un questionnaire.
- */
-@GetMapping("/{id}/tests")
-public ResponseEntity<?> getTestsByQuestionnaire(@PathVariable Long id) {
-    try {
-        log.info("Requête reçue pour LISTER les tests du questionnaire ID: {}", id);
-        return ResponseEntity.ok(questionnaireService.getTestsByQuestionnaire(id));
-    } catch (Exception e) {
-        log.error("Erreur lors de la récupération des tests du questionnaire ID: {}", id, e);
-        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-}
-
-/**
- * Créer un nouveau test lié à un questionnaire.
- */
-@PostMapping("/{id}/tests")
-public ResponseEntity<?> createTest(@PathVariable Long id, @RequestBody com.moscepa.entity.Test test) {
-    try {
-        log.info("Requête reçue pour CRÉER un test pour le questionnaire ID: {}", id);
-        return new ResponseEntity<>(questionnaireService.createTest(id, test), HttpStatus.CREATED);
-    } catch (Exception e) {
-        log.error("Erreur lors de la création d'un test pour le questionnaire ID: {}", id, e);
-        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-}
-
-/**
- * Mettre à jour un test existant.
- */
-@PutMapping("/tests/{testId}")
-public ResponseEntity<?> updateTest(@PathVariable Long testId, @RequestBody com.moscepa.entity.Test test) {
-    try {
-        log.info("Requête reçue pour MODIFIER le test ID: {}", testId);
-        return ResponseEntity.ok(questionnaireService.updateTest(testId, test));
-    } catch (Exception e) {
-        log.error("Erreur lors de la mise à jour du test ID: {}", testId, e);
-        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-}
-
-/**
- * Supprimer un test.
- */
-@DeleteMapping("/tests/{testId}")
-public ResponseEntity<Void> deleteTest(@PathVariable Long testId) {
-    try {
-        log.info("Requête reçue pour SUPPRIMER le test ID: {}", testId);
-        questionnaireService.deleteTest(testId);
-        return ResponseEntity.noContent().build();
-    } catch (Exception e) {
-        log.error("Erreur lors de la suppression du test ID: {}", testId, e);
-        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-}
-// ====================================================================
-// === DÉTAIL D’UN QUESTIONNAIRE                                     ===
-// ====================================================================
-@GetMapping("/{id}")
-public ResponseEntity<QuestionnaireDetailDto> getQuestionnaireById(@PathVariable Long id) {
-    try {
-        log.info("Requête reçue pour DÉTAIL du questionnaire ID: {}", id);
-        return ResponseEntity.ok(questionnaireService.findDetailById(id));
-    } catch (Exception e) {
-        log.error("Erreur lors de la récupération du questionnaire ID: {}", id, e);
-        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-}
-
 }

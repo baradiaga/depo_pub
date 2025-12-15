@@ -79,6 +79,10 @@ public class ElementConstitutifService {
         nouvelElement.setCredit(dto.getCredit());
         nouvelElement.setUniteEnseignement(ue);
         nouvelElement.setEnseignant(enseignant);
+        nouvelElement.setVolumeHoraireCours(dto.getVolumeHoraireCours());
+        nouvelElement.setVolumeHoraireTD(dto.getVolumeHoraireTD());
+        nouvelElement.setVolumeHoraireTP(dto.getVolumeHoraireTP());
+
         ElementConstitutif savedElement = elementRepository.save(nouvelElement);
         return convertToResponseDto(savedElement);
     }
@@ -168,6 +172,9 @@ public class ElementConstitutifService {
         dto.setCode(element.getCode());
         dto.setDescription(element.getDescription());
         dto.setCredit(element.getCredit());
+        dto.setVolumeHoraireCours(element.getVolumeHoraireCours());
+        dto.setVolumeHoraireTD(element.getVolumeHoraireTD());
+        dto.setVolumeHoraireTP(element.getVolumeHoraireTP());
         if (element.getEnseignant() != null) {
             EnseignantDto enseignantDto = new EnseignantDto(
                 element.getEnseignant().getId(),

@@ -5,10 +5,12 @@ package com.moscepa.controller;
 import com.moscepa.dto.FormationCreationDto;
 import com.moscepa.dto.FormationDetailDto;
 import com.moscepa.service.FormationService;
+import com.moscepa.security.UserPrincipal; // AJOUTÉ
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication; // AJOUTÉ
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -38,6 +40,16 @@ public class FormationController {
     // ====================================================================
     // === LECTURE (Accessible à tous les utilisateurs authentifiés)    ===
     // ====================================================================
+    
+    // AJOUTÉ : Endpoint pour récupérer les formations créées par l'enseignant connecté
+    @GetMapping("/mes-formations")
+    @PreAuthorize("hasAnyRole('ENSEIGNANT', 'ADMIN')")
+    public ResponseEntity<List<FormationDetailDto>> getMesFormations(Authentication authentication) {
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        Long createurId = userPrincipal.getId();
+        List<FormationDetailDto> formations = formationService.getFormationsByCreateurId(createurId);
+        return ResponseEntity.ok(formations);
+    }
 
     @GetMapping
     @PreAuthorize("isAuthenticated()")
@@ -65,13 +77,13 @@ public class FormationController {
     }
 
     // Mise à jour d'une formation
-@PutMapping("/{id}")
-@PreAuthorize("hasAnyRole('ENSEIGNANT', 'ADMIN')")
-public ResponseEntity<FormationDetailDto> modifierFormation(
-        @PathVariable Long id,
-        @Valid @RequestBody FormationCreationDto dto) {
-    FormationDetailDto formationModifiee = formationService.modifierFormation(id, dto);
-    return ResponseEntity.ok(formationModifiee);
-}
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ENSEIGNANT', 'ADMIN')")
+    public ResponseEntity<FormationDetailDto> modifierFormation(
+            @PathVariable Long id,
+            @Valid @RequestBody FormationCreationDto dto) {
+        FormationDetailDto formationModifiee = formationService.modifierFormation(id, dto);
+        return ResponseEntity.ok(formationModifiee);
+    }
 
 }

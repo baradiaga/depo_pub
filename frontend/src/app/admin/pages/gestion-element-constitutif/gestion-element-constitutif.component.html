@@ -1,5 +1,3 @@
-<!-- Fichier : src/app/features/admin/pages/gestion-element-constitutif/gestion-element-constitutif.component.html -->
-
 <div class="container-fluid py-4">
   <h1 class="h3 mb-2 text-gray-800">Gestion des Matières (Éléments Constitutifs)</h1>
   <p class="mb-4">Cette page vous permet de gérer les matières de votre curriculum et de les assigner à des enseignants.</p>
@@ -20,7 +18,7 @@
     </div>
   </div>
 
-  <!-- Formulaire de création/modification (conditionnellement affiché) -->
+  <!-- Formulaire de création/modification -->
   <div *ngIf="isFormVisible" class="card shadow-sm mb-4">
     <div class="card-header">
       <h5 class="m-0">{{ isEditing ? 'Modifier la matière' : 'Ajouter une nouvelle matière' }}</h5>
@@ -37,11 +35,27 @@
             <input type="text" id="code" class="form-control" formControlName="code">
           </div>
         </div>
+
         <div class="row">
-          <div class="col-md-6 mb-3">
-            <label for="credit" class="form-label">coeffcients</label>
+          <div class="col-md-3 mb-3">
+            <label for="credit" class="form-label">Coefficients</label>
             <input type="number" id="credit" class="form-control" formControlName="credit">
           </div>
+          <div class="col-md-3 mb-3">
+            <label for="volumeCours" class="form-label">Volume horaire Cours (h)</label>
+            <input type="number" id="volumeCours" class="form-control" formControlName="volumeHoraireCours" min="0">
+          </div>
+          <div class="col-md-3 mb-3">
+            <label for="volumeTD" class="form-label">Volume horaire TD (h)</label>
+            <input type="number" id="volumeTD" class="form-control" formControlName="volumeHoraireTD" min="0">
+          </div>
+          <div class="col-md-3 mb-3">
+            <label for="volumeTP" class="form-label">Volume horaire TP (h)</label>
+            <input type="number" id="volumeTP" class="form-control" formControlName="volumeHoraireTP" min="0">
+          </div>
+        </div>
+
+        <div class="row">
           <div class="col-md-6 mb-3">
             <label for="enseignant" class="form-label">Enseignant Responsable</label>
             <select id="enseignant" class="form-select" formControlName="enseignantId">
@@ -52,10 +66,12 @@
             </select>
           </div>
         </div>
+
         <div class="mb-3">
           <label for="description" class="form-label">Description</label>
           <textarea id="description" class="form-control" formControlName="description" rows="3"></textarea>
         </div>
+
         <div class="d-flex justify-content-end">
           <button type="button" class="btn btn-secondary me-2" (click)="onCancel()">Annuler</button>
           <button type="submit" class="btn btn-success" [disabled]="elementForm.invalid">
@@ -81,7 +97,11 @@
             <tr>
               <th>Code</th>
               <th>Nom</th>
-              <th>Crédits</th>
+              <th>Coefficients</th>
+              <th>Volume Cours</th>
+              <th>Volume TD</th>
+              <th>Volume TP</th>
+              <th>Total (h)</th>
               <th>Enseignant</th>
               <th>Actions</th>
             </tr>
@@ -91,6 +111,10 @@
               <td>{{ element.code }}</td>
               <td>{{ element.nom }}</td>
               <td>{{ element.credit }}</td>
+              <td>{{ element.volumeHoraireCours }}</td>
+              <td>{{ element.volumeHoraireTD }}</td>
+              <td>{{ element.volumeHoraireTP }}</td>
+              <td>{{ (element.volumeHoraireCours || 0) + (element.volumeHoraireTD || 0) + (element.volumeHoraireTP || 0) }}</td>
               <td>{{ element.enseignant ? element.enseignant.prenom + ' ' + element.enseignant.nom : 'Non assigné' }}</td>
               <td>
                 <button class="btn btn-secondary btn-sm me-2" (click)="showEditForm(element)" title="Modifier">
@@ -102,7 +126,7 @@
               </td>
             </tr>
             <tr *ngIf="elements.length === 0">
-              <td colspan="5" class="text-center">Aucune matière trouvée.</td>
+              <td colspan="9" class="text-center">Aucune matière trouvée.</td>
             </tr>
           </tbody>
         </table>

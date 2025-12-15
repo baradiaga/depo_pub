@@ -4,6 +4,7 @@ import com.moscepa.entity.Formation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List; // AJOUTÉ
 import java.util.Optional;
 
 @Repository
@@ -17,4 +18,7 @@ public interface FormationRepository extends JpaRepository<Formation, Long> {
 
     // On pourra ajouter d'autres méthodes spécifiques si nécessaire
     // ex: findAllByStatut, findAllByNiveauEtude, etc.
+    
+    // AJOUTÉ : Recherche par l'ID de l'utilisateur créateur
+    List<Formation> findAllByCreateurId(Long createurId);
 }

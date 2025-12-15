@@ -20,13 +20,17 @@ import { FormChapitreComponent } from './components/form-chapitre/form-chapitre.
 import { FormSectionComponent } from './components/form-section/form-section.component';
 import { MesRessourcesComponent } from './components/mes-ressources/mes-ressources.component';
 import { BanqueQuestionGestionComponent } from './components/banque-question-gestion/banque-question-gestion.component';
-import { QuestionnaireDetailsComponent } from './components/questionnaire-details/questionnaire-details.component';
 import { GestionRessourcesPedagogiquesComponent } from './components/gestion-ressources-pedagogiques/gestion-ressources-pedagogiques.component';
 import { GestionFormationsComponent } from './components/gestion-formations/gestion-formations.component';
 import { QuestionnaireListComponent } from './components/questionnaire-list-component/questionnaire-list-component.component';
 import { ListeFormationsComponent } from './components/liste-formations/liste-formations.component';
 import { MesCoursComponentComponent } from './components/mes-cours-component/mes-cours-component.component';
 import { EvaluerEtudiantComponentComponent } from './components/evaluer-etudiant-component/evaluer-etudiant-component.component';
+import { FormationFilterPipe } from '../../pipes/formation-filter.pipe';
+import { QuestionnaireDetailsViewComponentComponent } from './components/questionnaire-details-view-component/questionnaire-details-view-component.component';
+import { EtablissementComponent } from './components/etablissement/etablissement.component';
+import { UefrComponent } from './components/uefr/uefr.component';
+import { DepartementComponent } from './components/departement/departement.component';
 @NgModule({
   declarations: [
     GestionQuestionnaireComponent,
@@ -36,13 +40,17 @@ import { EvaluerEtudiantComponentComponent } from './components/evaluer-etudiant
     FormSectionComponent,
     MesRessourcesComponent,
     BanqueQuestionGestionComponent,
-    QuestionnaireDetailsComponent,
     GestionRessourcesPedagogiquesComponent,
     GestionFormationsComponent,
     QuestionnaireListComponent,
     ListeFormationsComponent,
     MesCoursComponentComponent,
     EvaluerEtudiantComponentComponent,
+    FormationFilterPipe,
+    QuestionnaireDetailsViewComponentComponent,
+    EtablissementComponent,
+    UefrComponent,
+    DepartementComponent,
   ],
 
   imports: [
@@ -57,4 +65,4 @@ import { EvaluerEtudiantComponentComponent } from './components/evaluer-etudiant
     QuillModule.forRoot(),
   ],
 })
-export class EnseignantModule {}
+export class EnseignantModule {} 

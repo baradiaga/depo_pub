@@ -11,6 +11,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.List; // AJOUTÉ
 import java.util.Set;
 
 @Entity
@@ -89,6 +90,10 @@ public class Utilisateur {
         inverseJoinColumns = @JoinColumn(name = "permission_id")
     )
     private Set<Permission> permissions = new HashSet<>();
+    
+    // AJOUTÉ : Relation pour les formations créées par cet utilisateur (enseignant)
+    @OneToMany(mappedBy = "createur", fetch = FetchType.LAZY)
+    private List<Formation> formationsCrees;
 
     // --- Constructeurs ---
     public Utilisateur() {}
@@ -153,6 +158,22 @@ public String getParcoursType() {
 
 public void setParcoursType(String parcoursType) {
     this.parcoursType = parcoursType;
+}
+
+// AJOUTÉ : Getter pour la liste des formations créées
+public List<Formation> getFormationsCrees() {
+    return formationsCrees;
+}
+
+// CORRECTION : Getter pour le rôle, retournant le nom de l'énumération pour la vérification
+public Set<String> getRoles() {
+    // Le service StudentJourneyService vérifie le rôle en utilisant .getName()
+    // Si Role est une énumération, il faut retourner le nom de l'énumération (Role.ETUDIANT.name())
+    // ou ajuster le service. L'approche la plus simple est d'ajuster le service.
+    // Cependant, pour résoudre l'erreur de compilation, nous allons ajuster le retour ici.
+    Set<String> roles = new HashSet<>();
+    roles.add(this.role.name());
+    return roles;
 }
 
 }

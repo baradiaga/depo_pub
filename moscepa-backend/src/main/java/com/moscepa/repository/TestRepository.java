@@ -5,10 +5,11 @@ package com.moscepa.repository;
 import com.moscepa.entity.Chapitre;
 import com.moscepa.entity.Test;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
+import jakarta.transaction.Transactional; 
 import java.util.List;
 import java.util.Optional;
 
@@ -48,5 +49,8 @@ public interface TestRepository extends JpaRepository<Test, Long> {
  * Récupère tous les tests liés à un questionnaire donné.
  */
 List<Test> findByQuestionnaireId(@Param("questionnaireId") Long questionnaireId);
-
+ @Modifying
+    @Transactional
+    @Query(value = "DELETE FROM moscepa_test_questions WHERE question_id = :questionId", nativeQuery = true)
+    void deleteQuestionFromTests(@Param("questionId") Long questionId);
 }

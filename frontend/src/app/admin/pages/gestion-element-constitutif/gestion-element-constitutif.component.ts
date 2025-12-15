@@ -6,10 +6,7 @@ import { ToastrService } from 'ngx-toastr';
 import { Observable } from 'rxjs';
 
 import { UniteEnseignement, UniteEnseignementService } from '../../../services/unite-enseignement.service';
-// On importe SEULEMENT le service depuis le fichier du service
 import { ElementConstitutifService } from '../../../services/element-constitutif.service';
-
-// On importe les INTERFACES depuis le fichier central 'models.ts'
 import { ElementConstitutifResponse, ElementConstitutifRequest } from '../../../models/models';
 import { UtilisateurService, UserResponseDto } from '../../../services/utilisateur.service';
 
@@ -44,7 +41,10 @@ export class GestionElementConstitutifComponent implements OnInit {
       code: ['', Validators.required],
       credit: [0, [Validators.required, Validators.min(0)]],
       description: [''],
-      enseignantId: [null, Validators.required]
+      enseignantId: [null, Validators.required],
+      volumeHoraireCours: [0, [Validators.required, Validators.min(0)]],
+      volumeHoraireTD: [0, [Validators.required, Validators.min(0)]],
+      volumeHoraireTP: [0, [Validators.required, Validators.min(0)]]
     });
   }
 
@@ -69,16 +69,15 @@ export class GestionElementConstitutifComponent implements OnInit {
     });
   }
 
-  onSelectUnite(ueId: string): void {
-    this.selectedUniteId = Number(ueId);
-  }
+  onSelectUnite(ueId: any): void {
+  this.selectedUniteId = Number(ueId);
+}
+
 
   showNewForm(): void {
     this.isEditing = false;
     this.isFormVisible = true;
     this.elementForm.reset();
-    // On peut pré-sélectionner l'UE si une est déjà choisie
-    // this.elementForm.patchValue({ uniteEnseignementId: this.selectedUniteId });
   }
 
   showEditForm(element: ElementConstitutifResponse): void {
@@ -90,7 +89,10 @@ export class GestionElementConstitutifComponent implements OnInit {
       code: element.code,
       credit: element.credit,
       description: element.description,
-      enseignantId: element.enseignant ? element.enseignant.id : null
+      enseignantId: element.enseignant ? element.enseignant.id : null,
+      volumeHoraireCours: element.volumeHoraireCours || 0,
+      volumeHoraireTD: element.volumeHoraireTD || 0,
+      volumeHoraireTP: element.volumeHoraireTP || 0
     });
   }
 
@@ -99,6 +101,8 @@ export class GestionElementConstitutifComponent implements OnInit {
   }
 
   onSubmit(): void {
+    
+
     if (this.elementForm.invalid) {
       this.toastr.warning('Veuillez remplir tous les champs obligatoires.');
       return;
@@ -125,7 +129,7 @@ export class GestionElementConstitutifComponent implements OnInit {
       }
     } else {
       if (!this.selectedUniteId) {
-        this.toastr.error("Veuillez d'abord sélectionner une Unité d'Enseignement pour y associer cette nouvelle matière.");
+        this.toastr.error("Veuillez d'abord sélectionner une Unité d'Enseignement.");
         return;
       }
       this.ecService.create(this.selectedUniteId, formData).subscribe({
@@ -152,8 +156,8 @@ export class GestionElementConstitutifComponent implements OnInit {
           this.loadAllElements();
         },
         error: (err) => {
-          if (err.status === 409) { // Gère le cas où la matière est utilisée ailleurs
-            this.toastr.error("Impossible de supprimer cette matière car elle est déjà utilisée (par des chapitres, etc.).");
+          if (err.status === 409) {
+            this.toastr.error("Impossible de supprimer cette matière car elle est utilisée ailleurs.");
           } else {
             this.toastr.error("Une erreur est survenue lors de la suppression.");
           }
@@ -162,4 +166,12 @@ export class GestionElementConstitutifComponent implements OnInit {
       });
     }
   }
+
+  // Calcul du volume horaire total d'une UE
+  getVolumeHoraireTotal(ueId: number | undefined): number {
+    if (!ueId) return 0;
+    const elements = this.elements.filter(e => e.uniteEnseignementId === ueId);
+    return elements.reduce((sum, e) => sum + (e.volumeHoraireCours || 0) + (e.volumeHoraireTD || 0) + (e.volumeHoraireTP || 0), 0);
+  }
+
 }

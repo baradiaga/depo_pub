@@ -1,1 +1,51 @@
-<p>mes-cours-component works!</p>
+<div class="mes-cours-container">
+  <h2>Mes Cours</h2>
+
+  <!-- Barre de recherche -->
+  <div class="search-bar">
+    <input type="text" placeholder="Rechercher un cours..." [(ngModel)]="searchText" />
+  </div>
+
+  <!-- Filtre par statut -->
+  <div class="filters">
+    <label>
+      <select [(ngModel)]="statusFilter">
+        <option value="">Tous les statuts</option>
+        <option value="ACTIF">Actif</option>
+        <option value="TERMINE">Terminé</option>
+        <option value="INACTIF">Inactif</option>
+      </select>
+    </label>
+  </div>
+
+  <!-- Cartes des formations -->
+  <div class="cards-container">
+    <div *ngFor="let formation of formations$ | async | formationFilter:searchText:statusFilter" class="card">
+      <div class="card-header">
+        <h3>{{ formation.nom }} ({{ formation.code }})</h3>
+        <span class="badge">{{ formation.niveauEtude }}</span>
+      </div>
+
+      <div class="card-body">
+        <p>{{ formation.description }}</p>
+        <ul>
+          <li><strong>Durée :</strong> {{ formation.dureeAnnees }} ans</li>
+          <li><strong>Volume horaire :</strong> {{ formation.volumeHoraireTotal }}h</li>
+          <li><strong>ECTS total :</strong> {{ formation.ectsTotal }}</li>
+          <li><strong>Capacité :</strong> {{ formation.capacite }}</li>
+          <li><strong>Nombre d'étudiants :</strong> {{ formation.nbEtudiants || 0 }}</li>
+          <li><strong>Responsable :</strong> {{ formation.responsableNom }}</li>
+        </ul>
+        <div class="competences">
+          <strong>Compétences :</strong>
+          <span *ngFor="let c of formation.competences" class="competence-badge">{{ c.nom }}</span>
+        </div>
+      </div>
+
+      <div class="card-footer">
+        <button (click)="voirDetails(formation)">Voir détail</button>
+        <button (click)="editerFormation(formation)">Éditer</button>
+      </div>
+    </div>
+  </div>
+</div>

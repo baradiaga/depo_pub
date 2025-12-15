@@ -8,14 +8,16 @@ import { SelectionMatiereGestionComponent } from './components/selection-matiere
 import { GestionContenuComponent } from './components/gestion-contenu/gestion-contenu.component';
 import { MesRessourcesComponent } from './components/mes-ressources/mes-ressources.component';
 import { BanqueQuestionGestionComponent } from './components/banque-question-gestion/banque-question-gestion.component';
-import { QuestionnaireDetailsComponent } from './components/questionnaire-details/questionnaire-details.component';
 import { GestionRessourcesPedagogiquesComponent } from './components/gestion-ressources-pedagogiques/gestion-ressources-pedagogiques.component';
 import { GestionFormationsComponent } from './components/gestion-formations/gestion-formations.component';
 import { QuestionnaireListComponent } from './components/questionnaire-list-component/questionnaire-list-component.component';
 import { ListeFormationsComponent } from './components/liste-formations/liste-formations.component';
 import { MesCoursComponentComponent } from './components/mes-cours-component/mes-cours-component.component';
 import { EvaluerEtudiantComponentComponent } from './components/evaluer-etudiant-component/evaluer-etudiant-component.component';
-
+import { QuestionnaireDetailsViewComponentComponent } from './components/questionnaire-details-view-component/questionnaire-details-view-component.component';
+import { EtablissementComponent } from './components/etablissement/etablissement.component';
+import { UefrComponent } from './components/uefr/uefr.component';
+import { DepartementComponent } from './components/departement/departement.component';
 const routes: Routes = [
 { path: 'gestion-questionnaire', component: GestionQuestionnaireComponent },
 { path: 'dashboard', component: DashboardComponent },
@@ -23,7 +25,6 @@ const routes: Routes = [
 { path: 'gestion-contenu/:id',  component: GestionContenuComponent },
 { path: 'ressources',component: MesRessourcesComponent},
 { path: 'banque-questions',component: BanqueQuestionGestionComponent},
-{ path: 'questionnaires/:id', component: QuestionnaireDetailsComponent },
 { path: 'banques', component: GestionRessourcesPedagogiquesComponent },
 { path: 'formations', component: GestionFormationsComponent },
 { path: 'formations/:id/edit', component: GestionFormationsComponent },
@@ -31,6 +32,10 @@ const routes: Routes = [
 { path: 'listeformation', component: ListeFormationsComponent },
 { path: 'MesCours', component: MesCoursComponentComponent },
 { path: 'EvaluerEtudiant', component: EvaluerEtudiantComponentComponent },
+{ path: 'questionnaires/:id', component: QuestionnaireDetailsViewComponentComponent },
+{ path: 'etablissements', component: EtablissementComponent },
+{ path: 'uefr', component: UefrComponent },
+{ path: 'departements', component: DepartementComponent },
 
 ];
 

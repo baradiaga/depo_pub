@@ -4,9 +4,10 @@ package com.moscepa.repository;
 
 import com.moscepa.entity.Inscription;
 import org.springframework.data.jpa.repository.JpaRepository;
-
+import java.util.List;
 public interface InscriptionRepository extends JpaRepository<Inscription, Long> {
     // On peut ajouter ici des méthodes de recherche si nécessaire, par exemple :
     // boolean existsByEtudiantIdAndMatiereId(Long etudiantId, Long matiereId);
     boolean existsByEtudiantIdAndMatiereId(Long etudiantId, Long matiereId);
+    List<Inscription> findByStatut(String statut);
 }

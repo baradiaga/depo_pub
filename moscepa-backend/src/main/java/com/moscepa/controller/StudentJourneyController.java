@@ -4,6 +4,7 @@ import com.moscepa.dto.StudentJourneyDto;
 import com.moscepa.security.UserPrincipal;
 import com.moscepa.service.StudentJourneyService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize; // AJOUTÉ
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -55,6 +56,23 @@ public class StudentJourneyController {
 
         StudentJourneyDto parcours = studentJourneyService.getStudentJourney(id);
         return ResponseEntity.ok(parcours);
+    }
+
+    // AJOUTÉ : Endpoint pour récupérer les étudiants associés à l'enseignant connecté
+    /**
+     * Récupère les parcours étudiants associés à l'enseignant connecté.
+     */
+    @GetMapping("/mes-etudiants")
+    @PreAuthorize("hasRole('ENSEIGNANT')")
+    public ResponseEntity<List<StudentJourneyDto>> getStudentsForTeacher(
+            @AuthenticationPrincipal UserPrincipal userPrincipal
+    ) {
+        if (userPrincipal == null) {
+            return ResponseEntity.status(401).build();
+        }
+        Long teacherId = userPrincipal.getId();
+        List<StudentJourneyDto> journeys = studentJourneyService.getStudentsForTeacher(teacherId);
+        return ResponseEntity.ok(journeys);
     }
 
     /**

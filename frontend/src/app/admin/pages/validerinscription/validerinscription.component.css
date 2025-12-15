@@ -1,0 +1,104 @@
+/* Fichier : valider-inscription.component.css */
+
+/* Couleur principale */
+:root {
+  --primary-color: #1c5980;
+  --primary-color-light: #2a739f;
+  --success-color: #28a745;
+  --danger-color: #dc3545;
+  --warning-color: #ffc107;
+  --info-color: #17a2b8;
+}
+
+/* Container principal */
+.container {
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+/* Titres */
+h2 {
+  color: var(--primary-color);
+  font-weight: bold;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* Tableau */
+table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+table th {
+  background-color: var(--primary-color);
+  color: #fff;
+  text-align: center;
+}
+
+table td {
+  vertical-align: middle;
+}
+
+/* Badges */
+.badge {
+  font-size: 0.9rem;
+  padding: 0.4em 0.6em;
+}
+
+.badge.bg-success {
+  background-color: var(--success-color);
+}
+
+.badge.bg-danger {
+  background-color: var(--danger-color);
+}
+
+.badge.bg-warning {
+  background-color: var(--warning-color);
+  color: #212529;
+}
+
+.badge.bg-secondary {
+  background-color: #6c757d;
+}
+
+/* Boutons */
+.btn {
+  border-radius: 5px;
+  font-size: 0.85rem;
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-color-light);
+  border-color: var(--primary-color-light);
+}
+
+/* Spinner */
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+  border-width: 0.3em;
+  color: var(--primary-color);
+}
+
+/* Messages d'alerte */
+.alert {
+  border-radius: 5px;
+  font-size: 0.95rem;
+}
+
+/* Groupe de boutons dans le tableau */
+.btn-group .btn {
+  margin-right: 5px;
+}
+
+.btn-group .btn:last-child {
+  margin-right: 0;
+}

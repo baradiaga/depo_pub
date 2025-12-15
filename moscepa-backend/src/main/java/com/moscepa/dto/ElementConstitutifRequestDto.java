@@ -28,6 +28,18 @@ public class ElementConstitutifRequestDto {
 
     @NotNull(message = "L'enseignant responsable est obligatoire.")
     private Long enseignantId;
+    // Volumes horaires
+    @NotNull(message = "Le volume horaire de cours est obligatoire.")
+    @Min(value = 0, message = "Le volume horaire ne peut pas être négatif.")
+    private Integer volumeHoraireCours;
+
+    @NotNull(message = "Le volume horaire de TD est obligatoire.")
+    @Min(value = 0, message = "Le volume horaire ne peut pas être négatif.")
+    private Integer volumeHoraireTD;
+
+    @NotNull(message = "Le volume horaire de TP est obligatoire.")
+    @Min(value = 0, message = "Le volume horaire ne peut pas être négatif.")
+    private Integer volumeHoraireTP;
 
     // --- Getters et Setters ---
 
@@ -80,4 +92,12 @@ public class ElementConstitutifRequestDto {
     public void setEnseignantId(Long enseignantId) {
         this.enseignantId = enseignantId;
     }
+     public Integer getVolumeHoraireCours() { return volumeHoraireCours; }
+    public void setVolumeHoraireCours(Integer volumeHoraireCours) { this.volumeHoraireCours = volumeHoraireCours; }
+
+    public Integer getVolumeHoraireTD() { return volumeHoraireTD; }
+    public void setVolumeHoraireTD(Integer volumeHoraireTD) { this.volumeHoraireTD = volumeHoraireTD; }
+
+    public Integer getVolumeHoraireTP() { return volumeHoraireTP; }
+    public void setVolumeHoraireTP(Integer volumeHoraireTP) { this.volumeHoraireTP = volumeHoraireTP; }
 }

@@ -1,6 +1,8 @@
 package com.moscepa.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +33,7 @@ public class Question {
     // ====================================================================
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @OrderBy("id ASC")
+    @JsonManagedReference("question-reponses")  // Gère les réponses côté parent
     private List<Reponse> reponses = new ArrayList<>();
 
     // ====================================================================
@@ -38,7 +41,7 @@ public class Question {
     // ====================================================================
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "questionnaire_id")
-    @JsonBackReference
+    @JsonBackReference("questionnaire-questions")  // Même nom que dans Questionnaire
     private Questionnaire questionnaire;
 
     // ====================================================================
@@ -46,13 +49,14 @@ public class Question {
     // ====================================================================
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chapitre_id")
+    @JsonBackReference("chapitre-questions")  // Si Chapitre a une liste de questions
     private Chapitre chapitre;
 
     // ====================================================================
     // Tests associés via ManyToMany
     // ====================================================================
     @ManyToMany(mappedBy = "questions")
-    @JsonBackReference
+    @JsonIgnore  // Pour ManyToMany, souvent mieux d'ignorer complètement
     private List<Test> tests = new ArrayList<>();
 
     // ====================================================================
@@ -97,4 +101,30 @@ public class Question {
 
     public List<Test> getTests() { return tests; }
     public void setTests(List<Test> tests) { this.tests = tests; }
+
+    // ====================================================================
+    // Méthodes toString, equals, hashCode (importantes pour éviter les problèmes)
+    // ====================================================================
+    @Override
+    public String toString() {
+        return "Question{" +
+                "id=" + id +
+                ", enonce='" + enonce + '\'' +
+                ", typeQuestion=" + typeQuestion +
+                ", points=" + points +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Question question = (Question) o;
+        return id != null && id.equals(question.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }
