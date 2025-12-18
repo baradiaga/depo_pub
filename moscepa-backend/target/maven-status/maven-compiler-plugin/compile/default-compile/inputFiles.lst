@@ -22,6 +22,7 @@ C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\mo
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\security\AuthEntryPointJwt.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\entity\Utilisateur.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\dto\SectionUpdateRequest.java
+C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\dto\UefrSimpleDTO.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\service\UefrService.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\service\TestService.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\MoscepaBackendApplication.java
@@ -124,6 +125,7 @@ C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\mo
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\dto\ChapitreSyllabusDto.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\dto\SousFonctionnaliteDTO.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\exception\GlobalExceptionHandler.java
+C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\dto\ChapitreProgressDto.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\controller\MatiereContenuController.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\dto\InscriptionResponseDto.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\repository\RessourcePedagogiqueRepository.java
@@ -204,6 +206,7 @@ C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\mo
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\controller\CategorieController.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\dto\InscriptionRequest.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\security\JwtUtils.java
+C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\dto\DepartementWithRelationsDTO.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\dto\FormationDetailDto.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\dto\SectionDetailDto.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\entity\BanqueQuestion.java

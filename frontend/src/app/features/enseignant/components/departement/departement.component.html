@@ -1,142 +1,407 @@
-<div class="container">
-  <h2>{{ editingId ? 'Modifier le département' : 'Nouveau département' }}</h2>
-  
-  <form [formGroup]="departementForm" (ngSubmit)="onSubmit()">
-    <div class="form-group">
-      <label for="uefr_id">UEFR *</label>
-      <select 
-        id="uefr_id" 
-        formControlName="uefr_id"
-        class="form-control"
-      >
-        <option value="">Sélectionner une UEFR</option>
-        <option *ngFor="let uefr of uefrs" [value]="uefr.id">
-          {{ uefr.nom }} ({{ uefr.sigle }})
-        </option>
-      </select>
-      <div *ngIf="departementForm.get('uefr_id')?.invalid && departementForm.get('uefr_id')?.touched" class="error">
-        Veuillez sélectionner une UEFR.
+<div class="container-fluid py-3">
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col">
+      <h2 class="mb-0">
+        <i class="bi bi-building me-2"></i>Gestion des Départements
+      </h2>
+      <p class="text-muted">Gérez les départements de votre établissement</p>
+    </div>
+  </div>
+
+  <!-- Loading Indicator -->
+  <div class="alert alert-info d-flex align-items-center" *ngIf="isLoading">
+    <div class="spinner-border spinner-border-sm me-3" role="status"></div>
+    <span class="fw-medium">Chargement des données...</span>
+  </div>
+
+  <!-- Filter Card -->
+  <div class="card shadow-sm mb-4" *ngIf="!isLoading">
+    <div class="card-header bg-white border-bottom-0 pb-0">
+      <h5 class="card-title mb-0">
+        <i class="bi bi-funnel me-2"></i>Filtres et Recherche
+      </h5>
+    </div>
+    <div class="card-body pt-3">
+      <form [formGroup]="filterForm">
+        <div class="row g-3">
+          <!-- Search Input -->
+          <div class="col-lg-6">
+            <label for="search" class="form-label fw-medium">Recherche rapide</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light">
+                <i class="bi bi-search"></i>
+              </span>
+              <input type="text" class="form-control" id="search" formControlName="search"
+                     placeholder="Rechercher par nom, sigle, adresse ou contact...">
+              <button class="btn btn-outline-secondary" type="button" (click)="resetFilters()" 
+                      [disabled]="!filterForm.dirty">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            </div>
+            <div class="form-text">Recherche en temps réel</div>
+          </div>
+
+          <!-- UEFR Filter -->
+          <div class="col-lg-3">
+            <label for="filterUefrId" class="form-label fw-medium">Filtrer par UEFR</label>
+            <select class="form-select" id="filterUefrId" formControlName="uefrId">
+              <option value="0">Toutes les UFRs</option>
+              <option *ngFor="let uefr of uefrs" [value]="uefr.id">
+                {{ uefr.sigle }} - {{ uefr.nom }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Items per Page -->
+          <div class="col-lg-3">
+            <label for="itemsPerPage" class="form-label fw-medium">Éléments par page</label>
+            <select class="form-select" id="itemsPerPage" 
+                    [ngModel]="itemsPerPage" [ngModelOptions]="{standalone: true}"
+                    (ngModelChange)="changeItemsPerPage($event)">
+              <option value="5">5</option>
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row g-3 mt-2">
+          <!-- Sort By -->
+          <div class="col-lg-4">
+            <label for="sortBy" class="form-label fw-medium">Trier par</label>
+            <select class="form-select" id="sortBy" formControlName="sortBy">
+              <option value="nom">Nom</option>
+              <option value="sigle">Sigle</option>
+              <option value="adresse">Adresse</option>
+              <option value="contact">Contact</option>
+              <option value="uefrId">UFR</option>
+            </select>
+          </div>
+
+          <!-- Sort Order -->
+          <div class="col-lg-4">
+            <label for="sortOrder" class="form-label fw-medium">Ordre de tri</label>
+            <select class="form-select" id="sortOrder" formControlName="sortOrder">
+              <option value="asc">Croissant (A → Z)</option>
+              <option value="desc">Décroissant (Z → A)</option>
+            </select>
+          </div>
+
+          <!-- Actions -->
+          <div class="col-lg-4 d-flex align-items-end">
+            <div class="d-flex gap-2 w-100">
+              <button type="button" class="btn btn-primary flex-fill" (click)="applyFilters()"
+                      [disabled]="useServerSideSearch">
+                <i class="bi bi-funnel me-1"></i> Appliquer
+              </button>
+              <button type="button" class="btn btn-outline-secondary" (click)="resetFilters()">
+                <i class="bi bi-arrow-clockwise"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Stats Card -->
+  <div class="row mb-4" *ngIf="!isLoading">
+    <div class="col-md-4">
+      <div class="card bg-primary text-white shadow-sm">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="card-title mb-0">Total</h6>
+              <h2 class="mb-0">{{ departements.length }}</h2>
+              <small>Tous départements</small>
+            </div>
+            <i class="bi bi-building display-6 opacity-50"></i>
+          </div>
+        </div>
       </div>
     </div>
-
-    <div class="form-group">
-      <label for="nom">Nom du département *</label>
-      <input 
-        type="text" 
-        id="nom" 
-        formControlName="nom"
-        class="form-control"
-        placeholder="Ex: Département d'Informatique"
-      >
-      <div *ngIf="departementForm.get('nom')?.invalid && departementForm.get('nom')?.touched" class="error">
-        Le nom est requis et doit comporter au moins 2 caractères.
+    <div class="col-md-4">
+      <div class="card bg-success text-white shadow-sm">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="card-title mb-0">Filtrés</h6>
+              <h2 class="mb-0">{{ filteredDepartements.length }}</h2>
+              <small>Avec filtres appliqués</small>
+            </div>
+            <i class="bi bi-funnel display-6 opacity-50"></i>
+          </div>
+        </div>
       </div>
     </div>
-
-    <div class="form-group">
-      <label for="sigle">Sigle *</label>
-      <input 
-        type="text" 
-        id="sigle" 
-        formControlName="sigle"
-        class="form-control"
-        placeholder="Ex: DI"
-      >
-      <div *ngIf="departementForm.get('sigle')?.invalid && departementForm.get('sigle')?.touched" class="error">
-        Le sigle est requis (2 à 10 caractères).
+    <div class="col-md-4">
+      <div class="card bg-info text-white shadow-sm">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="card-title mb-0">Page actuelle</h6>
+              <h2 class="mb-0">{{ paginatedDepartements.length }}</h2>
+              <small>Éléments affichés</small>
+            </div>
+            <i class="bi bi-file-text display-6 opacity-50"></i>
+          </div>
+        </div>
       </div>
     </div>
+  </div>
 
-    <div class="form-group">
-      <label for="adresse">Adresse *</label>
-      <textarea 
-        id="adresse" 
-        formControlName="adresse"
-        class="form-control"
-        rows="3"
-        placeholder="Ex: Bâtiment Descartes, 45 rue des Écoles, 75005 Paris"
-      ></textarea>
-      <div *ngIf="departementForm.get('adresse')?.invalid && departementForm.get('adresse')?.touched" class="error">
-        L'adresse est requise.
+  <!-- Form Card -->
+  <div class="card shadow-sm mb-4" id="form-departement">
+    <div class="card-header" [class.bg-warning]="isEditMode" [class.bg-primary]="!isEditMode">
+      <h5 class="card-title mb-0 text-white">
+        <i class="bi" [class.bi-pencil-square]="isEditMode" [class.bi-plus-circle]="!isEditMode"></i>
+        {{ isEditMode ? 'Modifier le Département' : 'Nouveau Département' }}
+      </h5>
+    </div>
+    <div class="card-body">
+      <form [formGroup]="departementForm" (ngSubmit)="saveDepartement()" novalidate>
+        
+        <!-- =========================== -->
+        <!--  INFORMATIONS DU DEPARTEMENT -->
+        <!-- =========================== -->
+        <div class="row g-3">
+          <!-- UEFR en premier -->
+          <div class="col-md-6">
+            <label for="uefrId" class="form-label fw-medium">UFR <span class="text-danger">*</span></label>
+            <select class="form-select" id="uefrId" formControlName="uefrId"
+                    [class.is-invalid]="departementForm.get('uefrId')?.invalid && departementForm.get('uefrId')?.touched">
+              <option value="0" disabled>Sélectionner une UFR</option>
+              <option *ngFor="let uefr of uefrs" [value]="uefr.id">
+                {{ uefr.sigle }} - {{ uefr.nom }}
+              </option>
+            </select>
+            <div class="invalid-feedback" *ngIf="departementForm.get('uefrId')?.invalid && departementForm.get('uefrId')?.touched">
+              Veuillez sélectionner une UFR
+            </div>
+          </div>
+
+          <!-- Nom en deuxième -->
+          <div class="col-md-6">
+            <label for="nom" class="form-label fw-medium">Nom du Département <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="nom" formControlName="nom"
+                   [class.is-invalid]="departementForm.get('nom')?.invalid && departementForm.get('nom')?.touched"
+                   placeholder="Ex: Département d'Informatique">
+            <div class="invalid-feedback" *ngIf="departementForm.get('nom')?.hasError('required')">
+              Le nom est obligatoire
+            </div>
+            <div class="invalid-feedback" *ngIf="departementForm.get('nom')?.hasError('minlength')">
+              Minimum 2 caractères
+            </div>
+          </div>
+
+          <!-- Sigle -->
+          <div class="col-md-6">
+            <label for="sigle" class="form-label fw-medium">Sigle <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="sigle" formControlName="sigle"
+                   [class.is-invalid]="departementForm.get('sigle')?.invalid && departementForm.get('sigle')?.touched"
+                   placeholder="Ex: INFO">
+            <div class="invalid-feedback" *ngIf="departementForm.get('sigle')?.hasError('required')">
+              Le sigle est obligatoire
+            </div>
+          </div>
+
+          <!-- Adresse -->
+          <div class="col-12">
+            <label for="adresse" class="form-label fw-medium">Adresse <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="adresse" formControlName="adresse"
+                   [class.is-invalid]="departementForm.get('adresse')?.invalid && departementForm.get('adresse')?.touched"
+                   placeholder="Adresse complète du département">
+          </div>
+
+          <!-- Contact -->
+          <div class="col-md-6">
+            <label for="contact" class="form-label fw-medium">Contact <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="contact" formControlName="contact"
+                   [class.is-invalid]="departementForm.get('contact')?.invalid && departementForm.get('contact')?.touched"
+                   placeholder="Email ou téléphone">
+          </div>
+
+          <!-- Logo (type file) -->
+          <div class="col-md-6">
+            <label for="logo" class="form-label fw-medium">Logo</label>
+            <input type="file" class="form-control" id="logo" formControlName="logo"
+                   (change)="onFileSelected($event)"
+                   accept="image/*">
+            <div class="form-text">Taille maximale : 2MB. Formats acceptés : JPG, PNG, GIF</div>
+          </div>
+
+          <!-- Lien -->
+          <div class="col-12">
+            <label for="lien" class="form-label fw-medium">Lien (URL)</label>
+            <input type="text" class="form-control" id="lien" formControlName="lien"
+                   placeholder="Site web du département">
+          </div>
+
+          <!-- Form Actions -->
+          <div class="col-12">
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-primary" 
+                      [disabled]="departementForm.invalid">
+                <i class="bi" [class.bi-check-circle]="!isEditMode" [class.bi-arrow-repeat]="isEditMode"></i>
+                {{ isEditMode ? 'Mettre à jour' : 'Créer' }}
+              </button>
+              <button type="button" class="btn btn-outline-secondary" (click)="resetForm()" *ngIf="isEditMode">
+                <i class="bi bi-x-circle"></i> Annuler
+              </button>
+              <button type="button" class="btn btn-outline-secondary" (click)="resetForm()" *ngIf="!isEditMode">
+                <i class="bi bi-eraser"></i> Effacer
+              </button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Table Card -->
+  <div class="card shadow-sm" id="departements-table">
+    <div class="card-header bg-white">
+      <div class="d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">
+          <i class="bi bi-list-columns me-2"></i>Liste des Départements
+        </h5>
+        <span class="badge rounded-pill bg-dark">
+          {{ currentPage }}/{{ totalPages }}
+        </span>
       </div>
     </div>
+    <div class="card-body">
+      <!-- No Results -->
+      <div class="text-center py-5" *ngIf="filteredDepartements.length === 0 && !isLoading">
+        <i class="bi bi-search display-1 text-muted mb-3"></i>
+        <h5 class="text-muted">Aucun département trouvé</h5>
+        <p class="text-muted mb-4">Essayez de modifier vos critères de recherche</p>
+        <button class="btn btn-outline-primary" (click)="resetFilters()">
+          <i class="bi bi-arrow-clockwise me-1"></i> Réinitialiser les filtres
+        </button>
+      </div>
 
-    <div class="form-group">
-      <label for="contact">Contact *</label>
-      <input 
-        type="text" 
-        id="contact" 
-        formControlName="contact"
-        class="form-control"
-        placeholder="Ex: contact@di.univ-paris.fr"
-      >
-      <div *ngIf="departementForm.get('contact')?.invalid && departementForm.get('contact')?.touched" class="error">
-        Les informations de contact sont requises.
+      <!-- Table -->
+      <div class="table-responsive" *ngIf="filteredDepartements.length > 0">
+        <table class="table table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th width="50">ID</th>
+              <th>
+                <a href="javascript:void(0)" class="text-decoration-none text-dark" 
+                   (click)="filterForm.get('sortBy')?.setValue('nom'); applyFilters()">
+                  Nom
+                  <i class="bi ms-1" 
+                     [class.bi-sort-down]="filterForm.get('sortBy')?.value === 'nom' && filterForm.get('sortOrder')?.value === 'asc'"
+                     [class.bi-sort-up]="filterForm.get('sortBy')?.value === 'nom' && filterForm.get('sortOrder')?.value === 'desc'"></i>
+                </a>
+              </th>
+              <th>
+                <a href="javascript:void(0)" class="text-decoration-none text-dark"
+                   (click)="filterForm.get('sortBy')?.setValue('sigle'); applyFilters()">
+                  Sigle
+                  <i class="bi ms-1"
+                     [class.bi-sort-down]="filterForm.get('sortBy')?.value === 'sigle' && filterForm.get('sortOrder')?.value === 'asc'"
+                     [class.bi-sort-up]="filterForm.get('sortBy')?.value === 'sigle' && filterForm.get('sortOrder')?.value === 'desc'"></i>
+                </a>
+              </th>
+              <th>Adresse</th>
+              <th>Contact</th>
+              <th>
+                <a href="javascript:void(0)" class="text-decoration-none text-dark"
+                   (click)="filterForm.get('sortBy')?.setValue('uefrId'); applyFilters()">
+                  UEFR
+                  <i class="bi ms-1"
+                     [class.bi-sort-down]="filterForm.get('sortBy')?.value === 'uefrId' && filterForm.get('sortOrder')?.value === 'asc'"
+                     [class.bi-sort-up]="filterForm.get('sortBy')?.value === 'uefrId' && filterForm.get('sortOrder')?.value === 'desc'"></i>
+                </a>
+              </th>
+              <th width="150" class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let dept of paginatedDepartements">
+              <td>
+                <span class="badge bg-secondary">#{{ dept.id }}</span>
+              </td>
+              <td class="fw-medium">{{ dept.nom }}</td>
+              <td>
+                <span class="badge bg-info text-dark">{{ dept.sigle }}</span>
+              </td>
+              <td>
+                <small class="text-muted">{{ dept.adresse }}</small>
+              </td>
+              <td>
+                <small>{{ dept.contact }}</small>
+              </td>
+              <td>
+                <span class="badge bg-light text-dark border">
+                  {{ getUefrName(dept.uefrId) }}
+                </span>
+              </td>
+              <td>
+                <div class="d-flex justify-content-center gap-1">
+                  <button class="btn btn-sm btn-outline-warning" (click)="editDepartement(dept)" 
+                          title="Modifier">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger" (click)="deleteDepartement(dept.id!)"
+                          title="Supprimer">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="d-flex justify-content-between align-items-center mt-4" *ngIf="filteredDepartements.length > 0">
+        <div class="text-muted">
+          Affichage de <strong>{{ (currentPage - 1) * itemsPerPage + 1 }}</strong> 
+          à <strong>{{ Math.min(currentPage * itemsPerPage, totalItems) }}</strong> 
+          sur <strong>{{ totalItems }}</strong> éléments
+        </div>
+        
+        <nav aria-label="Navigation des pages">
+          <ul class="pagination mb-0">
+            <!-- First & Previous -->
+            <li class="page-item" [class.disabled]="currentPage === 1">
+              <a class="page-link" (click)="changePage(1)" [class.disabled]="currentPage === 1">
+                <i class="bi bi-chevron-double-left"></i>
+              </a>
+            </li>
+            <li class="page-item" [class.disabled]="currentPage === 1">
+              <a class="page-link" (click)="changePage(currentPage - 1)" [class.disabled]="currentPage === 1">
+                <i class="bi bi-chevron-left"></i>
+              </a>
+            </li>
+            
+            <!-- Page Numbers -->
+            <li class="page-item" *ngFor="let page of getPageNumbers()" 
+                [class.active]="page === currentPage">
+              <a class="page-link" (click)="changePage(page)">{{ page }}</a>
+            </li>
+            
+            <!-- Next & Last -->
+            <li class="page-item" [class.disabled]="currentPage === totalPages">
+              <a class="page-link" (click)="changePage(currentPage + 1)" 
+                 [class.disabled]="currentPage === totalPages">
+                <i class="bi bi-chevron-right"></i>
+              </a>
+            </li>
+            <li class="page-item" [class.disabled]="currentPage === totalPages">
+              <a class="page-link" (click)="changePage(totalPages)" 
+                 [class.disabled]="currentPage === totalPages">
+                <i class="bi bi-chevron-double-right"></i>
+              </a>
+            </li>
+          </ul>
+        </nav>
       </div>
     </div>
-
-    <div class="form-group">
-      <label for="logo">Logo (URL)</label>
-      <input 
-        type="text" 
-        id="logo" 
-        formControlName="logo"
-        class="form-control"
-        placeholder="Ex: https://example.com/logo-di.png"
-      >
-    </div>
-
-    <div class="form-group">
-      <label for="lien">Site Web</label>
-      <input 
-        type="url" 
-        id="lien" 
-        formControlName="lien"
-        class="form-control"
-        placeholder="Ex: https://www.di.univ-paris.fr"
-      >
-    </div>
-
-    <div class="form-actions">
-      <button type="submit" class="btn btn-primary" [disabled]="departementForm.invalid">
-        {{ editingId ? 'Modifier' : 'Créer' }}
-      </button>
-      <button type="button" class="btn btn-secondary" (click)="cancelEdit()">
-        Annuler
-      </button>
-    </div>
-  </form>
-
-  <div class="list-section">
-    <h3>Liste des départements</h3>
-    <table class="table">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Nom</th>
-          <th>Sigle</th>
-          <th>UEFR</th>
-          <th>Contact</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngIf="departements.length === 0">
-          <td colspan="6" class="text-center">Aucun département trouvé</td>
-        </tr>
-        <tr *ngFor="let dept of  departements">
-          <td>{{ dept.id }}</td>
-          <td>{{ dept.nom }}</td>
-          <td>{{ dept.sigle }}</td>
-          <td>{{ getUefrName(dept.uefr_id) }}</td>
-          <td>{{ dept.contact }}</td>
-          <td>
-            <button class="btn btn-sm btn-warning" (click)="editDepartement(dept)">Modifier</button>
-            <button class="btn btn-sm btn-danger"*ngIf="dept.id"(click)="deleteDepartement(dept.id)">Supprimer</button>
-
-          </td>
-        </tr>
-      </tbody>
-    </table>
   </div>
 </div>

@@ -1,85 +1,91 @@
 {
-  "hash": "b1b59419",
-  "configHash": "636647c7",
-  "lockfileHash": "65cf2002",
-  "browserHash": "56673f20",
+  "hash": "dfe806cc",
+  "configHash": "f0ce3625",
+  "lockfileHash": "480f7cd7",
+  "browserHash": "ef6cc5f3",
   "optimized": {
     "@angular/common": {
       "src": "../../../../../node_modules/@angular/common/fesm2022/common.mjs",
       "file": "@angular_common.js",
-      "fileHash": "fd171343",
+      "fileHash": "21789ed1",
       "needsInterop": false
     },
     "@angular/common/http": {
       "src": "../../../../../node_modules/@angular/common/fesm2022/http.mjs",
       "file": "@angular_common_http.js",
-      "fileHash": "3fb965bc",
+      "fileHash": "7a953df0",
       "needsInterop": false
     },
     "@angular/core": {
       "src": "../../../../../node_modules/@angular/core/fesm2022/core.mjs",
       "file": "@angular_core.js",
-      "fileHash": "008caa2f",
+      "fileHash": "213c44d7",
       "needsInterop": false
     },
     "@angular/forms": {
       "src": "../../../../../node_modules/@angular/forms/fesm2022/forms.mjs",
       "file": "@angular_forms.js",
-      "fileHash": "34871781",
+      "fileHash": "1ec85cde",
       "needsInterop": false
     },
     "@angular/platform-browser": {
       "src": "../../../../../node_modules/@angular/platform-browser/fesm2022/platform-browser.mjs",
       "file": "@angular_platform-browser.js",
-      "fileHash": "58ee5e53",
+      "fileHash": "7259b282",
       "needsInterop": false
     },
     "@angular/platform-browser/animations": {
       "src": "../../../../../node_modules/@angular/platform-browser/fesm2022/animations.mjs",
       "file": "@angular_platform-browser_animations.js",
-      "fileHash": "9395cba3",
+      "fileHash": "7893366a",
       "needsInterop": false
     },
     "@angular/router": {
       "src": "../../../../../node_modules/@angular/router/fesm2022/router.mjs",
       "file": "@angular_router.js",
-      "fileHash": "70e4dd48",
+      "fileHash": "e01bef2e",
       "needsInterop": false
     },
     "@ng-bootstrap/ng-bootstrap": {
       "src": "../../../../../node_modules/@ng-bootstrap/ng-bootstrap/fesm2022/ng-bootstrap.mjs",
       "file": "@ng-bootstrap_ng-bootstrap.js",
-      "fileHash": "975a9870",
+      "fileHash": "561b0996",
       "needsInterop": false
     },
     "jwt-decode": {
       "src": "../../../../../node_modules/jwt-decode/build/esm/index.js",
       "file": "jwt-decode.js",
-      "fileHash": "a157bd0b",
+      "fileHash": "4ceec756",
       "needsInterop": false
     },
     "ngx-quill": {
       "src": "../../../../../node_modules/ngx-quill/fesm2022/ngx-quill.mjs",
       "file": "ngx-quill.js",
-      "fileHash": "4444bf8c",
+      "fileHash": "7f6038b6",
       "needsInterop": false
     },
     "ngx-toastr": {
       "src": "../../../../../node_modules/ngx-toastr/fesm2022/ngx-toastr.mjs",
       "file": "ngx-toastr.js",
-      "fileHash": "c5e5c600",
+      "fileHash": "1918c475",
       "needsInterop": false
     },
     "rxjs": {
       "src": "../../../../../node_modules/rxjs/dist/esm5/index.js",
       "file": "rxjs.js",
-      "fileHash": "a2b64465",
+      "fileHash": "972b452c",
       "needsInterop": false
     },
     "rxjs/operators": {
       "src": "../../../../../node_modules/rxjs/dist/esm5/operators/index.js",
       "file": "rxjs_operators.js",
-      "fileHash": "0d1ab6b3",
+      "fileHash": "20096222",
+      "needsInterop": false
+    },
+    "ngx-pagination": {
+      "src": "../../../../../node_modules/ngx-pagination/fesm2020/ngx-pagination.mjs",
+      "file": "ngx-pagination.js",
+      "fileHash": "bbd1931e",
       "needsInterop": false
     }
   },
@@ -87,14 +93,14 @@
     "quill-CI7GS773": {
       "file": "quill-CI7GS773.js"
     },
+    "chunk-E4RSS4AY": {
+      "file": "chunk-E4RSS4AY.js"
+    },
     "chunk-CAHFD6J2": {
       "file": "chunk-CAHFD6J2.js"
     },
     "chunk-JBTCVGOT": {
       "file": "chunk-JBTCVGOT.js"
-    },
-    "chunk-E4RSS4AY": {
-      "file": "chunk-E4RSS4AY.js"
     },
     "chunk-MSS7YHDL": {
       "file": "chunk-MSS7YHDL.js"

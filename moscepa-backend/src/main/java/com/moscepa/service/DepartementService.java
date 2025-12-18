@@ -1,135 +1,155 @@
 package com.moscepa.service;
 
 import com.moscepa.dto.DepartementDTO;
-import com.moscepa.dto.UefrDTO;
 import com.moscepa.entity.Departement;
+import com.moscepa.entity.Formation;
 import com.moscepa.entity.Uefr;
-import com.moscepa.exception.ResourceNotFoundException;
 import com.moscepa.repository.DepartementRepository;
+import com.moscepa.repository.FormationRepository;
 import com.moscepa.repository.UefrRepository;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
 public class DepartementService {
     
-    private final DepartementRepository departementRepository;
-    private final UefrRepository uefrRepository;
-    private final ModelMapper modelMapper;
+    @Autowired
+    private DepartementRepository departementRepository;
     
     @Autowired
-    public DepartementService(DepartementRepository departementRepository, 
-                             UefrRepository uefrRepository, 
-                             ModelMapper modelMapper) {
-        this.departementRepository = departementRepository;
-        this.uefrRepository = uefrRepository;
-        this.modelMapper = modelMapper;
+    private UefrRepository uefrRepository;
+    
+    @Autowired
+    private FormationRepository formationRepository;
+    
+    // ========== MÉTHODES CRUD ==========
+    
+    public List<Departement> getAllDepartements() {
+        return departementRepository.findAll();
     }
     
-    public List<DepartementDTO> getAllDepartements() {
-        return departementRepository.findAll()
-                .stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
+    public Departement getDepartementById(Long id) {
+        return departementRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Département non trouvé avec l'ID: " + id));
     }
     
-    public List<DepartementDTO> getDepartementsByUefrId(Long uefrId) {
-        return departementRepository.findByUefrId(uefrId)
-                .stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
-    }
-    
-    public DepartementDTO getDepartementById(Long id) {
-        Departement departement = departementRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Département non trouvé avec l'ID : " + id));
-        return convertToDTO(departement);
-    }
-    
-    public DepartementDTO createDepartement(DepartementDTO departementDTO) {
-        // Vérifier si l'UEFR est fournie
-        if (departementDTO.getUefr() == null || departementDTO.getUefr().getId() == null) {
-            throw new IllegalArgumentException("L'UEFR est obligatoire");
+    public Departement createDepartement(DepartementDTO departementDTO) {
+        // Vérifier si le sigle existe déjà
+        if (departementRepository.existsBySigle(departementDTO.getSigle())) {
+            throw new RuntimeException("Le sigle '" + departementDTO.getSigle() + "' existe déjà");
         }
         
-        // Récupérer l'UEFR
-        Uefr uefr = uefrRepository.findById(departementDTO.getUefr().getId())
-                .orElseThrow(() -> new ResourceNotFoundException("UEFR non trouvée avec l'ID : " + departementDTO.getUefr().getId()));
+        Departement departement = new Departement();
         
-        // Vérifier l'unicité du sigle dans l'UEFR
-        if (departementRepository.existsBySigleAndUefr(departementDTO.getSigle(), uefr)) {
-            throw new IllegalArgumentException("Un département avec ce sigle existe déjà dans cette UEFR");
-        }
+        // Mapper les champs de base
+        departement.setNom(departementDTO.getNom());
+        departement.setSigle(departementDTO.getSigle());
+        departement.setAdresse(departementDTO.getAdresse());
+        departement.setContact(departementDTO.getContact());
+        departement.setLogo(departementDTO.getLogo());
+        departement.setLien(departementDTO.getLien());
         
-        // Convertir et sauvegarder
-        Departement departement = convertToEntity(departementDTO);
+        // Gérer l'UEFR
+        Uefr uefr = uefrRepository.findById(departementDTO.getUefrId())
+            .orElseThrow(() -> new RuntimeException("UEFR non trouvée avec l'ID: " + departementDTO.getUefrId()));
         departement.setUefr(uefr);
         
-        Departement savedDepartement = departementRepository.save(departement);
-        return convertToDTO(savedDepartement);
-    }
-    
-    public DepartementDTO updateDepartement(Long id, DepartementDTO departementDTO) {
-        // Vérifier l'existence du département
-        Departement existingDepartement = departementRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Département non trouvé avec l'ID : " + id));
-        
-        // Vérifier si l'UEFR est fournie
-        if (departementDTO.getUefr() == null || departementDTO.getUefr().getId() == null) {
-            throw new IllegalArgumentException("L'UEFR est obligatoire");
+        // Gérer la Formation (si spécifiée)
+        if (departementDTO.getFormationId() != null) {
+            Formation formation = formationRepository.findById(departementDTO.getFormationId())
+                .orElseThrow(() -> new RuntimeException("Formation non trouvée avec l'ID: " + departementDTO.getFormationId()));
+            departement.setFormation(formation);
         }
         
-        // Récupérer l'UEFR
-        Uefr uefr = uefrRepository.findById(departementDTO.getUefr().getId())
-                .orElseThrow(() -> new ResourceNotFoundException("UEFR non trouvée avec l'ID : " + departementDTO.getUefr().getId()));
+        return departementRepository.save(departement);
+    }
+    
+    public Departement updateDepartement(Long id, DepartementDTO departementDTO) {
+        Departement departement = departementRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Département non trouvé avec l'ID: " + id));
         
-        // Vérifier l'unicité du sigle si changé
-        if (!existingDepartement.getSigle().equals(departementDTO.getSigle()) &&
-            departementRepository.existsBySigleAndUefr(departementDTO.getSigle(), uefr)) {
-            throw new IllegalArgumentException("Un département avec ce sigle existe déjà dans cette UEFR");
+        // Vérifier si le sigle existe pour un autre département
+        if (!departement.getSigle().equals(departementDTO.getSigle()) 
+            && departementRepository.existsBySigle(departementDTO.getSigle())) {
+            throw new RuntimeException("Le sigle '" + departementDTO.getSigle() + "' est déjà utilisé");
         }
         
         // Mettre à jour les champs
-        existingDepartement.setNom(departementDTO.getNom());
-        existingDepartement.setSigle(departementDTO.getSigle());
-        existingDepartement.setAdresse(departementDTO.getAdresse());
-        existingDepartement.setContact(departementDTO.getContact());
-        existingDepartement.setLogo(departementDTO.getLogo());
-        existingDepartement.setLien(departementDTO.getLien());
-        existingDepartement.setUefr(uefr);
+        departement.setNom(departementDTO.getNom());
+        departement.setSigle(departementDTO.getSigle());
+        departement.setAdresse(departementDTO.getAdresse());
+        departement.setContact(departementDTO.getContact());
+        departement.setLogo(departementDTO.getLogo());
+        departement.setLien(departementDTO.getLien());
         
-        Departement updatedDepartement = departementRepository.save(existingDepartement);
-        return convertToDTO(updatedDepartement);
+        // Mettre à jour l'UEFR
+        if (!departement.getUefr().getId().equals(departementDTO.getUefrId())) {
+            Uefr uefr = uefrRepository.findById(departementDTO.getUefrId())
+                .orElseThrow(() -> new RuntimeException("UEFR non trouvée avec l'ID: " + departementDTO.getUefrId()));
+            departement.setUefr(uefr);
+        }
+        
+        // Mettre à jour la Formation
+        Long formationId = departementDTO.getFormationId();
+        if (formationId == null) {
+            departement.setFormation(null);
+        } else if (departement.getFormation() == null || !departement.getFormation().getId().equals(formationId)) {
+            Formation formation = formationRepository.findById(formationId)
+                .orElseThrow(() -> new RuntimeException("Formation non trouvée avec l'ID: " + formationId));
+            departement.setFormation(formation);
+        }
+        
+        return departementRepository.save(departement);
     }
     
     public void deleteDepartement(Long id) {
         if (!departementRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Département non trouvé avec l'ID : " + id);
+            throw new RuntimeException("Département non trouvé avec l'ID: " + id);
         }
         departementRepository.deleteById(id);
     }
     
-    // Méthodes de conversion
-    private DepartementDTO convertToDTO(Departement departement) {
-        DepartementDTO dto = modelMapper.map(departement, DepartementDTO.class);
-        
-        // Convertir l'UEFR en DTO
-        if (departement.getUefr() != null) {
-            UefrDTO uefrDTO = modelMapper.map(departement.getUefr(), UefrDTO.class);
-            dto.setUefr(uefrDTO);
+    // ========== RECHERCHE AVEC PAGINATION ==========
+    
+    public Page<Departement> search(String searchTerm, Long uefrId, Pageable pageable) {
+        if ((searchTerm == null || searchTerm.trim().isEmpty()) && uefrId == null) {
+            return departementRepository.findAll(pageable);
         }
         
-        return dto;
+        return departementRepository.search(
+            (searchTerm != null && !searchTerm.trim().isEmpty()) ? searchTerm.trim() : null,
+            uefrId,
+            pageable
+        );
     }
     
-    private Departement convertToEntity(DepartementDTO departementDTO) {
-        Departement departement = modelMapper.map(departementDTO, Departement.class);
-        return departement;
+    // Méthode search avec formationId (si besoin)
+    public Page<Departement> search(String searchTerm, Long uefrId, Long formationId, Pageable pageable) {
+        if ((searchTerm == null || searchTerm.trim().isEmpty()) && uefrId == null && formationId == null) {
+            return departementRepository.findAll(pageable);
+        }
+        
+        return departementRepository.search(
+            (searchTerm != null && !searchTerm.trim().isEmpty()) ? searchTerm.trim() : null,
+            uefrId,
+            formationId,
+            pageable
+        );
+    }
+    
+    // ========== MÉTHODES UTILITAIRES ==========
+    
+    public boolean existsBySigle(String sigle) {
+        return departementRepository.existsBySigle(sigle);
+    }
+    
+    public boolean existsBySigleAndIdNot(String sigle, Long id) {
+        return departementRepository.existsBySigleAndIdNot(sigle, id);
     }
 }

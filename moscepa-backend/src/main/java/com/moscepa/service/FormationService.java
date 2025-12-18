@@ -10,9 +10,17 @@ import com.moscepa.entity.NiveauAcquisition;
 import com.moscepa.entity.Utilisateur;
 import com.moscepa.entity.ElementConstitutif;
 import com.moscepa.entity.Formation;
+// NOUVEAUX IMPORTS
+import com.moscepa.entity.Etablissement;
+import com.moscepa.entity.Uefr;
+import com.moscepa.entity.Departement;
 import com.moscepa.repository.ElementConstitutifRepository;
 import com.moscepa.repository.FormationRepository;
 import com.moscepa.repository.UtilisateurRepository;
+// NOUVEAUX REPOSITORIES
+import com.moscepa.repository.EtablissementRepository;
+import com.moscepa.repository.UefrRepository;
+import com.moscepa.repository.DepartementRepository;
 import com.moscepa.security.UserPrincipal;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -30,13 +38,25 @@ public class FormationService {
     private final FormationRepository formationRepository;
     private final UtilisateurRepository utilisateurRepository;
     private final ElementConstitutifRepository elementConstitutifRepository;
+    // NOUVEAUX REPOSITORIES
+    private final EtablissementRepository etablissementRepository;
+    private final UefrRepository uefrRepository;
+    private final DepartementRepository departementRepository;
 
     public FormationService(FormationRepository formationRepository,
                             UtilisateurRepository utilisateurRepository,
-                            ElementConstitutifRepository elementConstitutifRepository) {
+                            ElementConstitutifRepository elementConstitutifRepository,
+                            // NOUVEAUX REPOSITORIES
+                            EtablissementRepository etablissementRepository,
+                            UefrRepository uefrRepository,
+                            DepartementRepository departementRepository) {
         this.formationRepository = formationRepository;
         this.utilisateurRepository = utilisateurRepository;
         this.elementConstitutifRepository = elementConstitutifRepository;
+        // NOUVEAUX REPOSITORIES
+        this.etablissementRepository = etablissementRepository;
+        this.uefrRepository = uefrRepository;
+        this.departementRepository = departementRepository;
     }
 
     // ====================================================================
@@ -85,6 +105,31 @@ public class FormationService {
         formation.setCapacite(dto.getCapacite());
         formation.setTarif(dto.getTarif());
         formation.setCertificationProfessionnelle(dto.getCertificationProfessionnelle());
+
+        // ========================
+        // NOUVEAUX CHAMPS - Références administratives
+        // ========================
+
+        // Vérifier et récupérer l'établissement
+        if (dto.getEtablissementId() != null) {
+            Etablissement etablissement = etablissementRepository.findById(dto.getEtablissementId())
+                .orElseThrow(() -> new EntityNotFoundException("Établissement non trouvé avec l'ID: " + dto.getEtablissementId()));
+            formation.setEtablissement(etablissement);
+        }
+
+        // Vérifier et récupérer l'UFR
+        if (dto.getUefrId() != null) {
+            Uefr uefr = uefrRepository.findById(dto.getUefrId())
+                .orElseThrow(() -> new EntityNotFoundException("UFR non trouvée avec l'ID: " + dto.getUefrId()));
+            formation.setUefr(uefr);
+        }
+
+        // Vérifier et récupérer le département
+        if (dto.getDepartementId() != null) {
+            Departement departement = departementRepository.findById(dto.getDepartementId())
+                .orElseThrow(() -> new EntityNotFoundException("Département non trouvé avec l'ID: " + dto.getDepartementId()));
+            formation.setDepartement(departement);
+        }
 
         // Sauvegarde initiale pour obtenir l'ID (nécessaire pour les relations OneToMany)
         Formation savedFormation = formationRepository.save(formation);
@@ -170,40 +215,39 @@ public class FormationService {
     // === MODIFICATION
     // ====================================================================
     
-    
-       @Transactional
-	public FormationDetailDto modifierFormation(Long id, FormationCreationDto dto) {
+    @Transactional
+    public FormationDetailDto modifierFormation(Long id, FormationCreationDto dto) {
 
-	    Formation formation = formationRepository.findById(id)
-	            .orElseThrow(() -> new EntityNotFoundException("Formation non trouvée."));
+        Formation formation = formationRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Formation non trouvée."));
 
-	    // Vérification code / nom
-	    if (!formation.getCode().equals(dto.getCode())) {
-	        formationRepository.findByCode(dto.getCode())
-	                .ifPresent(f -> { throw new IllegalArgumentException("Code déjà utilisé."); });
-	    }
+        // Vérification code / nom
+        if (!formation.getCode().equals(dto.getCode())) {
+            formationRepository.findByCode(dto.getCode())
+                    .ifPresent(f -> { throw new IllegalArgumentException("Code déjà utilisé."); });
+        }
 
-	    if (!formation.getNom().equals(dto.getNom())) {
-	        formationRepository.findByNom(dto.getNom())
-	                .ifPresent(f -> { throw new IllegalArgumentException("Nom déjà utilisé."); });
-	    }
+        if (!formation.getNom().equals(dto.getNom())) {
+            formationRepository.findByNom(dto.getNom())
+                    .ifPresent(f -> { throw new IllegalArgumentException("Nom déjà utilisé."); });
+        }
 
-	    // Update basiques
-	    formation.setNom(dto.getNom());
-	    formation.setCode(dto.getCode());
-	    formation.setDescription(dto.getDescription());
-	    formation.setStatut(dto.getStatut());
-	    formation.setNiveauEtude(dto.getNiveauEtude());
-	    formation.setDuree(dto.getDuree());
+        // Update basiques
+        formation.setNom(dto.getNom());
+        formation.setCode(dto.getCode());
+        formation.setDescription(dto.getDescription());
+        formation.setStatut(dto.getStatut());
+        formation.setNiveauEtude(dto.getNiveauEtude());
+        formation.setDuree(dto.getDuree());
 
-	    // Responsable
-	    if (dto.getResponsableId() != null) {
-	        Utilisateur responsable = utilisateurRepository.findById(dto.getResponsableId())
-	                .orElseThrow(() -> new EntityNotFoundException("Responsable pédagogique non trouvé."));
-	        formation.setResponsablePedagogique(responsable);
-	    } else {
-	        formation.setResponsablePedagogique(null);
-	    }
+        // Responsable
+        if (dto.getResponsableId() != null) {
+            Utilisateur responsable = utilisateurRepository.findById(dto.getResponsableId())
+                    .orElseThrow(() -> new EntityNotFoundException("Responsable pédagogique non trouvé."));
+            formation.setResponsablePedagogique(responsable);
+        } else {
+            formation.setResponsablePedagogique(null);
+        }
 
         // --- Nouveaux champs ---
         formation.setObjectifs(dto.getObjectifs());
@@ -217,6 +261,37 @@ public class FormationService {
         formation.setCapacite(dto.getCapacite());
         formation.setTarif(dto.getTarif());
         formation.setCertificationProfessionnelle(dto.getCertificationProfessionnelle());
+
+        // ========================
+        // NOUVEAUX CHAMPS - Références administratives
+        // ========================
+
+        // Vérifier et récupérer l'établissement
+        if (dto.getEtablissementId() != null) {
+            Etablissement etablissement = etablissementRepository.findById(dto.getEtablissementId())
+                .orElseThrow(() -> new EntityNotFoundException("Établissement non trouvé avec l'ID: " + dto.getEtablissementId()));
+            formation.setEtablissement(etablissement);
+        } else {
+            formation.setEtablissement(null);
+        }
+
+        // Vérifier et récupérer l'UFR
+        if (dto.getUefrId() != null) {
+            Uefr uefr = uefrRepository.findById(dto.getUefrId())
+                .orElseThrow(() -> new EntityNotFoundException("UFR non trouvée avec l'ID: " + dto.getUefrId()));
+            formation.setUefr(uefr);
+        } else {
+            formation.setUefr(null);
+        }
+
+        // Vérifier et récupérer le département
+        if (dto.getDepartementId() != null) {
+            Departement departement = departementRepository.findById(dto.getDepartementId())
+                .orElseThrow(() -> new EntityNotFoundException("Département non trouvé avec l'ID: " + dto.getDepartementId()));
+            formation.setDepartement(departement);
+        } else {
+            formation.setDepartement(null);
+        }
 
         // 1. Gestion des Compétences (orphanRemoval=true gère la suppression des anciennes)
         formation.getCompetences().clear();

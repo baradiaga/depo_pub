@@ -87,6 +87,21 @@ public class Formation {
     // Relation OneToMany pour les Unités d'Enseignement
     @OneToMany(mappedBy = "formation", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UniteEnseignement> unitesEnseignement = new ArrayList<>();
+    // ========================
+// NOUVEAUX CHAMPS - Références administratives
+// ========================
+
+@ManyToOne(fetch = FetchType.LAZY)
+@JoinColumn(name = "etablissement_id", nullable = false)
+private Etablissement etablissement;
+
+@ManyToOne(fetch = FetchType.LAZY)
+@JoinColumn(name = "uefr_id", nullable = false)
+private Uefr uefr;
+
+@ManyToOne(fetch = FetchType.LAZY)
+@JoinColumn(name = "departement_id", nullable = false)
+private Departement departement;
 
     // ========================
     // Constructeurs
@@ -183,4 +198,13 @@ public class Formation {
         elementsConstitutifs.remove(ec);
         ec.setFormation(null);
     }
+    // --- Getters et Setters pour les nouveaux champs administratifs ---
+public Etablissement getEtablissement() { return etablissement; }
+public void setEtablissement(Etablissement etablissement) { this.etablissement = etablissement; }
+
+public Uefr getUefr() { return uefr; }
+public void setUefr(Uefr uefr) { this.uefr = uefr; }
+
+public Departement getDepartement() { return departement; }
+public void setDepartement(Departement departement) { this.departement = departement; }
 }

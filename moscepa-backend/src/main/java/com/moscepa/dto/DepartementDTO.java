@@ -1,14 +1,14 @@
 package com.moscepa.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.time.LocalDateTime;
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class DepartementDTO {
     
     private Long id;
@@ -33,8 +33,13 @@ public class DepartementDTO {
     
     private String lien;
     
-    @NotNull(message = "L'UEFR est obligatoire")
-    private UefrDTO uefr;
+    @NotNull(message = "L'ID UEFR est obligatoire")
+    @JsonProperty("uefrId")
+    @JsonAlias("uefr_id")
+    private Long uefrId;
+    
+    // AJOUTÉ ICI SEULEMENT
+    private Long formationId;
     
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
@@ -42,115 +47,39 @@ public class DepartementDTO {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updatedAt;
     
-    // Constructeurs
-    public DepartementDTO() {}
+    // Getters et Setters EXISTANTS + AJOUTEZ ceux pour formationId
     
-    // Constructeur simplifié pour création
-    public DepartementDTO(String nom, String sigle, String adresse, 
-                         String contact, String logo, String lien, UefrDTO uefr) {
-        this.nom = nom;
-        this.sigle = sigle;
-        this.adresse = adresse;
-        this.contact = contact;
-        this.logo = logo;
-        this.lien = lien;
-        this.uefr = uefr;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
     
-    // Getters et Setters
-    public Long getId() {
-        return id;
-    }
+    public String getNom() { return nom; }
+    public void setNom(String nom) { this.nom = nom; }
     
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public String getSigle() { return sigle; }
+    public void setSigle(String sigle) { this.sigle = sigle; }
     
-    public String getNom() {
-        return nom;
-    }
+    public String getAdresse() { return adresse; }
+    public void setAdresse(String adresse) { this.adresse = adresse; }
     
-    public void setNom(String nom) {
-        this.nom = nom;
-    }
+    public String getContact() { return contact; }
+    public void setContact(String contact) { this.contact = contact; }
     
-    public String getSigle() {
-        return sigle;
-    }
+    public String getLogo() { return logo; }
+    public void setLogo(String logo) { this.logo = logo; }
     
-    public void setSigle(String sigle) {
-        this.sigle = sigle;
-    }
+    public String getLien() { return lien; }
+    public void setLien(String lien) { this.lien = lien; }
     
-    public String getAdresse() {
-        return adresse;
-    }
+    public Long getUefrId() { return uefrId; }
+    public void setUefrId(Long uefrId) { this.uefrId = uefrId; }
     
-    public void setAdresse(String adresse) {
-        this.adresse = adresse;
-    }
+    // AJOUTÉ ICI SEULEMENT
+    public Long getFormationId() { return formationId; }
+    public void setFormationId(Long formationId) { this.formationId = formationId; }
     
-    public String getContact() {
-        return contact;
-    }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     
-    public void setContact(String contact) {
-        this.contact = contact;
-    }
-    
-    public String getLogo() {
-        return logo;
-    }
-    
-    public void setLogo(String logo) {
-        this.logo = logo;
-    }
-    
-    public String getLien() {
-        return lien;
-    }
-    
-    public void setLien(String lien) {
-        this.lien = lien;
-    }
-    
-    public UefrDTO getUefr() {
-        return uefr;
-    }
-    
-    public void setUefr(UefrDTO uefr) {
-        this.uefr = uefr;
-    }
-    
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-    
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-    
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-    
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-    
-    @Override
-    public String toString() {
-        return "DepartementDTO{" +
-                "id=" + id +
-                ", nom='" + nom + '\'' +
-                ", sigle='" + sigle + '\'' +
-                ", adresse='" + adresse + '\'' +
-                ", contact='" + contact + '\'' +
-                ", logo='" + logo + '\'' +
-                ", lien='" + lien + '\'' +
-                ", uefrId=" + (uefr != null ? uefr.getId() : "null") +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                '}';
-    }
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

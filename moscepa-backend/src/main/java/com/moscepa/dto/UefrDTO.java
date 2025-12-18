@@ -1,6 +1,8 @@
 package com.moscepa.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -31,8 +33,10 @@ public class UefrDTO {
     
     private String lien;
     
-    @NotNull(message = "L'établissement est obligatoire")
-    private EtablissementDTO etablissement;
+    @NotNull(message = "L'ID établissement est obligatoire")
+    @JsonProperty("etablissementId")
+    @JsonAlias("etablissement_id") // ← Accepte les deux formats
+    private Long etablissementId;
     
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
@@ -40,111 +44,34 @@ public class UefrDTO {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updatedAt;
     
-    // Constructeurs
-    public UefrDTO() {}
+    // Getters et Setters (inchangés)
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
     
-    // Constructeur simplifié
-    public UefrDTO(Long id, String nom, String sigle, EtablissementDTO etablissement) {
-        this.id = id;
-        this.nom = nom;
-        this.sigle = sigle;
-        this.etablissement = etablissement;
-    }
+    public String getNom() { return nom; }
+    public void setNom(String nom) { this.nom = nom; }
     
-    // Getters et Setters
-    public Long getId() {
-        return id;
-    }
+    public String getSigle() { return sigle; }
+    public void setSigle(String sigle) { this.sigle = sigle; }
     
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public String getAdresse() { return adresse; }
+    public void setAdresse(String adresse) { this.adresse = adresse; }
     
-    public String getNom() {
-        return nom;
-    }
+    public String getContact() { return contact; }
+    public void setContact(String contact) { this.contact = contact; }
     
-    public void setNom(String nom) {
-        this.nom = nom;
-    }
+    public String getLogo() { return logo; }
+    public void setLogo(String logo) { this.logo = logo; }
     
-    public String getSigle() {
-        return sigle;
-    }
+    public String getLien() { return lien; }
+    public void setLien(String lien) { this.lien = lien; }
     
-    public void setSigle(String sigle) {
-        this.sigle = sigle;
-    }
+    public Long getEtablissementId() { return etablissementId; }
+    public void setEtablissementId(Long etablissementId) { this.etablissementId = etablissementId; }
     
-    public String getAdresse() {
-        return adresse;
-    }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     
-    public void setAdresse(String adresse) {
-        this.adresse = adresse;
-    }
-    
-    public String getContact() {
-        return contact;
-    }
-    
-    public void setContact(String contact) {
-        this.contact = contact;
-    }
-    
-    public String getLogo() {
-        return logo;
-    }
-    
-    public void setLogo(String logo) {
-        this.logo = logo;
-    }
-    
-    public String getLien() {
-        return lien;
-    }
-    
-    public void setLien(String lien) {
-        this.lien = lien;
-    }
-    
-    public EtablissementDTO getEtablissement() {
-        return etablissement;
-    }
-    
-    public void setEtablissement(EtablissementDTO etablissement) {
-        this.etablissement = etablissement;
-    }
-    
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-    
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-    
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-    
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-    
-    @Override
-    public String toString() {
-        return "UefrDTO{" +
-                "id=" + id +
-                ", nom='" + nom + '\'' +
-                ", sigle='" + sigle + '\'' +
-                ", adresse='" + adresse + '\'' +
-                ", contact='" + contact + '\'' +
-                ", logo='" + logo + '\'' +
-                ", lien='" + lien + '\'' +
-                ", etablissementId=" + (etablissement != null ? etablissement.getId() : "null") +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                '}';
-    }
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

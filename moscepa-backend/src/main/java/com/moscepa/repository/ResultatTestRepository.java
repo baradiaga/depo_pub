@@ -29,4 +29,14 @@ public interface ResultatTestRepository extends JpaRepository<ResultatTest, Long
      */
     List<ResultatTest> findByEtudiantIdOrderByDateTestDesc(Long etudiantId);
     Optional<ResultatTest> findTopByEtudiantIdAndTestIdOrderByDateTestDesc(Long etudiantId, Long testId);
+
+    
+    
+     // NOUVELLE MÉTHODE: Récupère tous les résultats d'un étudiant avec jointures
+       @Query("SELECT DISTINCT rt FROM ResultatTest rt " +
+          "JOIN FETCH rt.test t " +
+          "JOIN FETCH t.chapitre c " +
+          "JOIN FETCH c.elementConstitutif ec " +
+          "WHERE rt.etudiant.id = :etudiantId")
+   List<ResultatTest> findByEtudiantIdWithDetails(@Param("etudiantId") Long etudiantId);
 }

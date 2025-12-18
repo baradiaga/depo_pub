@@ -15,22 +15,18 @@ import { AuthService } from '../../../services/auth.service';
 })
 export class GestionUnitesComponent implements OnInit {
 
-  // Listes et objets
   uniteList: UniteEnseignement[] = [];
   ueEnCours: UniteEnseignement = this.initUe();
   formations: FormationDetail[] = [];
   tousLesElementsConstitutifs: ElementConstitutifResponse[] = [];
 
-  // Etats du formulaire
   afficherFormulaire = false;
   isEditing = false;
   isLoading = true;
 
-  // Sélections
   niveauFormationSelectionnee: string = '';
   niveauxDisponibles: string[] = ['LICENCE', 'BACHELOR', 'MASTER', 'MS', 'CERTIFICAT', 'DOCTORAT'];
   anneesDisponibles: { value: number, label: string }[] = [];
-  anneeSelectionnee: number = 1;
 
   constructor(
     private ueService: UniteEnseignementService,
@@ -41,7 +37,7 @@ export class GestionUnitesComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.loadFormations(); // Charger les formations d’abord
+    this.loadFormations();
     this.chargerElementsConstitutifs();
   }
 
@@ -53,11 +49,10 @@ export class GestionUnitesComponent implements OnInit {
     this.formationService.getAllFormations().subscribe({
       next: (data: FormationDetail[]) => {
         this.formations = data;
-        this.loadUnites(); // Charger les UE après avoir les formations
+        this.loadUnites();
       },
       error: (err: HttpErrorResponse) => {
         this.toastr.error("Erreur lors du chargement des formations.", "Erreur");
-        console.error(err);
       }
     });
   }
@@ -66,19 +61,15 @@ export class GestionUnitesComponent implements OnInit {
     this.isLoading = true;
     this.ueService.getAll().subscribe({
       next: (data: UniteEnseignement[]) => {
-        this.uniteList = data.map(ue => {
-          const formation = this.formations.find(f => f.id === ue.formationId);
-          return {
-            ...ue,
-            niveauEtude: formation ? formation.niveauEtude : 'N/A' // ajouter le niveau pour le tableau
-          };
-        });
+        this.uniteList = data.map(ue => ({
+          ...ue,
+          anneeCycle: ue.anneeCycle ?? 1
+        }));
         this.isLoading = false;
       },
       error: (err: HttpErrorResponse) => {
         this.isLoading = false;
         this.toastr.error('Erreur lors du chargement des unités.', 'Erreur');
-        console.error(err);
       }
     });
   }
@@ -104,6 +95,7 @@ export class GestionUnitesComponent implements OnInit {
       ects: 0,
       semestre: 1,
       formationId: null,
+      anneeCycle: 1,
       elementConstitutifIds: [],
       volumeHoraireCours: 0,
       volumeHoraireTD: 0,
@@ -117,7 +109,6 @@ export class GestionUnitesComponent implements OnInit {
     this.afficherFormulaire = true;
     this.niveauFormationSelectionnee = '';
     this.anneesDisponibles = [];
-    this.anneeSelectionnee = 1;
   }
 
   modifierUnite(ue: UniteEnseignement): void {
@@ -138,22 +129,25 @@ export class GestionUnitesComponent implements OnInit {
     this.ueEnCours = this.initUe();
     this.niveauFormationSelectionnee = '';
     this.anneesDisponibles = [];
-    this.anneeSelectionnee = 1;
   }
 
   onFormationChange(): void {
-    const formation = this.formations.find(f => f.id === Number(this.ueEnCours.formationId));
+    const formation = this.formations.find(f => f.id === this.ueEnCours.formationId);
+    
     if (formation) {
       this.niveauFormationSelectionnee = formation.niveauEtude;
       this.updateAnneesDisponibles(this.niveauFormationSelectionnee);
+      
+      if (this.anneesDisponibles.length > 0) {
+        this.ueEnCours.anneeCycle = this.anneesDisponibles[0].value;
+      }
     } else {
       this.niveauFormationSelectionnee = '';
       this.anneesDisponibles = [];
-      this.anneeSelectionnee = 1;
     }
   }
 
-  updateAnneesDisponibles(niveau: string | undefined): void {
+  updateAnneesDisponibles(niveau: string): void {
     switch (niveau) {
       case 'LICENCE':
       case 'BACHELOR':
@@ -183,11 +177,10 @@ export class GestionUnitesComponent implements OnInit {
       default:
         this.anneesDisponibles = [{ value: 1, label: 'Niveau 1' }];
     }
-    this.anneeSelectionnee = this.anneesDisponibles[0]?.value ?? 1;
   }
 
   // ============================
-  //  SUBMIT
+  //  SUBMIT - SOLUTION LOCALE
   // ============================
 
   getPayload(): UniteEnseignement {
@@ -195,7 +188,11 @@ export class GestionUnitesComponent implements OnInit {
       this.toastr.error("Veuillez sélectionner une formation.", "Erreur de validation");
       throw new Error("Formation obligatoire");
     }
-    return { ...this.ueEnCours, formationId: Number(this.ueEnCours.formationId) };
+    
+    return { 
+      ...this.ueEnCours,
+      anneeCycle: this.ueEnCours.anneeCycle ?? 1
+    };
   }
 
   onSubmit(form: any): void {
@@ -207,22 +204,48 @@ export class GestionUnitesComponent implements OnInit {
     const payload = this.getPayload();
 
     if (this.isEditing && payload.id) {
+      // Mise à jour
       this.ueService.update(payload.id, payload).subscribe({
-        next: () => {
+        next: (response) => {
+          // Utiliser les données que NOUS AVONS ENVOYÉES car le backend ne renvoie pas anneeCycle
+          const updatedUe = {
+            ...response,
+            anneeCycle: payload.anneeCycle // Utilisez la valeur du payload
+          };
+          
+          // Mettre à jour localement
+          const index = this.uniteList.findIndex(u => u.id === updatedUe.id);
+          if (index !== -1) {
+            this.uniteList[index] = updatedUe;
+            this.uniteList = [...this.uniteList]; // Nouvelle référence
+          }
+          
           this.toastr.success('Unité mise à jour avec succès !', 'Succès');
           this.onReset();
-          this.loadUnites();
         },
-        error: (err: HttpErrorResponse) => this.toastr.error('Erreur lors de la mise à jour.', 'Erreur')
+        error: (err: HttpErrorResponse) => {
+          this.toastr.error('Erreur lors de la mise à jour.', 'Erreur');
+        }
       });
     } else {
+      // Création
       this.ueService.create(payload).subscribe({
-        next: () => {
+        next: (response) => {
+          // Utiliser les données que NOUS AVONS ENVOYÉES
+          const newUe = {
+            ...response,
+            anneeCycle: payload.anneeCycle // Utilisez la valeur du payload
+          };
+          
+          // Ajouter localement
+          this.uniteList = [...this.uniteList, newUe];
+          
           this.toastr.success('Unité créée avec succès !', 'Succès');
           this.onReset();
-          this.loadUnites();
         },
-        error: (err: HttpErrorResponse) => this.toastr.error('Erreur lors de la création.', 'Erreur')
+        error: (err: HttpErrorResponse) => {
+          this.toastr.error('Erreur lors de la création.', 'Erreur');
+        }
       });
     }
   }
@@ -231,10 +254,12 @@ export class GestionUnitesComponent implements OnInit {
     if (id && confirm('Êtes-vous sûr de vouloir supprimer cette unité ?')) {
       this.ueService.delete(id).subscribe({
         next: () => {
+          this.uniteList = this.uniteList.filter(u => u.id !== id);
           this.toastr.info('Unité supprimée.', 'Information');
-          this.loadUnites();
         },
-        error: (err: HttpErrorResponse) => this.toastr.error('Erreur lors de la suppression.', 'Erreur')
+        error: (err: HttpErrorResponse) => {
+          this.toastr.error('Erreur lors de la suppression.', 'Erreur');
+        }
       });
     }
   }
@@ -245,6 +270,28 @@ export class GestionUnitesComponent implements OnInit {
 
   getNiveauEtude(ue: UniteEnseignement): string {
     const formation = this.formations.find(f => f.id === ue.formationId);
-    return formation?.niveauEtude ?? 'N/A';
+    if (!formation) return 'N/A';
+    
+    const niveau = formation.niveauEtude;
+    const annee = ue.anneeCycle ?? 1;
+    
+    // Si c'est un certificat, pas d'année
+    if (niveau === 'CERTIFICAT') {
+      return niveau;
+    }
+    
+    // Pour DOCTORAT, format spécial
+    if (niveau === 'DOCTORAT') {
+      return `DOCTORAT Année ${annee}`;
+    }
+    
+    // Pour les autres: LICENCE, MASTER, etc.
+    return `${niveau} ${annee}`;
+  }
+
+  getNomFormation(formationId: number | null): string {
+    if (!formationId) return 'Non assignée';
+    const formation = this.formations.find(f => f.id === formationId);
+    return formation ? formation.nom : 'Inconnue';
   }
 }

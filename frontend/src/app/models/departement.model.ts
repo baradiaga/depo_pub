@@ -1,10 +1,13 @@
 export interface Departement {
-  id?: number;
+  id: number;
   nom: string;
   sigle: string;
   adresse: string;
   contact: string;
   logo?: string;
   lien?: string;
-  uefr_id: number;
+  uefrId: number;
+  createdAt?: Date;
+  updatedAt?: Date;
+  formationId: number;
 }

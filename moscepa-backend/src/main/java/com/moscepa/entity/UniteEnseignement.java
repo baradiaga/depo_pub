@@ -61,6 +61,8 @@ public class UniteEnseignement {
         inverseJoinColumns = @JoinColumn(name = "element_constitutif_id")
     )
     private List<ElementConstitutif> elementsConstitutifs = new ArrayList<>();
+    @Column(name = "annee_cycle")
+    private Integer anneeCycle ;
 
     // --- Getters et Setters ---
     public Long getId() { return id; }
@@ -89,4 +91,6 @@ public class UniteEnseignement {
     public void setResponsable(Utilisateur responsable) { this.responsable = responsable; }
     public List<ElementConstitutif> getElementsConstitutifs() { return elementsConstitutifs; }
     public void setElementsConstitutifs(List<ElementConstitutif> elementsConstitutifs) { this.elementsConstitutifs = elementsConstitutifs; }
+    public Integer getAnneeCycle() { return anneeCycle; }
+    public void setAnneeCycle(Integer anneeCycle) { this.anneeCycle = anneeCycle; }
 }

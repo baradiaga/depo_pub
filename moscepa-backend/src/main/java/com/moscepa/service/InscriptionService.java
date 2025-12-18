@@ -33,7 +33,6 @@ public class InscriptionService {
         this.ecRepository = ecRepository;
     }
 
-
     // ===============================================================
     // 🔹 MAPPER — Convertit une entité Inscription en DTO complet
     // ===============================================================
@@ -70,37 +69,46 @@ public class InscriptionService {
         return dto;
     }
 
-
     // ===============================================================
-    // 🔹 INSCRIPTION D'UN ÉTUDIANT
+    // 🔹 INSCRIPTION D'UN ÉTUDIANT (VERSION CORRIGÉE)
     // ===============================================================
-    @Transactional
-    public InscriptionResponseDto inscrireEtudiant(InscriptionRequestDto request) {
+   @Transactional
+public InscriptionResponseDto inscrireEtudiant(InscriptionRequestDto request) {
+    Utilisateur etudiant = utilisateurRepository.findById(request.getEtudiantId())
+            .orElseThrow(() -> new EntityNotFoundException(
+                    "Étudiant non trouvé avec l'ID: " + request.getEtudiantId()));
 
-        Utilisateur etudiant = utilisateurRepository.findById(request.getEtudiantId())
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Étudiant non trouvé avec l'ID: " + request.getEtudiantId()));
+    ElementConstitutif matiere = ecRepository.findById(request.getEcId())
+            .orElseThrow(() -> new EntityNotFoundException(
+                    "Matière non trouvée avec l'ID: " + request.getEcId()));
 
-        ElementConstitutif matiere = ecRepository.findById(request.getEcId())
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Matière non trouvée avec l'ID: " + request.getEcId()));
-
-        // Vérifier si déjà inscrit
-        if (inscriptionRepository.existsByEtudiantIdAndMatiereId(etudiant.getId(), matiere.getId())) {
-            throw new IllegalStateException("L'étudiant est déjà inscrit à cette matière.");
-        }
-
-        // Nouvelle inscription
-        Inscription inscription = new Inscription();
-        inscription.setEtudiant(etudiant);
-        inscription.setMatiere(matiere);
-        inscription.setStatut("EN_ATTENTE");
-        inscription.setActif(true);
-        inscription.setDateInscription(LocalDateTime.now());
-
-        return mapToDto(inscriptionRepository.save(inscription));
+    // Vérifier si déjà inscrit
+    if (inscriptionRepository.existsByEtudiantIdAndMatiereId(etudiant.getId(), matiere.getId())) {
+        throw new IllegalStateException("L'étudiant est déjà inscrit à cette matière.");
     }
 
+    // Nouvelle inscription - SEULEMENT ces 2 setters
+    Inscription inscription = new Inscription();
+    inscription.setEtudiant(etudiant);
+    inscription.setMatiere(matiere);
+
+    // Log avant sauvegarde
+    System.out.println("DEBUG - Avant sauvegarde :");
+    System.out.println("  Statut : " + inscription.getStatut());
+    System.out.println("  Actif : " + inscription.isActif());
+    System.out.println("  DateInscription : " + inscription.getDateInscription());
+
+    Inscription saved = inscriptionRepository.save(inscription);
+
+    // Log après sauvegarde
+    System.out.println("DEBUG - Après sauvegarde :");
+    System.out.println("  ID : " + saved.getId());
+    System.out.println("  Statut : " + saved.getStatut());
+    System.out.println("  Actif : " + saved.isActif());
+    System.out.println("  DateInscription : " + saved.getDateInscription());
+
+    return mapToDto(saved);
+}
 
     // ===============================================================
     // 🔹 VALIDER / REJETER UNE INSCRIPTION
@@ -130,7 +138,6 @@ public class InscriptionService {
         return mapToDto(inscriptionRepository.save(inscription));
     }
 
-
     // ===============================================================
     // 🔹 ACTIVER / DÉSACTIVER UNE INSCRIPTION
     // ===============================================================
@@ -146,14 +153,20 @@ public class InscriptionService {
         return mapToDto(inscriptionRepository.save(inscription));
     }
 
-
     // ===============================================================
     // 🔹 LISTE DES INSCRIPTIONS EN ATTENTE
     // ===============================================================
     public List<InscriptionResponseDto> getInscriptionsEnAttente() {
-        return inscriptionRepository.findByStatut("EN_ATTENTE")
-                .stream()
-                .map(this::mapToDto)
-                .toList();
+    List<Inscription> inscriptions = inscriptionRepository.findByStatut("EN_ATTENTE");
+    
+    System.out.println("DEBUG - getInscriptionsEnAttente :");
+    System.out.println("  Nombre d'inscriptions trouvées : " + inscriptions.size());
+    for (Inscription ins : inscriptions) {
+        System.out.println("    ID : " + ins.getId() + ", Statut : " + ins.getStatut());
     }
+    
+    return inscriptions.stream()
+            .map(this::mapToDto)
+            .toList();
+}
 }

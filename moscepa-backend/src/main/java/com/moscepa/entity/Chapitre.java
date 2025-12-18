@@ -16,7 +16,8 @@ public class Chapitre {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+     @Column(name = "parcours_type")
+    private String parcoursType; 
     @NotBlank
     private String nom;
     private Integer numero;
@@ -25,7 +26,7 @@ public class Chapitre {
     private String objectif;
     @Column(name = "ordre")
     private Integer ordre;
-
+  
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "element_constitutif_id", nullable = false)
@@ -54,6 +55,8 @@ public class Chapitre {
     }
 
     // --- Getters et Setters ---
+    public String getParcoursType() { return parcoursType; }
+    public void setParcoursType(String parcoursType) { this.parcoursType = parcoursType; }
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getNom() { return nom; }

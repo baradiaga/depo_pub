@@ -67,7 +67,7 @@ export const COMPLETE_SIDEBAR_CONFIG: MenuItem[] = [
     defaultRoles: ['ADMIN', 'RESPONSABLE_FORMATION'],
     children:  [
     { label: 'Etablissements', route: '/app/enseignant/etablissements', featureKey: 'etablissement' },
-    { label: 'UEFR', route: '/app/enseignant/uefr', featureKey: 'uefr' },
+    { label: 'UFR', route: '/app/enseignant/uefr', featureKey: 'uefr' },
     { label: 'Départements', route: '/app/enseignant/etablissements', featureKey: 'departement' },
     { label: 'Liste des formations', route: '/app/admin/formations', featureKey: 'liste_formations' },
     { label: 'Gérer inscriptions', route: '/app/admin/inscriptions', featureKey: 'gerer_inscriptions' }

@@ -15,6 +15,30 @@ export type NiveauEtude = 'LICENCE' | 'MASTER' | 'CERTIFICAT' | 'DOCTORAT' | 'BA
 export type ModaliteEnseignement = 'PRESENTIEL' | 'DISTANCIEL' | 'HYBRIDE';
 export type NiveauAcquisition = 'INITIATION' | 'MAITRISE' | 'EXPERTISE';
 
+// ====================================================================
+// === NOUVELLES INTERFACES POUR LA STRUCTURE UNIVERSITAIRE
+// ====================================================================
+
+export interface Etablissement {
+  id: number;
+  nom: string;
+  // Ajoutez d'autres propriétés si nécessaire dans votre API
+}
+
+export interface Uefr {
+  id: number;
+  nom: string;
+  etablissementId?: number;
+  // Ajoutez d'autres propriétés si nécessaire
+}
+
+export interface Departement {
+  id: number;
+  nom: string;
+  uefrId?: number;
+  // Ajoutez d'autres propriétés si nécessaire
+}
+
 /**
  * Représente une compétence détaillée avec son niveau visé et ses indicateurs d'évaluation.
  */
@@ -29,15 +53,21 @@ export interface CompetenceDetail {
  * C'est l'unité de base de la structure académique.
  */
 export interface UniteEnseignement {
-  id?: number;
-  nom: string;
-  code: string; // Ex: "UEF1"
-  description: string;
-  ects: number; // Crédits ECTS alloués à cette UE
-  volumeHoraireCours: number; // CM (Cours Magistraux)
-  volumeHoraireTD: number; // TD (Travaux Dirigés)
-  volumeHoraireTP: number; // TP (Travaux Pratiques)
-  elementConstitutifIds: number[]; // IDs des matières/cours rattachés
+    id?: number;
+    nom: string;
+    code: string;
+    description: string;
+    objectifs: string;
+    ects: number;
+    semestre: number;
+    formationId: number | null;
+    anneeCycle: number;
+    elementConstitutifIds: number[];
+    volumeHoraireCours: number;
+    volumeHoraireTD: number;
+    volumeHoraireTP: number;
+    // Ajoutez ceci pour le calcul local
+    niveauEtudeComplet?: string;
 }
 
 // ====================================================================
@@ -125,6 +155,11 @@ export interface RessourcePedagogique {
  * Intègre la nouvelle structure modulaire (UEs) et les compétences détaillées.
  */
 export interface FormationCreation {
+  // NOUVEAUX CHAMPS - Références administratives
+  etablissementId: number;
+  uefrId: number;
+  departementId: number;
+  
   // Informations Générales
   nom: string;
   code: string;
@@ -170,9 +205,11 @@ export interface FormationDetail extends FormationCreation {
   responsableNom?: string;
   createurNom?: string;
   dateCreation?: string;
-  // Les détails des relations (éléments constitutifs, intervenants, documents)
-  // sont gérés via les IDs dans FormationCreation, mais le backend pourrait
-  // renvoyer les objets complets ici si nécessaire.
+  
+  // NOUVEAUX CHAMPS - Références complètes pour l'affichage
+  etablissement?: Etablissement;
+  uefr?: Uefr;
+  departement?: Departement;
 }
 
 // ====================================================================

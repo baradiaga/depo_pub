@@ -1,143 +1,408 @@
-<div class="container">
-  <h2>{{ editingId ? 'Modifier la UEFR' : 'Nouvelle UEFR' }}</h2>
-  
-  <form [formGroup]="uefrForm" (ngSubmit)="onSubmit()">
-    <div class="form-group">
-      <label for="etablissement_id">Établissement *</label>
-      <select 
-        id="etablissement_id" 
-        formControlName="etablissement_id"
-        class="form-control"
-      >
-        <option value="">Sélectionner un établissement</option>
-        <option *ngFor="let etab of etablissements" [value]="etab.id">
-          {{ etab.nom }} ({{ etab.sigle }})
-        </option>
-      </select>
-      <div *ngIf="uefrForm.get('etablissement_id')?.invalid && uefrForm.get('etablissement_id')?.touched" class="error">
-        Veuillez sélectionner un établissement.
+<div class="container-fluid py-3">
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col">
+      <h2 class="mb-0">
+        <i class="bi bi-diagram-3 me-2"></i>Gestion des UEFRs
+      </h2>
+      <p class="text-muted">Gérez les Unités d'Enseignement et de Formation de Recherche</p>
+    </div>
+    <div class="col-auto">
+      <div class="btn-group">
+        <button class="btn btn-outline-info" (click)="toggleSearchMode()" 
+                [title]="useServerSideSearch ? 'Recherche serveur activée' : 'Recherche client activée'">
+          <i class="bi" [class.bi-server]="useServerSideSearch" [class.bi-pc]="!useServerSideSearch"></i>
+          {{ useServerSideSearch ? 'Serveur' : 'Client' }}
+        </button>
+        <button class="btn btn-outline-success" (click)="exportToCSV()" title="Exporter en CSV">
+          <i class="bi bi-download"></i> Exporter
+        </button>
       </div>
     </div>
+  </div>
 
-    <div class="form-group">
-      <label for="nom">Nom de la UEFR *</label>
-      <input 
-        type="text" 
-        id="nom" 
-        formControlName="nom"
-        class="form-control"
-        placeholder="Ex: Faculté des Sciences"
-      >
-      <div *ngIf="uefrForm.get('nom')?.invalid && uefrForm.get('nom')?.touched" class="error">
-        Le nom est requis et doit comporter au moins 2 caractères.
+  <!-- Loading Indicator -->
+  <div class="alert alert-info d-flex align-items-center" *ngIf="isLoading">
+    <div class="spinner-border spinner-border-sm me-3" role="status"></div>
+    <span class="fw-medium">Chargement des données...</span>
+  </div>
+
+  <!-- Filter Card -->
+  <div class="card shadow-sm mb-4" *ngIf="!isLoading">
+    <div class="card-header bg-white border-bottom-0 pb-0">
+      <h5 class="card-title mb-0">
+        <i class="bi bi-funnel me-2"></i>Filtres et Recherche
+      </h5>
+    </div>
+    <div class="card-body pt-3">
+      <form [formGroup]="filterForm">
+        <div class="row g-3">
+          <!-- Search Input -->
+          <div class="col-lg-6">
+            <label for="search" class="form-label fw-medium">Recherche rapide</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light">
+                <i class="bi bi-search"></i>
+              </span>
+              <input type="text" class="form-control" id="search" formControlName="search"
+                     placeholder="Rechercher par nom, sigle, adresse ou contact...">
+              <button class="btn btn-outline-secondary" type="button" (click)="resetFilters()" 
+                      [disabled]="!filterForm.dirty">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            </div>
+            <div class="form-text">Recherche en temps réel</div>
+          </div>
+
+          <!-- Établissement Filter -->
+          <div class="col-lg-3">
+            <label for="filterEtablissementId" class="form-label fw-medium">Filtrer par Établissement</label>
+            <select class="form-select" id="filterEtablissementId" formControlName="etablissementId">
+              <option value="0">Tous les établissements</option>
+              <option *ngFor="let etablissement of etablissements" [value]="etablissement.id">
+                {{ etablissement.sigle }} - {{ etablissement.nom }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Items per Page -->
+          <div class="col-lg-3">
+            <label for="itemsPerPage" class="form-label fw-medium">Éléments par page</label>
+            <select class="form-select" id="itemsPerPage" 
+                    [ngModel]="itemsPerPage" [ngModelOptions]="{standalone: true}"
+                    (ngModelChange)="changeItemsPerPage($event)">
+              <option value="5">5</option>
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row g-3 mt-2">
+          <!-- Sort By -->
+          <div class="col-lg-4">
+            <label for="sortBy" class="form-label fw-medium">Trier par</label>
+            <select class="form-select" id="sortBy" formControlName="sortBy">
+              <option value="nom">Nom</option>
+              <option value="sigle">Sigle</option>
+              <option value="adresse">Adresse</option>
+              <option value="contact">Contact</option>
+              <option value="etablissementId">Établissement</option>
+            </select>
+          </div>
+
+          <!-- Sort Order -->
+          <div class="col-lg-4">
+            <label for="sortOrder" class="form-label fw-medium">Ordre de tri</label>
+            <select class="form-select" id="sortOrder" formControlName="sortOrder">
+              <option value="asc">Croissant (A → Z)</option>
+              <option value="desc">Décroissant (Z → A)</option>
+            </select>
+          </div>
+
+          <!-- Actions -->
+          <div class="col-lg-4 d-flex align-items-end">
+            <div class="d-flex gap-2 w-100">
+              <button type="button" class="btn btn-primary flex-fill" (click)="applyFilters()"
+                      [disabled]="useServerSideSearch">
+                <i class="bi bi-funnel me-1"></i> Appliquer
+              </button>
+              <button type="button" class="btn btn-outline-secondary" (click)="resetFilters()">
+                <i class="bi bi-arrow-clockwise"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Stats Card -->
+  <div class="row mb-4" *ngIf="!isLoading">
+    <div class="col-md-4">
+      <div class="card bg-primary text-white shadow-sm">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="card-title mb-0">Total</h6>
+              <h2 class="mb-0">{{ uefrs.length }}</h2>
+              <small>Toutes UEFRs</small>
+            </div>
+            <i class="bi bi-diagram-3 display-6 opacity-50"></i>
+          </div>
+        </div>
       </div>
     </div>
-
-    <div class="form-group">
-      <label for="sigle">Sigle *</label>
-      <input 
-        type="text" 
-        id="sigle" 
-        formControlName="sigle"
-        class="form-control"
-        placeholder="Ex: FS"
-      >
-      <div *ngIf="uefrForm.get('sigle')?.invalid && uefrForm.get('sigle')?.touched" class="error">
-        Le sigle est requis (2 à 10 caractères).
+    <div class="col-md-4">
+      <div class="card bg-success text-white shadow-sm">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="card-title mb-0">Filtrés</h6>
+              <h2 class="mb-0">{{ filteredUefrs.length }}</h2>
+              <small>Avec filtres appliqués</small>
+            </div>
+            <i class="bi bi-funnel display-6 opacity-50"></i>
+          </div>
+        </div>
       </div>
     </div>
-
-    <div class="form-group">
-      <label for="adresse">Adresse *</label>
-      <textarea 
-        id="adresse" 
-        formControlName="adresse"
-        class="form-control"
-        rows="3"
-        placeholder="Ex: mbour grand mbour"
-      ></textarea>
-      <div *ngIf="uefrForm.get('adresse')?.invalid && uefrForm.get('adresse')?.touched" class="error">
-        L'adresse est requise.
+    <div class="col-md-4">
+      <div class="card bg-info text-white shadow-sm">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="card-title mb-0">Page actuelle</h6>
+              <h2 class="mb-0">{{ paginatedUefrs.length }}</h2>
+              <small>Éléments affichés</small>
+            </div>
+            <i class="bi bi-file-text display-6 opacity-50"></i>
+          </div>
+        </div>
       </div>
     </div>
+  </div>
 
-    <div class="form-group">
-      <label for="contact">Contact *</label>
-      <input 
-        type="text" 
-        id="contact" 
-        formControlName="contact"
-        class="form-control"
-        placeholder="Ex: Ex: https://www.unchk.edu.sn"
-      >
-      <div *ngIf="uefrForm.get('contact')?.invalid && uefrForm.get('contact')?.touched" class="error">
-        Les informations de contact sont requises.
+  <!-- Form Card -->
+  <div class="card shadow-sm mb-4" id="form-uefr">
+    <div class="card-header" [class.bg-warning]="isEditMode" [class.bg-primary]="!isEditMode">
+      <h5 class="card-title mb-0 text-white">
+        <i class="bi" [class.bi-pencil-square]="isEditMode" [class.bi-plus-circle]="!isEditMode"></i>
+        {{ isEditMode ? 'Modifier l\'UEFR' : 'Nouvelle UEFR' }}
+      </h5>
+    </div>
+    <div class="card-body">
+      <form [formGroup]="uefrForm" (ngSubmit)="saveUefr()" novalidate>
+        <div class="row g-3">
+          <!-- Nom -->
+          <div class="col-md-6">
+            <label for="nom" class="form-label fw-medium">Nom <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="nom" formControlName="nom"
+                   [class.is-invalid]="uefrForm.get('nom')?.invalid && uefrForm.get('nom')?.touched"
+                   placeholder="Ex: Unité d'Informatique et Mathématiques">
+            <div class="invalid-feedback" *ngIf="uefrForm.get('nom')?.hasError('required')">
+              Le nom est obligatoire
+            </div>
+          </div>
+
+          <!-- Sigle -->
+          <div class="col-md-6">
+            <label for="sigle" class="form-label fw-medium">Sigle <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="sigle" formControlName="sigle"
+                   [class.is-invalid]="uefrForm.get('sigle')?.invalid && uefrForm.get('sigle')?.touched"
+                   placeholder="Ex: UIM">
+            <div class="invalid-feedback" *ngIf="uefrForm.get('sigle')?.hasError('required')">
+              Le sigle est obligatoire
+            </div>
+          </div>
+
+          <!-- Adresse -->
+          <div class="col-12">
+            <label for="adresse" class="form-label fw-medium">Adresse <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="adresse" formControlName="adresse"
+                   [class.is-invalid]="uefrForm.get('adresse')?.invalid && uefrForm.get('adresse')?.touched"
+                   placeholder="Adresse complète de l'UEFR">
+          </div>
+
+          <!-- Contact -->
+          <div class="col-md-6">
+            <label for="contact" class="form-label fw-medium">Contact <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="contact" formControlName="contact"
+                   [class.is-invalid]="uefrForm.get('contact')?.invalid && uefrForm.get('contact')?.touched"
+                   placeholder="Email ou téléphone">
+          </div>
+
+          <!-- Établissement -->
+          <div class="col-md-6">
+            <label for="etablissementId" class="form-label fw-medium">Établissement <span class="text-danger">*</span></label>
+            <select class="form-select" id="etablissementId" formControlName="etablissementId"
+                    [class.is-invalid]="uefrForm.get('etablissementId')?.invalid && uefrForm.get('etablissementId')?.touched">
+              <option value="0" disabled>Sélectionner un établissement</option>
+              <option *ngFor="let etablissement of etablissements" [value]="etablissement.id">
+                {{ etablissement.sigle }} - {{ etablissement.nom }}
+              </option>
+            </select>
+            <div class="invalid-feedback" *ngIf="uefrForm.get('etablissementId')?.hasError('min')">
+              Veuillez sélectionner un établissement
+            </div>
+          </div>
+
+          <!-- Logo & Lien -->
+          <div class="col-md-6">
+            <label for="logo" class="form-label fw-medium">Logo (URL)</label>
+            <input type="file" class="form-control" id="logo" formControlName="logo"
+                   placeholder="URL de l'image du logo">
+          </div>
+
+          <div class="col-md-6">
+            <label for="lien" class="form-label fw-medium">Lien (URL)</label>
+            <input type="text" class="form-control" id="lien" formControlName="lien"
+                   placeholder="Site web de l'UEFR">
+          </div>
+
+          <!-- Form Actions -->
+          <div class="col-12">
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-primary" [disabled]="uefrForm.invalid">
+                <i class="bi" [class.bi-check-circle]="!isEditMode" [class.bi-arrow-repeat]="isEditMode"></i>
+                {{ isEditMode ? 'Mettre à jour' : 'Créer' }}
+              </button>
+              <button type="button" class="btn btn-outline-secondary" (click)="resetForm()" *ngIf="isEditMode">
+                <i class="bi bi-x-circle"></i> Annuler
+              </button>
+              <button type="button" class="btn btn-outline-secondary" (click)="resetForm()" *ngIf="!isEditMode">
+                <i class="bi bi-eraser"></i> Effacer
+              </button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Table Card -->
+  <div class="card shadow-sm" id="uefrs-table">
+    <div class="card-header bg-white">
+      <div class="d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">
+          <i class="bi bi-list-columns me-2"></i>Liste des UEFRs
+        </h5>
+        <span class="badge rounded-pill bg-dark">
+          {{ currentPage }}/{{ totalPages }}
+        </span>
       </div>
     </div>
+    <div class="card-body">
+      <!-- No Results -->
+      <div class="text-center py-5" *ngIf="filteredUefrs.length === 0 && !isLoading">
+        <i class="bi bi-search display-1 text-muted mb-3"></i>
+        <h5 class="text-muted">Aucune UEFR trouvée</h5>
+        <p class="text-muted mb-4">Essayez de modifier vos critères de recherche</p>
+        <button class="btn btn-outline-primary" (click)="resetFilters()">
+          <i class="bi bi-arrow-clockwise me-1"></i> Réinitialiser les filtres
+        </button>
+      </div>
 
-    <div class="form-group">
-      <label for="logo">Logo (URL)</label>
-      <input 
-        type="text" 
-        id="logo" 
-        formControlName="logo"
-        class="form-control"
-        placeholder="Ex: https://example.com/logo.png"
-      >
+      <!-- Table -->
+      <div class="table-responsive" *ngIf="filteredUefrs.length > 0">
+        <table class="table table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th width="50">ID</th>
+              <th>
+                <a href="javascript:void(0)" class="text-decoration-none text-dark" 
+                   (click)="filterForm.get('sortBy')?.setValue('nom'); applyFilters()">
+                  Nom
+                  <i class="bi ms-1" 
+                     [class.bi-sort-down]="filterForm.get('sortBy')?.value === 'nom' && filterForm.get('sortOrder')?.value === 'asc'"
+                     [class.bi-sort-up]="filterForm.get('sortBy')?.value === 'nom' && filterForm.get('sortOrder')?.value === 'desc'"></i>
+                </a>
+              </th>
+              <th>
+                <a href="javascript:void(0)" class="text-decoration-none text-dark"
+                   (click)="filterForm.get('sortBy')?.setValue('sigle'); applyFilters()">
+                  Sigle
+                  <i class="bi ms-1"
+                     [class.bi-sort-down]="filterForm.get('sortBy')?.value === 'sigle' && filterForm.get('sortOrder')?.value === 'asc'"
+                     [class.bi-sort-up]="filterForm.get('sortBy')?.value === 'sigle' && filterForm.get('sortOrder')?.value === 'desc'"></i>
+                </a>
+              </th>
+              <th>Adresse</th>
+              <th>Contact</th>
+              <th>
+                <a href="javascript:void(0)" class="text-decoration-none text-dark"
+                   (click)="filterForm.get('sortBy')?.setValue('etablissementId'); applyFilters()">
+                  Établissement
+                  <i class="bi ms-1"
+                     [class.bi-sort-down]="filterForm.get('sortBy')?.value === 'etablissementId' && filterForm.get('sortOrder')?.value === 'asc'"
+                     [class.bi-sort-up]="filterForm.get('sortBy')?.value === 'etablissementId' && filterForm.get('sortOrder')?.value === 'desc'"></i>
+                </a>
+              </th>
+              <th width="150" class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let uefr of paginatedUefrs">
+              <td>
+                <span class="badge bg-secondary">#{{ uefr.id }}</span>
+              </td>
+              <td class="fw-medium">{{ uefr.nom }}</td>
+              <td>
+                <span class="badge bg-info text-dark">{{ uefr.sigle }}</span>
+              </td>
+              <td>
+                <small class="text-muted">{{ uefr.adresse }}</small>
+              </td>
+              <td>
+                <small>{{ uefr.contact }}</small>
+              </td>
+              <td>
+                <span class="badge bg-light text-dark border">
+                  {{ getEtablissementName(uefr.etablissementId) }}
+                </span>
+              </td>
+              <td>
+                <div class="d-flex justify-content-center gap-1">
+                  <button class="btn btn-sm btn-outline-warning" (click)="editUefr(uefr)" 
+                          title="Modifier">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger" (click)="deleteUefr(uefr.id!)"
+                          title="Supprimer">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="d-flex justify-content-between align-items-center mt-4" *ngIf="filteredUefrs.length > 0">
+        <div class="text-muted">
+          Affichage de <strong>{{ (currentPage - 1) * itemsPerPage + 1 }}</strong> 
+          à <strong>{{ Math.min(currentPage * itemsPerPage, totalItems) }}</strong> 
+          sur <strong>{{ totalItems }}</strong> éléments
+        </div>
+        
+        <nav aria-label="Navigation des pages">
+          <ul class="pagination mb-0">
+            <!-- First & Previous -->
+            <li class="page-item" [class.disabled]="currentPage === 1">
+              <a class="page-link" (click)="changePage(1)" [class.disabled]="currentPage === 1">
+                <i class="bi bi-chevron-double-left"></i>
+              </a>
+            </li>
+            <li class="page-item" [class.disabled]="currentPage === 1">
+              <a class="page-link" (click)="changePage(currentPage - 1)" [class.disabled]="currentPage === 1">
+                <i class="bi bi-chevron-left"></i>
+              </a>
+            </li>
+            
+            <!-- Page Numbers -->
+            <li class="page-item" *ngFor="let page of getPageNumbers()" 
+                [class.active]="page === currentPage">
+              <a class="page-link" (click)="changePage(page)">{{ page }}</a>
+            </li>
+            
+            <!-- Next & Last -->
+            <li class="page-item" [class.disabled]="currentPage === totalPages">
+              <a class="page-link" (click)="changePage(currentPage + 1)" 
+                 [class.disabled]="currentPage === totalPages">
+                <i class="bi bi-chevron-right"></i>
+              </a>
+            </li>
+            <li class="page-item" [class.disabled]="currentPage === totalPages">
+              <a class="page-link" (click)="changePage(totalPages)" 
+                 [class.disabled]="currentPage === totalPages">
+                <i class="bi bi-chevron-double-right"></i>
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
     </div>
-
-    <div class="form-group">
-      <label for="lien">Site Web</label>
-      <input 
-        type="url" 
-        id="lien" 
-        formControlName="lien"
-        class="form-control"
-        placeholder="Ex: https://www.unchk.edu.sn"
-      >
-    </div>
-
-    <div class="form-actions">
-      <button type="submit" class="btn btn-primary" [disabled]="uefrForm.invalid">
-        {{ editingId ? 'Modifier' : 'Créer' }}
-      </button>
-      <button type="button" class="btn btn-secondary" (click)="cancelEdit()">
-        Annuler
-      </button>
-    </div>
-  </form>
-
-  <div class="list-section">
-    <h3>Liste des UEFR</h3>
-    <table class="table">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Nom</th>
-          <th>Sigle</th>
-          <th>Établissement</th>
-          <th>Contact</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngIf="uefrs.length === 0">
-          <td colspan="6" class="text-center">Aucune UEFR trouvée</td>
-        </tr>
-        <tr *ngFor="let uefr of uefrs">
-          <td>{{ uefr.id }}</td>
-          <td>{{ uefr.nom }}</td>
-          <td>{{ uefr.sigle }}</td>
-          <td>{{ getEtablissementName(uefr.etablissement_id) }}</td>
-          <td>{{ uefr.contact }}</td>
-          <td>
-            <button class="btn btn-sm btn-warning" (click)="editUefr(uefr)">Modifier</button>
-<button class="btn btn-sm btn-danger" (click)="deleteUefr(uefr)">
-  Supprimer
-</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
   </div>
 </div>

@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 // L'interface mise à jour pour inclure les volumes horaires et les éléments constitutifs
+// Dans unite-enseignement.service.ts
 export interface UniteEnseignement {
   id?: number;
   nom: string;
@@ -14,13 +15,13 @@ export interface UniteEnseignement {
   semestre: number;
   responsable?: { id: number, nom: string, prenom: string };
   objectifs: string;
-  formationId: number | string | null;
-  niveauEtude?: string; 
-  // Nouveaux champs ajoutés pour la création de l'unité d'enseignement
+  formationId: number | null;
+  anneeCycle: number;
+  niveauEtudeComplet?: string; // Ajoutez cette ligne
   volumeHoraireCours: number;
   volumeHoraireTD: number;
   volumeHoraireTP: number;
-  elementConstitutifIds: number[]; // Liste des IDs des éléments constitutifs
+  elementConstitutifIds: number[];
 }
 
 // ==========================================================

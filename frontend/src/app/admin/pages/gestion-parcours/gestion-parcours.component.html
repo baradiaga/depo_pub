@@ -1,61 +1,275 @@
-<div class="container">
+<div class="container-fluid mt-4">
+  <!-- En-tête avec filtres -->
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <h2>Gestion des Parcours Étudiants</h2>
+      <p class="text-muted">{{ parcoursTypeLabel }}</p>
+    </div>
+    <div class="col-md-4 text-end">
+      <div class="btn-group" role="group">
+        <button *ngFor="let type of parcoursTypes" 
+                class="btn btn-outline-primary"
+                [class.active]="currentParcoursType === type"
+                (click)="changeParcoursType(type)">
+          {{ type }}
+        </button>
+      </div>
+    </div>
+  </div>
 
-  <!-- Filtre type de parcours 
-  <div class="filter-bar">
-    <label>Filtrer par type :</label>
-    <button *ngFor="let type of parcoursTypes"
-            [class.active]="currentParcoursType === type"
-            (click)="changeParcoursType(type)">
-      {{ type }}
-    </button>
-  </div>  -->
+  <!-- Loading State -->
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Chargement...</span>
+    </div>
+    <p class="mt-2">Chargement des étudiants...</p>
+  </div>
 
-  <h2>{{ parcoursTypeLabel }}</h2>
+  <!-- Error Message -->
+  <div *ngIf="errorMessage && !loading" class="alert alert-danger" role="alert">
+    {{ errorMessage }}
+  </div>
 
-  <!-- Loading spinner -->
-  <div *ngIf="loading" class="spinner">Chargement...</div>
-  <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
-
-  <!-- Vue d’ensemble des étudiants -->
-  <table *ngIf="!loading && studentsOverview.length > 0" class="students-table">
-    <thead>
-      <tr>
-        <th>Nom</th>
-        <th>Email</th>
-        <th>Formation</th>
-        <th>Moyenne Tests</th>
-        <th>Tests Passés</th>
-        <th>Action</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let student of studentsOverview">
-        <td>{{ student.nomComplet }}</td>
-        <td>{{ student.email }}</td>
-        <td>{{ student.formationActuelle }}</td>
-        <td>
-          <div class="progress-bar">
-            <div class="progress-fill" [style.width.%]="student.moyenneGeneraleTests"></div>
+  <!-- Liste des étudiants -->
+  <div *ngIf="!loading && !errorMessage" class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Liste des Étudiants ({{ studentsOverview.length }})</h5>
+        </div>
+        <div class="card-body">
+          <div *ngIf="studentsOverview.length === 0" class="text-center py-4">
+            <p class="text-muted">Aucun étudiant trouvé pour ce type de parcours.</p>
           </div>
-          {{ student.moyenneGeneraleTests | number:'1.0-0' }}%
-        </td>
-        <td>{{ student.testsPasses }}</td>
-        <td>
-          <button (click)="viewStudentDetail(student.studentId)">
-            Voir détail
+
+          <div *ngIf="studentsOverview.length > 0" class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Nom Complet</th>
+                  <th>Email</th>
+                  <th>Formation</th>
+                  <th>Moyenne</th>
+                  <th>Tests</th>
+                  <th>Type Parcours</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let student of studentsOverview">
+                  <td>{{ student.studentId }}</td>
+                  <td>
+                    <strong>{{ student.nomComplet }}</strong>
+                    <div class="small text-muted">{{ student.niveauEtude }}</div>
+                  </td>
+                  <td>{{ student.email }}</td>
+                  <td>{{ student.formationActuelle }}</td>
+                  <td>
+                    <span class="badge" [ngClass]="'bg-' + getCouleurScore(student.moyenneGeneraleTests)">
+                      {{ student.moyenneGeneraleTests | number:'1.0-0' }}%
+                    </span>
+                  </td>
+                  <td>{{ student.testsPasses }}</td>
+                  <td>
+                    <span class="badge" [ngClass]="'bg-' + getCouleurParcours(student.parcoursType.toUpperCase())">
+                      {{ student.parcoursType }}
+                    </span>
+                  </td>
+                  <td>
+                    <button class="btn btn-sm btn-primary" 
+                            (click)="viewStudentDetail(student.studentId)">
+                      <i class="bi bi-eye"></i> Voir détails
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal pour les détails -->
+  <div *ngIf="selectedStudentJourney" class="modal fade show d-block" style="background: rgba(0,0,0,0.5)">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="bi bi-person-circle me-2"></i>
+            {{ selectedStudentJourney.nomComplet }}
+          </h5>
+          <button type="button" class="btn-close" (click)="closeDetailView()"></button>
+        </div>
+        
+        <div class="modal-body">
+          <!-- En-tête étudiant -->
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <h6>Informations</h6>
+              <ul class="list-unstyled">
+                <li><strong>Email:</strong> {{ selectedStudentJourney.email }}</li>
+                <li><strong>Formation:</strong> {{ selectedStudentJourney.formationActuelle }}</li>
+                <li><strong>Niveau:</strong> {{ selectedStudentJourney.niveauEtude }}</li>
+              </ul>
+            </div>
+            <div class="col-md-6">
+              <h6>Statistiques</h6>
+              <div class="row">
+                <div class="col-6">
+                  <div class="card bg-light">
+                    <div class="card-body text-center">
+                      <h3 class="mb-0">{{ selectedStudentJourney.moyenneGeneraleTests | number:'1.0-0' }}%</h3>
+                      <small class="text-muted">Moyenne Générale</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="card bg-light">
+                    <div class="card-body text-center">
+                      <h3 class="mb-0">{{ selectedStudentJourney.testsPasses }}</h3>
+                      <small class="text-muted">Tests Passés</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cours suivis -->
+          <div class="mb-4" *ngIf="selectedStudentJourney.progressionParCours && selectedStudentJourney.progressionParCours.length > 0">
+            <h6>Cours suivis</h6>
+            <div class="row">
+              <div *ngFor="let course of selectedStudentJourney.progressionParCours" class="col-md-4 mb-3">
+                <div class="card h-100">
+                  <div class="card-body">
+                    <h6 class="card-title">{{ course.courseCode }}</h6>
+                    <p class="card-text">{{ course.courseName }}</p>
+                    <div class="d-flex justify-content-between">
+                      <span class="badge bg-primary">{{ course.scoreMoyen }}%</span>
+                      <span class="text-muted">{{ course.testsPasses }} tests</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chapitres détaillés -->
+          <div>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h6>Progression par Chapitre</h6>
+              <div class="btn-group btn-group-sm">
+                <button class="btn btn-outline-primary" 
+                        (click)="viewStudentChapters(selectedStudentJourney.studentId)">
+                  Liste
+                </button>
+                <button class="btn btn-outline-secondary" 
+                        (click)="viewStudentChaptersGrouped(selectedStudentJourney.studentId)">
+                  Groupé par matière
+                </button>
+              </div>
+            </div>
+
+            <!-- Loading pour les chapitres -->
+            <div *ngIf="detailLoading" class="text-center py-3">
+              <div class="spinner-border spinner-border-sm" role="status">
+                <span class="visually-hidden">Chargement...</span>
+              </div>
+              <p class="mt-2 small">Chargement des chapitres...</p>
+            </div>
+
+            <!-- Vue liste des chapitres -->
+            <div *ngIf="showChapitresDetail && chapitresEtudiant.length > 0 && !detailLoading">
+              <div class="table-responsive">
+                <table class="table table-sm">
+                  <thead>
+                    <tr>
+                      <th>Chapitre</th>
+                      <th>Score</th>
+                      <th>Type Parcours</th>
+                      <th>Tests</th>
+                      <th>Dernier test</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let chapitre of chapitresEtudiant">
+                      <td>
+                        <div><strong>Chapitre {{ chapitre.ordre }}</strong></div>
+                        <div class="small">{{ chapitre.chapitreNom }}</div>
+                      </td>
+                      <td>
+                        <span class="badge" [ngClass]="'bg-' + getCouleurScore(chapitre.scoreMoyen)">
+                          {{ chapitre.scoreMoyen | number:'1.0-0' }}%
+                        </span>
+                      </td>
+                      <td>
+                        <span class="badge" [ngClass]="'bg-' + getCouleurParcours(chapitre.parcoursType)">
+                          {{ chapitre.parcoursType }}
+                        </span>
+                      </td>
+                      <td>{{ chapitre.nombreTests }}</td>
+                      <td>{{ chapitre.dateDernierTest | date:'dd/MM/yyyy' }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Vue groupée par matière -->
+            <div *ngIf="showChapitresDetail && getObjectKeys(chapitresGroupesParMatiere).length > 0 && !detailLoading">
+              <div *ngFor="let matiere of getObjectKeys(chapitresGroupesParMatiere)" class="mb-4">
+                <h6 class="border-bottom pb-2">{{ matiere }}</h6>
+                <div class="row">
+                  <div *ngFor="let chapitre of chapitresGroupesParMatiere[matiere]" class="col-md-6 mb-2">
+                    <div class="card">
+                      <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                          <div>
+                            <strong>Chapitre {{ chapitre.ordre }}</strong>
+                            <div class="small">{{ chapitre.chapitreNom }}</div>
+                          </div>
+                          <div class="text-end">
+                            <span class="badge" [ngClass]="'bg-' + getCouleurScore(chapitre.scoreMoyen)">
+                              {{ chapitre.scoreMoyen | number:'1.0-0' }}%
+                            </span>
+                            <div class="small mt-1">
+                              <span class="badge bg-secondary">{{ chapitre.parcoursType }}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="small text-muted mt-2">
+                          {{ chapitre.nombreTests }} tests • 
+                          Dernier: {{ chapitre.dateDernierTest | date:'dd/MM' }}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Message si pas de chapitres -->
+            <div *ngIf="showChapitresDetail && chapitresEtudiant.length === 0 
+                      && getObjectKeys(chapitresGroupesParMatiere).length === 0 
+                      && !detailLoading"
+                 class="alert alert-info">
+              <i class="bi bi-info-circle me-2"></i>
+              Aucun chapitre trouvé pour cet étudiant avec le type de parcours "{{ currentParcoursType }}".
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeDetailView()">
+            Fermer
           </button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-
-  <!-- Détail étudiant -->
-  <app-student-detail 
-  *ngIf="selectedStudentJourney"
-  [studentJourney]="selectedStudentJourney"
-  (close)="closeDetailView()">
-</app-student-detail>
-
-  
-
+          <button type="button" class="btn btn-primary">
+            <i class="bi bi-download"></i> Exporter
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

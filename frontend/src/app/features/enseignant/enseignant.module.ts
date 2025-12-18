@@ -2,9 +2,9 @@
 
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-
+import { NgxPaginationModule } from 'ngx-pagination';
 import { EnseignantRoutingModule } from './enseignant-routing.module';
 
 // Modules partagés
@@ -32,6 +32,7 @@ import { EtablissementComponent } from './components/etablissement/etablissement
 import { UefrComponent } from './components/uefr/uefr.component';
 import { DepartementComponent } from './components/departement/departement.component';
 @NgModule({
+  
   declarations: [
     GestionQuestionnaireComponent,
     SelectionMatiereGestionComponent,
@@ -58,11 +59,12 @@ import { DepartementComponent } from './components/departement/departement.compo
     FormsModule,         // Obligatoire pour ngModel
     ReactiveFormsModule, // Obligatoire pour formGroup et formControlName
     RouterModule,
-
+    
     SharedModule,
     EnseignantRoutingModule,
     NgbModalModule,
     QuillModule.forRoot(),
+    [NgxPaginationModule],
   ],
 })
 export class EnseignantModule {} 

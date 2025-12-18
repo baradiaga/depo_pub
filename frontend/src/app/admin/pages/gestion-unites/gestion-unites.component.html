@@ -38,49 +38,73 @@
           </div>
           <div class="col-md-4 mb-3">
             <!-- Sélection de la formation -->
-            <label for="formationId">Formation associée</label>
+            <label for="formationId">Formation associée *</label>
             <select class="form-control" id="formationId" name="formationId"
                     [(ngModel)]="ueEnCours.formationId"
                     (change)="onFormationChange()"
                     required #formationId="ngModel">
               <option [ngValue]="null">-- Sélectionner une formation --</option>
-              <option *ngFor="let f of formations" [ngValue]="f.id">{{ f.nom }}</option>
+              <option *ngFor="let f of formations" [ngValue]="f.id">
+                {{ f.nom }} ({{ f.niveauEtude }})
+              </option>
             </select>
             <div *ngIf="formationId.invalid && formationId.touched" class="text-danger">
               La formation est obligatoire.
             </div>
           </div>
 
+          <!-- Niveau (lecture seule) -->
           <div class="col-md-2 mb-3" *ngIf="ueEnCours.formationId">
-            <!-- Sélection du niveau -->
             <label for="niveau">Niveau</label>
-            <select class="form-control" id="niveau" name="niveau"
-                    [(ngModel)]="niveauFormationSelectionnee"
-                    (change)="updateAnneesDisponibles(niveauFormationSelectionnee)"
-                    required>
-              <option *ngFor="let n of niveauxDisponibles" [value]="n">{{ n }}</option>
-            </select>
+            <input type="text" class="form-control" id="niveau" 
+                   [value]="niveauFormationSelectionnee" 
+                   readonly
+                   style="background-color: #e9ecef; cursor: not-allowed;">
+            <small class="form-text text-muted">Déterminé par la formation</small>
           </div>
 
+          <!-- Année dans le cycle -->
           <div class="col-md-2 mb-3" *ngIf="anneesDisponibles.length > 0">
-            <!-- Sélection de l'année -->
-            <label for="annee">Année</label>
-            <select class="form-control" id="annee" name="annee" [(ngModel)]="anneeSelectionnee">
+            <label for="anneeCycle">Année dans le cycle</label>
+            <select class="form-control" id="anneeCycle" name="anneeCycle" 
+                    [(ngModel)]="ueEnCours.anneeCycle">
               <option *ngFor="let a of anneesDisponibles" [value]="a.value">{{ a.label }}</option>
             </select>
+            <small class="form-text text-muted">Basé sur le niveau</small>
           </div>
         </div>
 
         <!-- Description et Objectifs -->
         <div class="mb-3">
           <label for="description">Description</label>
-          <textarea class="form-control" id="description" name="description" [(ngModel)]="ueEnCours.description" rows="3"></textarea>
+          <textarea class="form-control" id="description" name="description" 
+                    [(ngModel)]="ueEnCours.description" rows="3"></textarea>
         </div>
 
         <div class="mb-3">
           <label for="objectifs">Objectifs</label>
-          <textarea class="form-control" id="objectifs" name="objectifs" [(ngModel)]="ueEnCours.objectifs" rows="3"></textarea>
+          <textarea class="form-control" id="objectifs" name="objectifs" 
+                    [(ngModel)]="ueEnCours.objectifs" rows="3"></textarea>
         </div>
+        <!--
+       ceci est a spprmer 
+        <div class="row mb-3">
+          <div class="col-md-4">
+            <label for="volumeHoraireCours">Volume horaire Cours (h)</label>
+            <input type="number" class="form-control" id="volumeHoraireCours" 
+                   name="volumeHoraireCours" [(ngModel)]="ueEnCours.volumeHoraireCours" min="0">
+          </div>
+          <div class="col-md-4">
+            <label for="volumeHoraireTD">Volume horaire TD (h)</label>
+            <input type="number" class="form-control" id="volumeHoraireTD" 
+                   name="volumeHoraireTD" [(ngModel)]="ueEnCours.volumeHoraireTD" min="0">
+          </div>
+          <div class="col-md-4">
+            <label for="volumeHoraireTP">Volume horaire TP (h)</label>
+            <input type="number" class="form-control" id="volumeHoraireTP" 
+                   name="volumeHoraireTP" [(ngModel)]="ueEnCours.volumeHoraireTP" min="0">
+          </div>
+        </div>  -->
 
         <!-- Éléments constitutifs -->
         <div class="mb-3">
@@ -124,31 +148,31 @@
           <th>Code</th>
           <th>ECTS</th>
           <th>Semestre</th>
+          <th>Formation</th>
           <th>Niveau d'étude</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody>
-  <tr *ngFor="let ue of uniteList">
-    <td>{{ ue.nom }}</td>
-    <td>{{ ue.code }}</td>
-    <td>{{ ue.ects }}</td>
-    <td>{{ ue.semestre }}</td>
-    <!-- Niveau d'étude basé sur la formation associée -->
-   <td>{{ getNiveauEtude(ue) }}</td>
-
-
-    <td>
-      <button class="btn btn-sm btn-info me-2" (click)="modifierUnite(ue)">
-        <i class="fas fa-edit"></i> Modifier
-      </button>
-      <button class="btn btn-sm btn-danger" (click)="supprimerUnite(ue.id)">
-        <i class="fas fa-trash"></i> Supprimer
-      </button>
-    </td>
-  </tr>
-</tbody>
-
+        <tr *ngFor="let ue of uniteList">
+          <td>{{ ue.nom }}</td>
+          <td>{{ ue.code }}</td>
+          <td>{{ ue.ects }}</td>
+          <td>{{ ue.semestre }}</td>
+          <td>{{ getNomFormation(ue.formationId) }}</td>
+          <td>{{ getNiveauEtude(ue) }}</td>
+          <td>
+            <div class="d-flex justify-content-center">
+              <button class="btn btn-sm btn-info me-2" (click)="modifierUnite(ue)">
+                <i class="fas fa-edit"></i> Modifier
+              </button>
+              <button class="btn btn-sm btn-danger" (click)="supprimerUnite(ue.id)">
+                <i class="fas fa-trash"></i> Supprimer
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
     </table>
   </div>
 </div>

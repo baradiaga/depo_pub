@@ -1,14 +1,6 @@
-// Interface pour la progression par cours
-export interface CourseProgress {
-  courseId: number;
-  courseCode: string;
-  courseName: string;
-  scoreMoyen: number;
-  testsPasses: number;
-  statutRecommandation: string;
-}
+import { CourseProgressDto } from './course-progress.model';
+import { ChapitreProgress } from './chapitre-progress.model';
 
-// Interface principale pour le parcours étudiant
 export interface StudentJourney {
   studentId: number;
   nomComplet: string;
@@ -17,6 +9,9 @@ export interface StudentJourney {
   niveauEtude: string;
   moyenneGeneraleTests: number;
   testsPasses: number;
-  progressionParCours: CourseProgress[];
+  progressionParCours: CourseProgressDto[];
   parcoursType: 'Recommandé' | 'Mixte' | 'Choisi';
+  
+  // Optionnel: ajouter les chapitres si backend les fournit
+  chapitresProgress?: ChapitreProgress[];
 }

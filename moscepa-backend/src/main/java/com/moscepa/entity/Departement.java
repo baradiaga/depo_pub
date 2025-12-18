@@ -43,11 +43,16 @@ public class Departement {
     @Column(length = 255)
     private String lien;
     
-    // Relation avec UEFR
+    // Relation avec UEFR (gardée pour JPA)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "uefr_id", nullable = false)
     @NotNull(message = "L'UEFR est obligatoire")
     private Uefr uefr;
+    
+    // AJOUTÉ ICI SEULEMENT - Relation avec Formation
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "formation_id")
+    private Formation formation;
     
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
@@ -57,118 +62,39 @@ public class Departement {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
     
-    // Constructeurs
-    public Departement() {}
+    // Getters et Setters EXISTANTS + AJOUTEZ ceux pour formation
     
-    public Departement(Long id, String nom, String sigle, String adresse, 
-                      String contact, String logo, String lien, Uefr uefr,
-                      LocalDateTime createdAt, LocalDateTime updatedAt) {
-        this.id = id;
-        this.nom = nom;
-        this.sigle = sigle;
-        this.adresse = adresse;
-        this.contact = contact;
-        this.logo = logo;
-        this.lien = lien;
-        this.uefr = uefr;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
     
-    // Getters et Setters
-    public Long getId() {
-        return id;
-    }
+    public String getNom() { return nom; }
+    public void setNom(String nom) { this.nom = nom; }
     
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public String getSigle() { return sigle; }
+    public void setSigle(String sigle) { this.sigle = sigle; }
     
-    public String getNom() {
-        return nom;
-    }
+    public String getAdresse() { return adresse; }
+    public void setAdresse(String adresse) { this.adresse = adresse; }
     
-    public void setNom(String nom) {
-        this.nom = nom;
-    }
+    public String getContact() { return contact; }
+    public void setContact(String contact) { this.contact = contact; }
     
-    public String getSigle() {
-        return sigle;
-    }
+    public String getLogo() { return logo; }
+    public void setLogo(String logo) { this.logo = logo; }
     
-    public void setSigle(String sigle) {
-        this.sigle = sigle;
-    }
+    public String getLien() { return lien; }
+    public void setLien(String lien) { this.lien = lien; }
     
-    public String getAdresse() {
-        return adresse;
-    }
+    public Uefr getUefr() { return uefr; }
+    public void setUefr(Uefr uefr) { this.uefr = uefr; }
     
-    public void setAdresse(String adresse) {
-        this.adresse = adresse;
-    }
+    // AJOUTÉ ICI SEULEMENT
+    public Formation getFormation() { return formation; }
+    public void setFormation(Formation formation) { this.formation = formation; }
     
-    public String getContact() {
-        return contact;
-    }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     
-    public void setContact(String contact) {
-        this.contact = contact;
-    }
-    
-    public String getLogo() {
-        return logo;
-    }
-    
-    public void setLogo(String logo) {
-        this.logo = logo;
-    }
-    
-    public String getLien() {
-        return lien;
-    }
-    
-    public void setLien(String lien) {
-        this.lien = lien;
-    }
-    
-    public Uefr getUefr() {
-        return uefr;
-    }
-    
-    public void setUefr(Uefr uefr) {
-        this.uefr = uefr;
-    }
-    
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-    
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-    
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-    
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-    
-    @Override
-    public String toString() {
-        return "Departement{" +
-                "id=" + id +
-                ", nom='" + nom + '\'' +
-                ", sigle='" + sigle + '\'' +
-                ", adresse='" + adresse + '\'' +
-                ", contact='" + contact + '\'' +
-                ", logo='" + logo + '\'' +
-                ", lien='" + lien + '\'' +
-                ", uefr=" + (uefr != null ? uefr.getId() : "null") +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                '}';
-    }
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

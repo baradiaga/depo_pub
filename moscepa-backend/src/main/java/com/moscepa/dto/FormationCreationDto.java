@@ -1,6 +1,5 @@
 package com.moscepa.dto;
 
-
 import com.moscepa.dto.CompetenceDetailDto;
 import com.moscepa.entity.NiveauEtude;
 import com.moscepa.entity.StatutFormation;
@@ -44,6 +43,18 @@ public class FormationCreationDto {
     private Integer capacite;
     private Double tarif;
     private String certificationProfessionnelle;
+
+    // ========================
+    // NOUVEAUX CHAMPS - Références administratives
+    // ========================
+    @NotNull(message = "L'établissement est obligatoire")
+    private Long etablissementId;
+
+    @NotNull(message = "L'UFR est obligatoire")
+    private Long uefrId;
+
+    @NotNull(message = "Le département est obligatoire")
+    private Long departementId;
 
     private List<CompetenceDetailDto> competences;
     private List<UniteEnseignementDto> unitesEnseignement;
@@ -99,6 +110,16 @@ public class FormationCreationDto {
     public void setTarif(Double tarif) { this.tarif = tarif; }
     public String getCertificationProfessionnelle() { return certificationProfessionnelle; }
     public void setCertificationProfessionnelle(String certificationProfessionnelle) { this.certificationProfessionnelle = certificationProfessionnelle; }
+
+    // --- Getters et Setters pour les nouveaux champs administratifs ---
+    public Long getEtablissementId() { return etablissementId; }
+    public void setEtablissementId(Long etablissementId) { this.etablissementId = etablissementId; }
+
+    public Long getUefrId() { return uefrId; }
+    public void setUefrId(Long uefrId) { this.uefrId = uefrId; }
+
+    public Long getDepartementId() { return departementId; }
+    public void setDepartementId(Long departementId) { this.departementId = departementId; }
 
     public List<CompetenceDetailDto> getCompetences() { return competences; }
     public void setCompetences(List<CompetenceDetailDto> competences) { this.competences = competences; }

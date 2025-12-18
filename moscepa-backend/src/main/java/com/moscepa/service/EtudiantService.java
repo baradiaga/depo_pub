@@ -1,13 +1,14 @@
-// Fichier : src/main/java/com/moscepa/service/EtudiantService.java (Version Finale Corrigée)
+// Fichier : src/main/java/com/moscepa/service/EtudiantService.java (Version Corrigée)
 
 package com.moscepa.service;
 
 import com.moscepa.dto.EtudiantRegistrationDto;
+import com.moscepa.dto.InscriptionRequestDto;  // Nouveau DTO pour l'inscription
 import com.moscepa.dto.MatiereInscriteDto;
 import com.moscepa.entity.ElementConstitutif;
 import com.moscepa.entity.Role;
 import com.moscepa.entity.Utilisateur;
-import com.moscepa.repository.ElementConstitutifRepository; // <-- IMPORT IMPORTANT
+import com.moscepa.repository.ElementConstitutifRepository;
 import com.moscepa.repository.UtilisateurRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -22,11 +23,18 @@ import java.util.stream.Collectors;
 @Service
 public class EtudiantService {
 
-    @Autowired private UtilisateurRepository utilisateurRepository;
-    @Autowired private PasswordEncoder passwordEncoder;
+    @Autowired 
+    private UtilisateurRepository utilisateurRepository;
     
-    // On injecte le REPOSITORY, pas le service, pour avoir accès aux entités
-    @Autowired private ElementConstitutifRepository elementConstitutifRepository;
+    @Autowired 
+    private PasswordEncoder passwordEncoder;
+    
+    @Autowired 
+    private ElementConstitutifRepository elementConstitutifRepository;
+
+    // INJECTION du service d'inscription
+    @Autowired 
+    private InscriptionService inscriptionService;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -56,27 +64,24 @@ public class EtudiantService {
         Utilisateur etudiantSauvegarde = utilisateurRepository.save(nouvelEtudiant);
 
         if (dto.getMatiereIds() != null && !dto.getMatiereIds().isEmpty()) {
-            String sql = "INSERT IGNORE INTO moscepa_inscriptions (etudiant_id, ec_id) VALUES (:etudiantId, :ecId)";
+            // REMPLACER la requête native par des appels au service d'inscription
             for (Long matiereId : dto.getMatiereIds()) {
-                entityManager.createNativeQuery(sql)
-                        .setParameter("etudiantId", etudiantSauvegarde.getId())
-                        .setParameter("ecId", matiereId)
-                        .executeUpdate();
+                InscriptionRequestDto inscriptionRequest = new InscriptionRequestDto();
+                inscriptionRequest.setEtudiantId(etudiantSauvegarde.getId());
+                inscriptionRequest.setEcId(matiereId);
+                // Appel du service qui va créer une inscription complète avec statut "EN_ATTENTE"
+                inscriptionService.inscrireEtudiant(inscriptionRequest);
             }
         }
         
         return etudiantSauvegarde;
     }
 
-    /**
-     * Récupère les matières inscrites d'un étudiant sous forme de DTO enrichis.
-     * CORRECTION : Appelle directement le repository pour obtenir les entités.
-     */
+    // ... le reste de la classe (getMatieresInscrites et convertToMatiereInscriteDto) reste inchangé
     @Transactional(readOnly = true)
     public List<MatiereInscriteDto> getMatieresInscrites(Long utilisateurId) {
-        // On appelle la méthode du REPOSITORY qui renvoie des ENTITÉS
         return elementConstitutifRepository.findMatieresByEtudiantIdSqlNatif(utilisateurId).stream()
-            .map(this::convertToMatiereInscriteDto) // Maintenant, le type correspond !
+            .map(this::convertToMatiereInscriteDto)
             .collect(Collectors.toList());
     }
 

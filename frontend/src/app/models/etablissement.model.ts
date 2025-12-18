@@ -1,9 +1,11 @@
 export interface Etablissement {
-  id?: number;
+  id: number;
   nom: string;
   sigle: string;
   adresse: string;
   contact: string;
   logo?: string;
   lien?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }

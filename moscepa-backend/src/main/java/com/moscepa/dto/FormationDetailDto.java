@@ -31,6 +31,18 @@ public class FormationDetailDto {
     private Double tarif;
     private String certificationProfessionnelle;
 
+    // ========================
+    // NOUVEAUX CHAMPS - Références administratives
+    // ========================
+    private Long etablissementId;
+    private String etablissementNom;
+    
+    private Long uefrId;
+    private String uefrNom;
+    
+    private Long departementId;
+    private String departementNom;
+
     private Integer volumeHoraireTotal; // Champ calculé
     private Integer ectsTotal;          // Champ calculé
 
@@ -77,6 +89,22 @@ public class FormationDetailDto {
         this.tarif = formation.getTarif();
         this.certificationProfessionnelle = formation.getCertificationProfessionnelle();
 
+        // NOUVEAUX CHAMPS - Références administratives
+        if (formation.getEtablissement() != null) {
+            this.etablissementId = formation.getEtablissement().getId();
+            this.etablissementNom = formation.getEtablissement().getNom();
+        }
+        
+        if (formation.getUefr() != null) {
+            this.uefrId = formation.getUefr().getId();
+            this.uefrNom = formation.getUefr().getNom();
+        }
+        
+        if (formation.getDepartement() != null) {
+            this.departementId = formation.getDepartement().getId();
+            this.departementNom = formation.getDepartement().getNom();
+        }
+
         // Relations imbriquées
         this.competences = formation.getCompetences().stream()
             .map(CompetenceDetailDto::new)
@@ -122,6 +150,17 @@ public class FormationDetailDto {
     public Integer getCapacite() { return capacite; }
     public Double getTarif() { return tarif; }
     public String getCertificationProfessionnelle() { return certificationProfessionnelle; }
+    
+    // --- Getters pour les nouveaux champs administratifs ---
+    public Long getEtablissementId() { return etablissementId; }
+    public String getEtablissementNom() { return etablissementNom; }
+    
+    public Long getUefrId() { return uefrId; }
+    public String getUefrNom() { return uefrNom; }
+    
+    public Long getDepartementId() { return departementId; }
+    public String getDepartementNom() { return departementNom; }
+
     public Integer getVolumeHoraireTotal() { return volumeHoraireTotal; }
     public Integer getEctsTotal() { return ectsTotal; }
     public List<CompetenceDetailDto> getCompetences() { return competences; }

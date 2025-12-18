@@ -31,15 +31,10 @@ public class UefrService {
         this.modelMapper = modelMapper;
     }
     
+    // ========== CRUD DE BASE (IDs seulement) ==========
+    
     public List<UefrDTO> getAllUefrs() {
         return uefrRepository.findAll()
-                .stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
-    }
-    
-    public List<UefrDTO> getUefrsByEtablissementId(Long etablissementId) {
-        return uefrRepository.findByEtablissementId(etablissementId)
                 .stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
@@ -52,14 +47,9 @@ public class UefrService {
     }
     
     public UefrDTO createUefr(UefrDTO uefrDTO) {
-        // Vérifier si l'établissement est fourni
-        if (uefrDTO.getEtablissement() == null || uefrDTO.getEtablissement().getId() == null) {
-            throw new IllegalArgumentException("L'établissement est obligatoire");
-        }
-        
-        // Récupérer l'établissement
-        Etablissement etablissement = etablissementRepository.findById(uefrDTO.getEtablissement().getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Établissement non trouvé avec l'ID : " + uefrDTO.getEtablissement().getId()));
+        // Vérifier si l'établissement existe
+        Etablissement etablissement = etablissementRepository.findById(uefrDTO.getEtablissementId())
+                .orElseThrow(() -> new ResourceNotFoundException("Établissement non trouvé avec l'ID : " + uefrDTO.getEtablissementId()));
         
         // Vérifier l'unicité du sigle
         if (uefrRepository.existsBySigle(uefrDTO.getSigle())) {
@@ -79,14 +69,9 @@ public class UefrService {
         Uefr existingUefr = uefrRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("UEFR non trouvé avec l'ID : " + id));
         
-        // Vérifier si l'établissement est fourni
-        if (uefrDTO.getEtablissement() == null || uefrDTO.getEtablissement().getId() == null) {
-            throw new IllegalArgumentException("L'établissement est obligatoire");
-        }
-        
-        // Récupérer l'établissement
-        Etablissement etablissement = etablissementRepository.findById(uefrDTO.getEtablissement().getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Établissement non trouvé avec l'ID : " + uefrDTO.getEtablissement().getId()));
+        // Vérifier si l'établissement existe
+        Etablissement etablissement = etablissementRepository.findById(uefrDTO.getEtablissementId())
+                .orElseThrow(() -> new ResourceNotFoundException("Établissement non trouvé avec l'ID : " + uefrDTO.getEtablissementId()));
         
         // Vérifier l'unicité du sigle si changé
         if (!existingUefr.getSigle().equals(uefrDTO.getSigle()) &&
@@ -114,20 +99,38 @@ public class UefrService {
         uefrRepository.deleteById(id);
     }
     
-    // Méthodes de conversion
+    public List<UefrDTO> getUefrsByEtablissementId(Long etablissementId) {
+        return uefrRepository.findByEtablissementId(etablissementId)
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+    
+    // ========== MÉTHODES DE CONVERSION ==========
+    
     private UefrDTO convertToDTO(Uefr uefr) {
-        UefrDTO dto = modelMapper.map(uefr, UefrDTO.class);
-        
-        // Convertir l'établissement en DTO
-        if (uefr.getEtablissement() != null) {
-            dto.setEtablissement(modelMapper.map(uefr.getEtablissement(), com.moscepa.dto.EtablissementDTO.class));
-        }
-        
+        UefrDTO dto = new UefrDTO();
+        dto.setId(uefr.getId());
+        dto.setNom(uefr.getNom());
+        dto.setSigle(uefr.getSigle());
+        dto.setAdresse(uefr.getAdresse());
+        dto.setContact(uefr.getContact());
+        dto.setLogo(uefr.getLogo());
+        dto.setLien(uefr.getLien());
+        dto.setEtablissementId(uefr.getEtablissement().getId()); // ← ID seulement
+        dto.setCreatedAt(uefr.getCreatedAt());
+        dto.setUpdatedAt(uefr.getUpdatedAt());
         return dto;
     }
     
     private Uefr convertToEntity(UefrDTO uefrDTO) {
-        Uefr uefr = modelMapper.map(uefrDTO, Uefr.class);
+        Uefr uefr = new Uefr();
+        uefr.setNom(uefrDTO.getNom());
+        uefr.setSigle(uefrDTO.getSigle());
+        uefr.setAdresse(uefrDTO.getAdresse());
+        uefr.setContact(uefrDTO.getContact());
+        uefr.setLogo(uefrDTO.getLogo());
+        uefr.setLien(uefrDTO.getLien());
         return uefr;
     }
 }

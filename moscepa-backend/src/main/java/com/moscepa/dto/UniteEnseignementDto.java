@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 public class UniteEnseignementDto {
     private Long id;
     private String nom;
-    private Long formationId;
+    private Long formationId; // Déjà présent
     private String code;
     private String description;
     private Integer ects;
@@ -18,7 +18,7 @@ public class UniteEnseignementDto {
     private Integer volumeHoraireTP;
     private Long responsableId;
     private List<Long> elementConstitutifIds;
-
+      private Integer anneeCycle; 
     // Constructeur pour la création (utilisé par Spring pour le mapping JSON)
     public UniteEnseignementDto() {}
 
@@ -34,6 +34,13 @@ public class UniteEnseignementDto {
         this.volumeHoraireCours = entity.getVolumeHoraireCours();
         this.volumeHoraireTD = entity.getVolumeHoraireTD();
         this.volumeHoraireTP = entity.getVolumeHoraireTP();
+         this.anneeCycle = entity.getAnneeCycle();
+        
+        // CORRECTION : Récupérer l'ID de la formation
+        if (entity.getFormation() != null) {
+            this.formationId = entity.getFormation().getId();
+        }
+        
         if (entity.getResponsable() != null) {
             this.responsableId = entity.getResponsable().getId();
         }
@@ -70,4 +77,6 @@ public class UniteEnseignementDto {
     public void setElementConstitutifIds(List<Long> elementConstitutifIds) { this.elementConstitutifIds = elementConstitutifIds; }
     public Long getFormationId() { return formationId; }
     public void setFormationId(Long formationId) { this.formationId = formationId; }
+    public Integer getAnneeCycle() { return anneeCycle; }
+    public void setAnneeCycle(Integer anneeCycle) { this.anneeCycle = anneeCycle; }
 }

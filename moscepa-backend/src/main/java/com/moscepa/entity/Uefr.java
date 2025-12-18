@@ -47,7 +47,7 @@ public class Uefr {
     @Column(length = 255)
     private String lien;
     
-    // Relation avec Etablissement (ManyToOne)
+    // Relation avec Etablissement
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "etablissement_id", nullable = false)
     @NotNull(message = "L'établissement est obligatoire")
@@ -66,127 +66,37 @@ public class Uefr {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
     
-    // Constructeurs
-    public Uefr() {}
-    
-    public Uefr(Long id, String nom, String sigle, String adresse, 
-                String contact, String logo, String lien, Etablissement etablissement,
-                LocalDateTime createdAt, LocalDateTime updatedAt) {
-        this.id = id;
-        this.nom = nom;
-        this.sigle = sigle;
-        this.adresse = adresse;
-        this.contact = contact;
-        this.logo = logo;
-        this.lien = lien;
-        this.etablissement = etablissement;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-    }
-    
     // Getters et Setters
-    public Long getId() {
-        return id;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
     
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public String getNom() { return nom; }
+    public void setNom(String nom) { this.nom = nom; }
     
-    public String getNom() {
-        return nom;
-    }
+    public String getSigle() { return sigle; }
+    public void setSigle(String sigle) { this.sigle = sigle; }
     
-    public void setNom(String nom) {
-        this.nom = nom;
-    }
+    public String getAdresse() { return adresse; }
+    public void setAdresse(String adresse) { this.adresse = adresse; }
     
-    public String getSigle() {
-        return sigle;
-    }
+    public String getContact() { return contact; }
+    public void setContact(String contact) { this.contact = contact; }
     
-    public void setSigle(String sigle) {
-        this.sigle = sigle;
-    }
+    public String getLogo() { return logo; }
+    public void setLogo(String logo) { this.logo = logo; }
     
-    public String getAdresse() {
-        return adresse;
-    }
+    public String getLien() { return lien; }
+    public void setLien(String lien) { this.lien = lien; }
     
-    public void setAdresse(String adresse) {
-        this.adresse = adresse;
-    }
+    public Etablissement getEtablissement() { return etablissement; }
+    public void setEtablissement(Etablissement etablissement) { this.etablissement = etablissement; }
     
-    public String getContact() {
-        return contact;
-    }
+    public List<Departement> getDepartements() { return departements; }
+    public void setDepartements(List<Departement> departements) { this.departements = departements; }
     
-    public void setContact(String contact) {
-        this.contact = contact;
-    }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     
-    public String getLogo() {
-        return logo;
-    }
-    
-    public void setLogo(String logo) {
-        this.logo = logo;
-    }
-    
-    public String getLien() {
-        return lien;
-    }
-    
-    public void setLien(String lien) {
-        this.lien = lien;
-    }
-    
-    public Etablissement getEtablissement() {
-        return etablissement;
-    }
-    
-    public void setEtablissement(Etablissement etablissement) {
-        this.etablissement = etablissement;
-    }
-    
-    public List<Departement> getDepartements() {
-        return departements;
-    }
-    
-    public void setDepartements(List<Departement> departements) {
-        this.departements = departements;
-    }
-    
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-    
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-    
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-    
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-    
-    @Override
-    public String toString() {
-        return "Uefr{" +
-                "id=" + id +
-                ", nom='" + nom + '\'' +
-                ", sigle='" + sigle + '\'' +
-                ", adresse='" + adresse + '\'' +
-                ", contact='" + contact + '\'' +
-                ", logo='" + logo + '\'' +
-                ", lien='" + lien + '\'' +
-                ", etablissementId=" + (etablissement != null ? etablissement.getId() : "null") +
-                ", departementsCount=" + (departements != null ? departements.size() : 0) +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                '}';
-    }
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }
