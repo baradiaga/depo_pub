@@ -1,77 +1,182 @@
-<div class="container mt-4">
-  <h2>Paramétrage d'un nouveau chapitre</h2>
-  <hr>
+<div class="container">
+  <!-- En-tête -->
+  <div class="header">
+    <h2>Paramétrage de chapitre</h2>
+    <p class="header-description">
+      Créez un nouveau chapitre pédagogique en suivant les étapes
+    </p>
+  </div>
 
-  <!-- Formulaire de création de chapitre -->
-  <div class="card">
-    <div class="card-body">
-      <!-- Ligne 1: Matière et Titre -->
-      <div class="row mb-3">
-        <div class="col-md-6">
-          <label for="matiere" class="form-label">Matière</label>
-          <select id="matiere" class="form-select" [(ngModel)]="matiereSelectionnee">
-            <option value="" disabled>-- Choisissez une matière --</option>
-            <option *ngFor="let matiere of matieres" [value]="matiere">{{ matiere }}</option>
-          </select>
-        </div>
-        <div class="col-md-6">
-          <label for="titre" class="form-label">Titre du chapitre</label>
-          <input type="text" id="titre" class="form-control" [(ngModel)]="titre" placeholder="Ex: Les équations du second degré">
+  <!-- Stepper minimaliste -->
+  <div class="progress-indicator">
+    <div class="progress-line"></div>
+    <div class="progress-step" [class.active]="etapeActive >= 1" [class.completed]="etapeActive > 1" (click)="allerAEtape(1)">
+      <div class="step-circle">{{ etapeActive > 1 ? '✓' : '1' }}</div>
+      <div class="step-label">Informations de base</div>
+    </div>
+    <div class="progress-step" [class.active]="etapeActive >= 2" [class.completed]="etapeActive > 2" (click)="allerAEtape(2)">
+      <div class="step-circle">{{ etapeActive > 2 ? '✓' : '2' }}</div>
+      <div class="step-label">Structure</div>
+    </div>
+    <div class="progress-step" [class.active]="etapeActive >= 3" (click)="allerAEtape(3)">
+      <div class="step-circle">3</div>
+      <div class="step-label">Configuration</div>
+    </div>
+  </div>
+
+  <!-- Étape 1 -->
+  <div id="etape-1" class="form-card" [class.active]="etapeActive === 1">
+    <div class="card-header">
+      <div class="card-icon">📚</div>
+      <div>
+        <h3 class="card-title">Informations de base</h3>
+        <div class="card-subtitle" *ngIf="etapeActive === 1">Commencez par définir les bases</div>
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label for="matiere" class="form-label">Matière <span class="required">*</span></label>
+      <select id="matiere" class="form-select" [(ngModel)]="matiereSelectionnee" 
+              (ngModelChange)="verifierProgression()" required>
+        <option value="" disabled selected>Sélectionnez une matière</option>
+        <option *ngFor="let matiere of matieres" [value]="matiere">{{ matiere }}</option>
+      </select>
+      <div class="field-hint" *ngIf="!matiereSelectionnee">
+        Sélectionnez d'abord une matière
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label for="titre" class="form-label">Titre du chapitre <span class="required">*</span></label>
+      <input type="text" id="titre" class="form-control" [(ngModel)]="titre" 
+             (input)="verifierProgression()"
+             placeholder="Ex: Les équations du second degré" required>
+    </div>
+    
+    <div class="form-group">
+      <label for="niveau" class="form-label">Nombre de sections initial</label>
+      <div class="range-container">
+        <input type="range" id="niveau" class="form-range" [(ngModel)]="niveau" 
+               (ngModelChange)="majStructure()" min="1" max="10" step="1">
+        <span class="range-value">{{ niveau }} section{{ niveau > 1 ? 's' : '' }}</span>
+      </div>
+    </div>
+    
+    <div class="step-navigation" *ngIf="etapeActive === 1 && matiereSelectionnee && titre.trim()">
+      <button class="btn btn-primary" (click)="allerAEtape(2)">
+        Continuer <span>→</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Étape 2 -->
+  <div id="etape-2" class="form-card" [class.active]="etapeActive === 2" [class.disabled]="!etape2Accessible()">
+    <div class="card-header">
+      <div class="card-icon">📑</div>
+      <div>
+        <h3 class="card-title">Structure du chapitre</h3>
+        <div class="card-subtitle" *ngIf="matiereSelectionnee && titre.trim()">
+          {{ titre }} ({{ matiereSelectionnee }})
         </div>
       </div>
-
-      <!-- Ligne 2: Niveau et Objectif -->
-      <div class="row mb-3">
-        <div class="col-md-6">
-          <label for="niveau" class="form-label">Niveau / Nombre de sections initial</label>
-          <input type="number" id="niveau" class="form-control" [(ngModel)]="niveau" (ngModelChange)="majStructure()" min="1">
-        </div>
-        <div class="col-md-6">
-          <label for="objectif" class="form-label">Objectif du chapitre</label>
-          <textarea id="objectif" class="form-control" [(ngModel)]="objectif" rows="3" placeholder="Ex: Être capable de résoudre n'importe quelle équation de type ax²+bx+c=0"></textarea>
-        </div>
+    </div>
+    
+    <div class="sections-container">
+      <div class="sections-header">
+        <h4>Sections du chapitre</h4>
+        <p class="section-hint">Chaque section représente une partie du chapitre</p>
       </div>
-
-      <!-- Ligne 3: Gestion des sections -->
-      <div class="mb-3">
-        <h5>Sections du chapitre</h5>
-        <!-- Boucle sur le tableau 'sections' pour afficher un champ par section -->
-        <div *ngFor="let section of sections; let i = index; trackBy: trackByIndex" class="input-group mb-2">
-          <span class="input-group-text">Section {{ i + 1 }}</span>
-          <input type="text" class="form-control" [(ngModel)]="section.titre" placeholder="Titre de la section {{ i + 1 }}">
-          <!-- Le bouton de suppression n'est affiché que s'il y a plus d'une section -->
-          <button class="btn btn-outline-danger" type="button" (click)="supprimerSection(i)" [disabled]="sections.length <= 1">
-            &times; <!-- Symbole de croix pour supprimer -->
-          </button>
-        </div>
-        <!-- Bouton pour ajouter dynamiquement une nouvelle section -->
-        <button class="btn btn-outline-secondary btn-sm mt-2" (click)="ajouterSection()">
+      
+      <div *ngFor="let section of sections; let i = index; trackBy: trackByIndex" class="section-item">
+        <div class="section-number">{{ i + 1 }}</div>
+        <input type="text" class="form-control" [(ngModel)]="section.titre" 
+               (input)="verifierProgression()"
+               placeholder="Titre de la section {{ i + 1 }}">
+        <button class="btn btn-danger" type="button" (click)="supprimerSection(i)" 
+                [disabled]="sections.length <= 1">
+          ×
+        </button>
+      </div>
+      
+      <div class="section-actions">
+        <button class="btn btn-add" (click)="ajouterSection()">
           + Ajouter une section
         </button>
+        <span class="section-count">{{ sections.length }} section{{ sections.length > 1 ? 's' : '' }}</span>
       </div>
-
-      <!-- Ligne 4: Bouton d'enregistrement -->
-      <hr>
-      <div class="d-flex justify-content-end">
-        <button class="btn btn-primary" (click)="enregistrerChapitre()">
-          Enregistrer le chapitre
-        </button>
-      </div>
+    </div>
+    
+    <div class="step-navigation" *ngIf="etapeActive === 2">
+      <button class="btn btn-secondary" (click)="allerAEtape(1)">
+        ← Précédent
+      </button>
+      <button class="btn btn-primary" (click)="allerAEtape(3)" 
+              [disabled]="!sectionsRemplies()">
+        Continuer →
+      </button>
     </div>
   </div>
 
-  <!-- Section pour afficher les chapitres (si nécessaire) -->
-  <!-- Le bouton et le tableau sont conditionnels -->
-  <div class="mt-4">
-    <button class="btn btn-info" (click)="toggleTableau()">
-      {{ afficherTableau ? 'Masquer' : 'Afficher' }} les chapitres enregistrés
-    </button>
-
-    <div *ngIf="afficherTableau" class="mt-3">
-      <!-- Ici, vous mettriez le composant qui affiche la liste des chapitres -->
-      <!-- Exemple: <app-liste-chapitres></app-liste-chapitres> -->
-      <p>La liste des chapitres s'affichera ici.</p>
+  <!-- Étape 3 -->
+  <div id="etape-3" class="form-card" [class.active]="etapeActive === 3" [class.disabled]="!etape3Accessible()">
+    <div class="card-header">
+      <div class="card-icon">⚙️</div>
+      <div>
+        <h3 class="card-title">Configuration pédagogique</h3>
+        <div class="card-subtitle">Finalisez les paramètres pédagogiques</div>
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label for="objectif" class="form-label">Objectif pédagogique</label>
+      <textarea id="objectif" class="form-control" [(ngModel)]="objectif" rows="3"
+                placeholder="Que devront maîtriser les apprenants ?"></textarea>
+    </div>
+    
+    <div class="form-row">
+      <div class="form-group">
+        <label for="typeActivite" class="form-label">Type d'activité</label>
+        <select id="typeActivite" class="form-select" [(ngModel)]="typeActiviteSelectionne">
+          <option value="" disabled selected>Choisissez un type</option>
+          <option *ngFor="let type of typeActiviteListe" [value]="type">{{ type }}</option>
+        </select>
+        
+        <div *ngIf="typeActiviteSelectionne === 'Autre'" class="dynamic-field">
+          <input type="text" class="form-control" [(ngModel)]="typeActiviteAutre" 
+                 placeholder="Précisez le type d'activité">
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="prerequis" class="form-label">Prérequis</label>
+        <textarea id="prerequis" class="form-control" [(ngModel)]="prerequis" rows="3"
+                  placeholder="Connaissances requises..."></textarea>
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label for="typeEvaluation" class="form-label">Type d'évaluation</label>
+      <select id="typeEvaluation" class="form-select" [(ngModel)]="typeEvaluationSelectionne">
+        <option value="" disabled selected>Sélectionnez un type</option>
+        <option *ngFor="let type of typeEvaluationListe" [value]="type">{{ type }}</option>
+      </select>
+      
+      <div *ngIf="typeEvaluationSelectionne === 'Autre'" class="dynamic-field">
+        <input type="text" class="form-control" [(ngModel)]="typeEvaluationAutre" 
+               placeholder="Précisez le type d'évaluation">
+      </div>
+    </div>
+    
+    <div class="final-actions">
+      <button class="btn btn-secondary" (click)="allerAEtape(2)">
+        ← Retour
+      </button>
+      <button class="btn btn-primary" (click)="enregistrerChapitre()" [disabled]="isLoading">
+        <span *ngIf="!isLoading">Enregistrer le chapitre</span>
+        <span *ngIf="isLoading">
+          <span class="spinner"></span> Enregistrement...
+        </span>
+      </button>
     </div>
   </div>
-
 </div>

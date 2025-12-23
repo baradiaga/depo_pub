@@ -1,163 +1,367 @@
 <div class="container mt-4">
-  <h2>Gestion de la Banque de Questions</h2>
-
-  <!-- Formulaire de Création/Édition -->
-  <div class="card mb-4">
+  <div class="card shadow-sm">
     <div class="card-header bg-primary text-white">
-      {{ isEditMode ? 'Éditer la Question (ID: ' + questionIdToEdit + ')' : 'Ajouter une Nouvelle Question' }}
+      <h2 class="mb-0">Gestion de la Banque de Questions</h2>
+      <small class="text-light">Créez et gérez les questions pour la génération automatique de questionnaires</small>
     </div>
-
+    
     <div class="card-body">
-      <form (ngSubmit)="sauvegarderQuestion()">
-
-        <!-- MATIÈRE + CHAPITRE -->
-        <div class="row">
-          <div class="col-md-6 mb-3">
-            <label for="matiere">Matière</label>
-            <select id="matiere" class="form-control"
-        (change)="onMatiereChange($event)">
-  <option [ngValue]="null">-- Sélectionner une matière --</option>
-  <option *ngFor="let matiere of mesMatieres" [ngValue]="matiere.id">{{ matiere.nom }}</option>
-</select>
-          </div>
-
-          <div class="col-md-6 mb-3">
-            <label for="chapitre">Chapitre</label>
-            <select id="chapitre" class="form-control"
-        [(ngModel)]="questionForm.chapitreId" name="chapitreId" required>
-  <option [ngValue]="null">-- Sélectionner un chapitre --</option>
-  <option *ngFor="let chapitre of chapitresDisponibles" [ngValue]="chapitre.id">
-    {{ chapitre.nom }}
-  </option>
-</select>
-          </div>
+      <!-- FORMULAIRE DE CRÉATION/MODIFICATION -->
+      <div class="card mb-4">
+        <div class="card-header bg-light">
+          <h4 class="mb-0">{{ isEditMode ? 'Modifier une question' : 'Ajouter une nouvelle question' }}</h4>
         </div>
+        <div class="card-body">
+          <form (ngSubmit)="sauvegarderQuestion()" #formQuestion="ngForm">
+            
+            <!-- Énoncé -->
+            <div class="row mb-3">
+              <div class="col-md-12">
+                <label for="enonce" class="form-label fw-bold">Énoncé de la question *</label>
+                <textarea 
+                  id="enonce" 
+                  class="form-control" 
+                  rows="3" 
+                  [(ngModel)]="questionForm.enonce" 
+                  name="enonce" 
+                  placeholder="Saisissez la question..."
+                  required
+                ></textarea>
+              </div>
+            </div>
 
-        <!-- ENONCE -->
-        <div class="mb-3">
-          <label for="enonce">Énoncé de la Question</label>
-          <textarea id="enonce" class="form-control"
-                    [(ngModel)]="questionForm.enonce" name="enonce"
-                    rows="3" required></textarea>
+            <!-- Matière et Chapitre -->
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="matiere" class="form-label fw-bold">Matière *</label>
+                <select 
+                  id="matiere" 
+                  class="form-select" 
+                  [(ngModel)]="selectedMatiereId"
+                  (ngModelChange)="onMatiereChange()"
+                  name="selectedMatiereId"
+                  required
+                >
+                  <option [ngValue]="null" disabled>Sélectionnez une matière</option>
+                  <option *ngFor="let matiere of mesMatieres" [ngValue]="matiere.id">
+                    {{ matiere.nom }}
+                  </option>
+                </select>
+              </div>
+              
+              <div class="col-md-6">
+                <label for="chapitre" class="form-label fw-bold">Chapitre *</label>
+                <select 
+                  id="chapitre" 
+                  class="form-select" 
+                  [(ngModel)]="questionForm.chapitreId" 
+                  (ngModelChange)="onChapitreChange()" 
+                  name="chapitreId"
+                  [disabled]="!selectedMatiereId"
+                  required
+                >
+                  <option [ngValue]="null" disabled>Sélectionnez un chapitre</option>
+                  <option *ngFor="let chapitre of chapitresDisponibles" [ngValue]="chapitre.id">
+                    {{ chapitre.nom }}
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Thème et Niveau -->
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="theme" class="form-label fw-bold">Thème *</label>
+                <input 
+                  type="text" 
+                  id="theme" 
+                  class="form-control" 
+                  [(ngModel)]="questionForm.theme"
+                  name="theme"
+                  placeholder="Ex: Algorithmie, Base de données..."
+                  list="themesSuggestions"
+                  required
+                >
+                <datalist id="themesSuggestions">
+                  <option *ngFor="let theme of themesSuggestions" [value]="theme">{{ theme }}</option>
+                </datalist>
+                <small class="text-muted">Ce thème sera utilisé pour générer des questionnaires</small>
+              </div>
+              
+              <div class="col-md-6">
+                <label for="niveau" class="form-label fw-bold">Niveau de difficulté *</label>
+                <select 
+                  id="niveau" 
+                  class="form-select" 
+                  [(ngModel)]="questionForm.niveau"
+                  name="niveau"
+                  required
+                >
+                  <option *ngFor="let niveau of niveauxGenerique" [value]="niveau">
+                    {{ niveau === 'INTERMEDIAIRE' ? 'INTERMÉDIAIRE' : niveau }}
+                  </option>
+                </select>
+                <small class="text-muted">Sélectionnez le niveau pour la génération</small>
+              </div>
+            </div>
+
+            <!-- Type et Points -->
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <label for="typeQuestion" class="form-label fw-bold">Type de question *</label>
+                <select 
+                  id="typeQuestion" 
+                  class="form-select" 
+                  [(ngModel)]="questionForm.typeQuestion" 
+                  (ngModelChange)="onTypeQuestionChange()" 
+                  name="typeQuestion"
+                  required
+                >
+                  <option *ngFor="let type of typesQuestion" [value]="type">
+                    {{ type === 'VRAI_FAUX' ? 'Vrai/Faux' : 
+                       type === 'TEXTE_LIBRE' ? 'Texte Libre' : type }}
+                  </option>
+                </select>
+              </div>
+              
+              <div class="col-md-6">
+                <label for="points" class="form-label fw-bold">Points *</label>
+                <input 
+                  type="number" 
+                  id="points" 
+                  class="form-control" 
+                  [(ngModel)]="questionForm.points" 
+                  name="points" 
+                  min="0.5" 
+                  step="0.5"
+                  required
+                >
+              </div>
+            </div>
+
+            <!-- Tags -->
+            <div class="row mb-4">
+              <div class="col-md-12">
+                <label for="tags" class="form-label fw-bold">Tags</label>
+                <input 
+                  type="text" 
+                  id="tags" 
+                  class="form-control" 
+                  [ngModel]="questionForm.tags.join(', ')" 
+                  (ngModelChange)="mettreAJourTags($event)" 
+                  name="tags"
+                  placeholder="Séparés par des virgules (ex: Java, POO, Spring)"
+                >
+                <small class="text-muted">Mots-clés pour faciliter la recherche</small>
+              </div>
+            </div>
+
+            <!-- Réponses -->
+            <div class="card mb-4">
+              <div class="card-header bg-light">
+                <h5 class="mb-0">Réponses *</h5>
+                <small class="text-muted">Marquez les réponses correctes</small>
+              </div>
+              <div class="card-body">
+                <div *ngIf="questionForm.typeQuestion === 'VRAI_FAUX'" class="alert alert-info">
+                  Les réponses "Vrai" et "Faux" sont prédéfinies pour ce type de question.
+                </div>
+                
+                <div *ngIf="questionForm.typeQuestion === 'TEXTE_LIBRE'" class="alert alert-info">
+                  Saisissez la réponse correcte attendue.
+                </div>
+
+                <div *ngFor="let reponse of questionForm.reponses; let i = index" class="mb-3">
+                  <div class="input-group">
+                    <span class="input-group-text" style="min-width: 120px;">
+                      <span *ngIf="questionForm.typeQuestion === 'QCU'">
+                        <input 
+                          type="radio" 
+                          [checked]="reponse.correcte"
+                          (change)="marquerReponseCorrecte(i)"
+                          class="form-check-input me-2"
+                          name="reponseCorrecte"
+                        >
+                        Choix unique
+                      </span>
+                      <span *ngIf="questionForm.typeQuestion === 'QCM'">
+                        <input 
+                          type="checkbox" 
+                          [checked]="reponse.correcte"
+                          (change)="marquerReponseCorrecte(i)"
+                          class="form-check-input me-2"
+                        >
+                        Choix multiple
+                      </span>
+                      <span *ngIf="questionForm.typeQuestion === 'VRAI_FAUX' || questionForm.typeQuestion === 'TEXTE_LIBRE'">
+                        {{ reponse.correcte ? '✓ Correct' : '✗ Incorrect' }}
+                      </span>
+                    </span>
+                    
+                    <input 
+                      type="text" 
+                      class="form-control" 
+                      [(ngModel)]="reponse.texte" 
+                      [name]="'reponse' + i"
+                      [readonly]="questionForm.typeQuestion === 'VRAI_FAUX'"
+                      [placeholder]="questionForm.typeQuestion === 'VRAI_FAUX' ? '' : 'Saisissez la réponse'"
+                    >
+                    
+                    <button 
+                      *ngIf="questionForm.typeQuestion !== 'VRAI_FAUX' && questionForm.typeQuestion !== 'TEXTE_LIBRE'"
+                      type="button" 
+                      class="btn btn-outline-danger" 
+                      (click)="supprimerReponse(i)"
+                      [disabled]="questionForm.reponses.length <= 2"
+                    >
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <button 
+                  *ngIf="questionForm.typeQuestion !== 'VRAI_FAUX' && questionForm.typeQuestion !== 'TEXTE_LIBRE'"
+                  type="button" 
+                  class="btn btn-outline-primary btn-sm" 
+                  (click)="ajouterReponse()"
+                >
+                  <i class="bi bi-plus-circle me-1"></i>Ajouter une réponse
+                </button>
+              </div>
+            </div>
+
+            <!-- Boutons d'action -->
+            <div class="d-flex justify-content-between">
+              <button 
+                type="button" 
+                class="btn btn-secondary" 
+                (click)="reinitialiserFormulaire()"
+                [disabled]="isSaving"
+              >
+                <i class="bi bi-x-circle me-1"></i>Annuler
+              </button>
+              
+              <button 
+                type="submit" 
+                class="btn btn-primary" 
+                [disabled]="isSaving || !questionForm.chapitreId"
+              >
+                <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2"></span>
+                <i *ngIf="!isSaving" class="bi bi-check-circle me-1"></i>
+                {{ isEditMode ? 'Mettre à jour' : 'Créer la question' }}
+              </button>
+            </div>
+          </form>
         </div>
+      </div>
 
-        <!-- TYPE DE QUESTION + POINTS + DIFFICULTÉ -->
-        <div class="row">
-          <div class="col-md-4 mb-3">
-            <label for="type">Type de Question</label>
-            <select id="type" class="form-control"
-                    [(ngModel)]="questionForm.typeQuestion"
-                    name="typeQuestion"
-                    (change)="onTypeQuestionChange()">
-              <option *ngFor="let type of typesQuestion" [value]="type">{{ type }}</option>
-            </select>
-          </div>
-
-          <div class="col-md-4 mb-3">
-            <label for="points">Points</label>
-            <input id="points" type="number" class="form-control"
-                   [(ngModel)]="questionForm.points" name="points"
-                   required min="1">
-          </div>
-
-          <div class="col-md-4 mb-3">
-            <label for="difficulte">Difficulté</label>
-            <select id="difficulte" class="form-control"
-                    [(ngModel)]="questionForm.difficulte" name="difficulte">
-              <option *ngFor="let diff of difficultes" [value]="diff">{{ diff }}</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- RÉPONSES -->
-        <h5 class="mt-3">Réponses</h5>
-
-        <div *ngFor="let reponse of questionForm.reponses; let i = index" class="input-group mb-2">
-          <div class="input-group-text">
-            <input type="checkbox"
-                   [checked]="reponse.correcte"
-                   (change)="marquerReponseCorrecte(i)"
-                   [disabled]="questionForm.typeQuestion === 'TEXTE_LIBRE'">
-          </div>
-
-          <input type="text" class="form-control"
-                 [(ngModel)]="reponse.texte"
-                 [name]="'reponseText' + i"
-                 placeholder="Texte de la réponse" required>
-
-          <button type="button" class="btn btn-outline-danger" (click)="supprimerReponse(i)">X</button>
-        </div>
-
-        <button type="button"
-                class="btn btn-sm btn-outline-secondary mt-2"
-                (click)="ajouterReponse()"
-                *ngIf="questionForm.typeQuestion !== 'TEXTE_LIBRE'">
-          Ajouter une Réponse
-        </button>
-
-        <!-- TAGS -->
-        <h5 class="mt-3">Tags (séparés par des virgules)</h5>
-        <input type="text" class="form-control"
-               [ngModel]="questionForm.tags.join(', ')"
-               (ngModelChange)="mettreAJourTags($event)"
-               name="tagsInput"
-               placeholder="Ex: Algèbre, Fonction, Niveau 1">
-
-        <!-- BOUTONS -->
-        <div class="mt-4">
-          <button type="submit" class="btn btn-success" [disabled]="isSaving">
-            <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2"></span>
-            {{ isEditMode ? 'Mettre à Jour' : 'Créer la Question' }}
+      <!-- LISTE DES QUESTIONS -->
+      <div class="card">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+          <h4 class="mb-0">Questions disponibles ({{ questions.length }})</h4>
+          <button 
+            type="button" 
+            class="btn btn-sm btn-outline-secondary" 
+            (click)="chargerQuestions()"
+            [disabled]="isLoadingList"
+          >
+            <span *ngIf="isLoadingList" class="spinner-border spinner-border-sm me-1"></span>
+            <i *ngIf="!isLoadingList" class="bi bi-arrow-clockwise me-1"></i>
+            Actualiser
           </button>
-
-          <button type="button" class="btn btn-secondary ms-2" (click)="reinitialiserFormulaire()">
-            Annuler / Nouveau
-          </button>
         </div>
-
-      </form>
-    </div>
-  </div>
-
-  <!-- LISTE DES QUESTIONS -->
-  <div class="card">
-    <div class="card-header bg-info text-white">
-      Questions de la Banque ({{ questions.length }})
-    </div>
-
-    <div class="card-body">
-
-      <div *ngIf="isLoadingList" class="text-center">Chargement...</div>
-
-      <ul class="list-group">
-        <li *ngFor="let q of questions"
-            class="list-group-item d-flex justify-content-between align-items-center">
-
-          <div>
-            <strong>{{ q.enonce | slice:0:100 }}...</strong>
-            <small class="text-muted d-block">
-              Chapitre: {{ q.chapitreNom }} |
-              Type: {{ q.typeQuestion }} |
-              Note: {{ q.noteQualite | number:'1.1-1' }}
-            </small>
-
-            <span *ngFor="let tag of q.tags" class="badge bg-secondary me-1">{{ tag }}</span>
+        
+        <div class="card-body">
+          <!-- Loading -->
+          <div *ngIf="isLoadingList" class="text-center my-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Chargement...</span>
+            </div>
+            <p class="mt-2">Chargement des questions...</p>
           </div>
 
-          <div>
-            <button class="btn btn-sm btn-outline-primary me-2" (click)="editerQuestion(q)">
-              Éditer
-            </button>
-
-            <button class="btn btn-sm btn-outline-danger"
-                    (click)="supprimerQuestion(q.id, q.enonce)">
-              Supprimer
-            </button>
+          <!-- Aucune question -->
+          <div *ngIf="!isLoadingList && questions.length === 0" class="text-center my-5">
+            <div class="alert alert-info">
+              <i class="bi bi-info-circle me-2"></i>
+              Aucune question dans la banque. Commencez par en créer une.
+            </div>
           </div>
 
-        </li>
-      </ul>
-
+          <!-- Tableau des questions -->
+          <div *ngIf="!isLoadingList && questions.length > 0" class="table-responsive">
+            <table class="table table-hover table-striped">
+              <thead class="table-light">
+                <tr>
+                  <th scope="col" style="width: 60px">ID</th>
+                  <th scope="col" style="width: 300px">Énoncé</th>
+                  <th scope="col" style="width: 100px">Type</th>
+                  <th scope="col" style="width: 150px">Thème</th>
+                  <th scope="col" style="width: 120px">Niveau</th>
+                  <th scope="col" style="width: 80px">Points</th>
+                  <th scope="col" style="width: 150px">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let q of questions" class="align-middle">
+                  <td class="fw-bold">{{ q.id }}</td>
+                  <td>
+                    <div class="text-truncate" style="max-width: 250px;" title="{{ q.enonce }}">
+                      {{ q.enonce }}
+                    </div>
+                  </td>
+                  <td>
+                    <span class="badge" [ngClass]="{
+                      'bg-primary': q.typeQuestion === 'QCU',
+                      'bg-info': q.typeQuestion === 'QCM',
+                      'bg-warning': q.typeQuestion === 'VRAI_FAUX',
+                      'bg-secondary': q.typeQuestion === 'TEXTE_LIBRE'
+                    }">
+                      {{ q.typeQuestion === 'VRAI_FAUX' ? 'Vrai/Faux' : 
+                         q.typeQuestion === 'TEXTE_LIBRE' ? 'Texte Libre' : q.typeQuestion }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge bg-light text-dark border">
+                      {{ q.theme || 'Non défini' }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge" [ngClass]="{
+                      'bg-success': q.niveau === 'FACILE',
+                      'bg-warning': q.niveau === 'INTERMEDIAIRE',
+                      'bg-danger': q.niveau === 'DIFFICILE'
+                    }">
+                      {{ q.niveau === 'INTERMEDIAIRE' ? 'INTERMÉDIAIRE' : q.niveau }}
+                    </span>
+                  </td>
+                  <td class="fw-bold">{{ q.points }} pt{{ q.points > 1 ? 's' : '' }}</td>
+                  <td>
+                    <div class="btn-group btn-group-sm" role="group">
+                      <button 
+                        type="button" 
+                        class="btn btn-outline-primary" 
+                        (click)="editerQuestion(q)"
+                        title="Modifier"
+                      >
+                        <i class="bi bi-pencil"></i>
+                      </button>
+                      <button 
+                        type="button" 
+                        class="btn btn-outline-danger" 
+                        (click)="supprimerQuestion(q.id, q.enonce)"
+                        title="Supprimer"
+                      >
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>

@@ -1,13 +1,16 @@
 package com.moscepa.controller;
 
 import com.moscepa.dto.QuestionnaireDetailDto;
+import com.moscepa.dto.GenerationRequestDto;
 import com.moscepa.service.QuestionnaireService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -52,6 +55,27 @@ public class QuestionnaireController {
             return ResponseEntity.badRequest().body("Erreur: " + e.getMessage());
         } catch (Exception e) {
             logger.error("❌ Erreur création questionnaire: {}", e.getMessage(), e);
+            return ResponseEntity.status(500).body("Erreur serveur: " + e.getMessage());
+        }
+    }
+
+    // --- Générer un questionnaire depuis la banque de questions ---
+    @PostMapping("/generer-depuis-banque")
+    public ResponseEntity<?> genererQuestionnaireDepuisBanque(@Valid @RequestBody GenerationRequestDto generationRequest,
+                                                              BindingResult bindingResult) {
+        logger.info("📥 POST /api/questionnaires/generer-depuis-banque");
+        
+        if (bindingResult.hasErrors()) {
+            logger.error("❌ Validation échouée: {}", bindingResult.getAllErrors());
+            return ResponseEntity.badRequest().body(bindingResult.getAllErrors());
+        }
+        
+        try {
+            QuestionnaireDetailDto generated = questionnaireService.genererQuestionnaireDepuisBanque(generationRequest);
+            logger.info("✅ Questionnaire généré avec ID: {}", generated.getId());
+            return ResponseEntity.ok(generated);
+        } catch (Exception e) {
+            logger.error("❌ Erreur génération questionnaire: {}", e.getMessage(), e);
             return ResponseEntity.status(500).body("Erreur serveur: " + e.getMessage());
         }
     }

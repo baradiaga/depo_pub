@@ -2,6 +2,7 @@ package com.moscepa.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 
 public class ChapitrePayload {
@@ -19,7 +20,18 @@ public class ChapitrePayload {
 
     private List<SectionPayload> sections;
 
-    // Getters et Setters
+    // ========== AJOUTE CES 3 NOUVEAUX CHAMPS ==========
+    @Size(max = 255, message = "Le type d'activité ne doit pas dépasser 255 caractères")
+    private String typeActivite;
+
+    @Size(max = 2000, message = "Les prérequis ne doivent pas dépasser 2000 caractères")
+    private String prerequis;
+
+    @Size(max = 255, message = "Le type d'évaluation ne doit pas dépasser 255 caractères")
+    private String typeEvaluation;
+    // ===================================================
+
+    // Getters et Setters EXISTANTS
     public String getMatiere() { return matiere; }
     public void setMatiere(String matiere) { this.matiere = matiere; }
     public String getTitre() { return titre; }
@@ -30,4 +42,15 @@ public class ChapitrePayload {
     public void setObjectif(String objectif) { this.objectif = objectif; }
     public List<SectionPayload> getSections() { return sections; }
     public void setSections(List<SectionPayload> sections) { this.sections = sections; }
+
+    // ========== AJOUTE CES GETTERS ET SETTERS ==========
+    public String getTypeActivite() { return typeActivite; }
+    public void setTypeActivite(String typeActivite) { this.typeActivite = typeActivite; }
+    
+    public String getPrerequis() { return prerequis; }
+    public void setPrerequis(String prerequis) { this.prerequis = prerequis; }
+    
+    public String getTypeEvaluation() { return typeEvaluation; }
+    public void setTypeEvaluation(String typeEvaluation) { this.typeEvaluation = typeEvaluation; }
+    // ===================================================
 }

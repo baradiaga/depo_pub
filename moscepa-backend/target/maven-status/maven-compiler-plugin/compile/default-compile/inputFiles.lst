@@ -4,6 +4,7 @@ C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\mo
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\entity\RessourcePedagogique.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\entity\HistoriqueModification.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\entity\UniteEnseignement.java
+C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\dto\GenerationRequestDto.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\security\UserPrincipal.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\dto\SectionPayload.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\controller\QuestionnaireController.java
@@ -46,6 +47,7 @@ C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\mo
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\controller\BanqueQuestionController.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\config\WebConfig.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\repository\FonctionnaliteRepository.java
+C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\controller\StudentJourneyFrontController.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\dto\EchelleConnaissanceDto.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\dto\UniteEnseignementDto.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\controller\AdminController.java
@@ -54,6 +56,7 @@ C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\mo
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\dto\ParcoursDto.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\service\ParcoursService.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\controller\ChapitreController.java
+C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\controller\ProgressionFrontController.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\config\ModelMapperConfig.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\entity\StatutQuestion.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\dto\BanqueReponseDetailDto.java
@@ -165,6 +168,8 @@ C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\mo
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\security\UserDetailsServiceImpl.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\controller\UniteEnseignementController.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\service\EtablissementService.java
+C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\service\FrontendMapperService.java
+C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\dto\ChapitreProgressFrontDto.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\controller\MatiereController.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\entity\TypeSection.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\dto\BanqueQuestionCreationDto.java
@@ -198,6 +203,7 @@ C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\mo
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\entity\BanqueReponse.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\entity\RolePermission.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\service\QuestionService.java
+C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\dto\StudentJourneyFrontDto.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\repository\QuestionRepository.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\exception\ResourceNotFoundException.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\service\CategorieService.java

@@ -1,4 +1,4 @@
-// Fichier : src/main/java/com/moscepa/entity/Chapitre.java (Version Définitivement Corrigée)
+// Fichier : src/main/java/com/moscepa/entity/Chapitre.java
 
 package com.moscepa.entity;
 
@@ -16,17 +16,33 @@ public class Chapitre {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-     @Column(name = "parcours_type")
+    
+    @Column(name = "parcours_type")
     private String parcoursType; 
+    
     @NotBlank
     private String nom;
+    
     private Integer numero;
     private Integer niveau;
+    
     @Lob
     private String objectif;
+    
     @Column(name = "ordre")
     private Integer ordre;
-  
+    
+    // ========== NOUVEAUX CHAMPS À AJOUTER ==========
+    @Column(name = "type_activite")
+    private String typeActivite;
+    
+    @Lob
+    private String prerequis;
+    
+    @Column(name = "type_evaluation")
+    private String typeEvaluation;
+    // ================================================
+    
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "element_constitutif_id", nullable = false)
@@ -39,12 +55,8 @@ public class Chapitre {
     @OneToMany(mappedBy = "chapitre", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Questionnaire> questionnaires = new ArrayList<>();
 
-    // ====================================================================
-    // === CORRECTION DÉFINITIVE : AJOUT DE LA RELATION VERS L'ENTITÉ TEST ===
-    // ====================================================================
     @OneToMany(mappedBy = "chapitre", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Test> tests = new ArrayList<>();
-
 
     // --- Constructeurs, méthodes utilitaires, etc. ---
     public Chapitre() {}
@@ -57,31 +69,46 @@ public class Chapitre {
     // --- Getters et Setters ---
     public String getParcoursType() { return parcoursType; }
     public void setParcoursType(String parcoursType) { this.parcoursType = parcoursType; }
+    
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+    
     public String getNom() { return nom; }
     public void setNom(String nom) { this.nom = nom; }
+    
     public Integer getNumero() { return numero; }
     public void setNumero(Integer numero) { this.numero = numero; }
+    
     public Integer getNiveau() { return niveau; }
     public void setNiveau(Integer niveau) { this.niveau = niveau; }
+    
     public String getObjectif() { return objectif; }
     public void setObjectif(String objectif) { this.objectif = objectif; }
+    
     public Integer getOrdre() { return ordre; }
     public void setOrdre(Integer ordre) { this.ordre = ordre; }
+    
+    // ========== GETTERS ET SETTERS POUR LES NOUVEAUX CHAMPS ==========
+    public String getTypeActivite() { return typeActivite; }
+    public void setTypeActivite(String typeActivite) { this.typeActivite = typeActivite; }
+    
+    public String getPrerequis() { return prerequis; }
+    public void setPrerequis(String prerequis) { this.prerequis = prerequis; }
+    
+    public String getTypeEvaluation() { return typeEvaluation; }
+    public void setTypeEvaluation(String typeEvaluation) { this.typeEvaluation = typeEvaluation; }
+    // =================================================================
+    
     public ElementConstitutif getElementConstitutif() { return elementConstitutif; }
     public void setElementConstitutif(ElementConstitutif elementConstitutif) { this.elementConstitutif = elementConstitutif; }
+    
     public List<Section> getSections() { return sections; }
     public void setSections(List<Section> sections) { this.sections = sections; }
+    
     public List<Questionnaire> getQuestionnaires() { return questionnaires; }
     public void setQuestionnaires(List<Questionnaire> questionnaires) { this.questionnaires = questionnaires; }
 
     // --- GETTERS ET SETTERS POUR LA NOUVELLE RELATION ---
-    public List<Test> getTests() {
-        return tests;
-    }
-
-    public void setTests(List<Test> tests) {
-        this.tests = tests;
-    }
+    public List<Test> getTests() { return tests; }
+    public void setTests(List<Test> tests) { this.tests = tests; }
 }

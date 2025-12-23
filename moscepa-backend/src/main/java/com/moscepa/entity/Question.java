@@ -28,6 +28,12 @@ public class Question {
     @Column(name = "reponse_correcte_texte")
     private String reponseCorrecteTexte;
 
+    @Column(name = "theme")
+    private String theme;
+
+    @Column(name = "niveau")
+    private String niveau;
+
     // ====================================================================
     // Réponses associées à la question
     // ====================================================================
@@ -90,6 +96,12 @@ public class Question {
     public String getReponseCorrecteTexte() { return reponseCorrecteTexte; }
     public void setReponseCorrecteTexte(String reponseCorrecteTexte) { this.reponseCorrecteTexte = reponseCorrecteTexte; }
 
+    public String getTheme() { return theme; }
+    public void setTheme(String theme) { this.theme = theme; }
+
+    public String getNiveau() { return niveau; }
+    public void setNiveau(String niveau) { this.niveau = niveau; }
+
     public List<Reponse> getReponses() { return reponses; }
     public void setReponses(List<Reponse> reponses) { this.reponses = reponses; }
 
@@ -112,6 +124,8 @@ public class Question {
                 ", enonce='" + enonce + '\'' +
                 ", typeQuestion=" + typeQuestion +
                 ", points=" + points +
+                ", theme='" + theme + '\'' +
+                ", niveau='" + niveau + '\'' +
                 '}';
     }
 

@@ -1,11 +1,11 @@
 // Fichier : src/app/features/enseignant/components/gestion-questionnaire/gestion-questionnaire.component.ts
-// Version finale avec logs de debug complets
+// Version finale adaptée pour la génération depuis la banque
 
 import { Component, OnInit } from '@angular/core';
 import { switchMap } from 'rxjs/operators';
 
 // --- IMPORTS DE SERVICES ---
-import { QuestionnaireService, QuestionnairePayload, ParametresGeneration, QuestionnaireDetail } from '../../../../services/questionnaire.service';
+import { QuestionnaireService, QuestionnairePayload, QuestionnaireDetail, GenerationRequestDto } from '../../../../services/questionnaire.service';
 import { ElementConstitutifService } from '../../../../services/element-constitutif.service';
 import { ChapitreService } from '../../../../services/chapitre.service';
 import { TestService } from '../../../../services/test.service';
@@ -39,16 +39,23 @@ export class GestionQuestionnaireComponent implements OnInit {
     questions: []
   };
   
-  parametresGeneration: ParametresGeneration = {
-    titre: '', 
-    nombreQuestions: 10, 
-    duree: 0, 
-    chapitresIds: []
+  // NOUVEAUX PARAMÈTRES POUR LA GÉNÉRATION DEPUIS BANQUE
+  generationRequest: GenerationRequestDto = {
+    themes: [],
+    nombreQuestions: 10,
+    niveau: 'INTERMEDIAIRE'
   };
   
   matiereAutoId: number | null = null;
   generationEnCours = false;
   questionnaireGenere: QuestionnaireDetail | null = null;
+  
+  // NIVEAUX DISPONIBLES POUR LA GÉNÉRATION
+  niveauxDisponibles = [
+    { value: 'FACILE', label: 'Facile' },
+    { value: 'INTERMEDIAIRE', label: 'Intermédiaire' },
+    { value: 'DIFFICILE', label: 'Difficile' }
+  ];
 
   constructor(
     private questionnaireService: QuestionnaireService,
@@ -87,11 +94,10 @@ export class GestionQuestionnaireComponent implements OnInit {
     console.log(`🔄 Changement matière - Mode: ${this.modeCreation}, ID: ${matiereId}`);
     
     this.chapitresDisponibles = [];
+    this.generationRequest.themes = []; // Réinitialiser les thèmes
     
     if (this.modeCreation === 'manuel') { 
       this.questionnaire.chapitreId = null; 
-    } else { 
-      this.parametresGeneration.chapitresIds = []; 
     }
     
     if (!matiereId) {
@@ -134,6 +140,7 @@ export class GestionQuestionnaireComponent implements OnInit {
     console.log(`🔄 Changement mode: ${this.modeCreation} → ${nouveauMode}`);
     this.modeCreation = nouveauMode;
     this.chapitresDisponibles = [];
+    this.generationRequest.themes = []; // Réinitialiser les thèmes
   }
 
   reinitialiserFormulaireManuel(): void {
@@ -163,12 +170,13 @@ export class GestionQuestionnaireComponent implements OnInit {
     return valide;
   }
 
-  parametresGenerationValides(): boolean {
-    const valide = !!(this.parametresGeneration.titre && 
-                     this.matiereAutoId && 
-                     this.parametresGeneration.chapitresIds.length > 0 && 
-                     this.parametresGeneration.nombreQuestions > 0);
-    console.log(`📋 Validation génération: ${valide ? '✅' : '❌'}`);
+  // NOUVELLE MÉTHODE DE VALIDATION POUR LA GÉNÉRATION
+  generationRequestValide(): boolean {
+    const valide = !!(this.matiereAutoId && 
+                     this.generationRequest.themes.length > 0 && 
+                     this.generationRequest.nombreQuestions > 0 &&
+                     this.generationRequest.niveau);
+    console.log(`📋 Validation génération: ${valide ? '✅' : '❌'}`, this.generationRequest);
     return valide;
   }
 
@@ -256,15 +264,26 @@ export class GestionQuestionnaireComponent implements OnInit {
     }
   }
 
-  toggleChapitre(id: number): void {
-    const idx = this.parametresGeneration.chapitresIds.indexOf(id);
-    if (idx > -1) {
-      this.parametresGeneration.chapitresIds.splice(idx, 1);
-      console.log(`➖ Chapitre ${id} retiré. Total: ${this.parametresGeneration.chapitresIds.length}`);
+  // NOUVELLE MÉTHODE POUR TOGGLE LES THÈMES
+  toggleTheme(chapitreId: number): void {
+    const chapitre = this.chapitresDisponibles.find(c => c.id === chapitreId);
+    if (!chapitre) return;
+    
+    const themeIndex = this.generationRequest.themes.indexOf(chapitre.nom);
+    
+    if (themeIndex > -1) {
+      this.generationRequest.themes.splice(themeIndex, 1);
+      console.log(`➖ Thème "${chapitre.nom}" retiré. Total: ${this.generationRequest.themes.length}`);
     } else {
-      this.parametresGeneration.chapitresIds.push(id);
-      console.log(`➕ Chapitre ${id} ajouté. Total: ${this.parametresGeneration.chapitresIds.length}`);
+      this.generationRequest.themes.push(chapitre.nom);
+      console.log(`➕ Thème "${chapitre.nom}" ajouté. Total: ${this.generationRequest.themes.length}`);
     }
+  }
+
+  // VÉRIFIE SI UN CHAPITRE EST SÉLECTIONNÉ COMME THÈME
+  isThemeSelected(chapitreId: number): boolean {
+    const chapitre = this.chapitresDisponibles.find(c => c.id === chapitreId);
+    return chapitre ? this.generationRequest.themes.includes(chapitre.nom) : false;
   }
 
   supprimerQuestionnaire(id: number, titre: string): void {
@@ -284,25 +303,33 @@ export class GestionQuestionnaireComponent implements OnInit {
     }
   }
 
-  genererQuestionnaire(): void {
-    if (!this.parametresGenerationValides()) { 
-      alert("Veuillez remplir tous les champs obligatoires."); 
+  // NOUVELLE MÉTHODE DE GÉNÉRATION ADAPTÉE
+  genererQuestionnaireDepuisBanque(): void {
+    if (!this.generationRequestValide()) { 
+      alert("Veuillez sélectionner une matière, au moins un thème, et spécifier le nombre de questions et le niveau."); 
       return; 
     }
     
-    console.log('🚀 Lancement génération automatique...');
-    console.log('Paramètres:', this.parametresGeneration);
+    console.log('🚀 Lancement génération depuis banque...');
+    console.log('Paramètres:', this.generationRequest);
     
     this.generationEnCours = true;
     this.questionnaireGenere = null;
     
-    this.questionnaireService.genererQuestionnaireAutomatique(this.parametresGeneration).subscribe({
+    this.questionnaireService.genererQuestionnaireDepuisBanque(this.generationRequest).subscribe({
       next: (questionnaire) => {
         console.log('✅ Questionnaire généré:', questionnaire);
         this.questionnaireGenere = questionnaire;
         this.generationEnCours = false;
         alert(`Questionnaire généré : "${questionnaire.titre}" !`);
         this.chargerQuestionnaires();
+        
+        // Réinitialiser les paramètres après génération
+        this.generationRequest = {
+          themes: [],
+          nombreQuestions: 10,
+          niveau: 'INTERMEDIAIRE'
+        };
       },
       error: (err) => {
         console.error('❌ Erreur génération:', err);
@@ -486,6 +513,7 @@ export class GestionQuestionnaireComponent implements OnInit {
     console.log('Questions:', this.questionnaire.questions);
     console.log('Matières disponibles:', this.mesMatieres.length);
     console.log('Chapitres disponibles:', this.chapitresDisponibles.length);
+    console.log('Generation Request:', this.generationRequest);
     console.log('Questionnaires chargés:', this.listeQuestionnaires.length);
     console.log('=== FIN DEBUG ===');
   }

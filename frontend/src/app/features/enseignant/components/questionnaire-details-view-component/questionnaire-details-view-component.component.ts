@@ -83,7 +83,7 @@ export class QuestionnaireDetailsViewComponentComponent implements OnInit {
 
   // 🔥 Retour à la liste
   navigateToList(): void {
-    this.router.navigate(['/enseignant/questionnaires']);
+    this.router.navigate(['/app/enseignant/gestion-questionnaire']);
   }
 
   // 🔥 Suppression avec confirmation

@@ -1,1 +1,348 @@
-<p>activites works!</p>
+<div class="activites-container">
+  <!-- Header -->
+  <header class="activites-header">
+    <div class="header-left">
+      <h1 class="page-title">
+        <i class="bi bi-pencil-square"></i>
+        Mes Activités
+      </h1>
+      <p class="page-subtitle">Pratiquez et validez vos compétences</p>
+    </div>
+    
+    <div class="header-right">
+      <div class="stats-badge">
+        <div class="stats-progress" [style.background]="'conic-gradient(#4CAF50 ' + stats.tauxCompletion + '%, #f0f0f0 0)'">
+          <span>{{ stats.tauxCompletion }}%</span>
+        </div>
+        <div class="stats-text">
+          <small>Complétion</small>
+        </div>
+      </div>
+      
+      <button class="btn btn-outline-primary" (click)="toggleModeVue()">
+        <i class="bi" [class.bi-calendar-week]="modeVue === 'liste'" [class.bi-list-ul]="modeVue === 'calendrier'"></i>
+        {{ modeVue === 'liste' ? 'Vue Calendrier' : 'Vue Liste' }}
+      </button>
+    </div>
+  </header>
+
+  <!-- Statistiques -->
+  <div class="stats-section">
+    <div class="stat-card">
+      <div class="stat-icon" style="background-color: #e3f2fd;">
+        <i class="bi bi-clock" style="color: #ffc107;"></i>
+      </div>
+      <div class="stat-content">
+        <h3>{{ stats.aFaire }}</h3>
+        <p>À faire</p>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon" style="background-color: #fff3cd;">
+        <i class="bi bi-play-circle" style="color: #4361ee;"></i>
+      </div>
+      <div class="stat-content">
+        <h3>{{ stats.enCours }}</h3>
+        <p>En cours</p>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon" style="background-color: #d1ecf1;">
+        <i class="bi bi-send" style="color: #17a2b8;"></i>
+      </div>
+      <div class="stat-content">
+        <h3>{{ stats.soumis }}</h3>
+        <p>Soumis</p>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon" style="background-color: #d4edda;">
+        <i class="bi bi-check-circle" style="color: #28a745;"></i>
+      </div>
+      <div class="stat-content">
+        <h3>{{ stats.corrige }}</h3>
+        <p>Corrigé</p>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon" style="background-color: #f8d7da;">
+        <i class="bi bi-star" style="color: #dc3545;"></i>
+      </div>
+      <div class="stat-content">
+        <h3>{{ stats.pointsObtenus }}/{{ stats.pointsTotal }}</h3>
+        <p>Points</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtres -->
+  <div class="filters-section">
+    <div class="filter-group">
+      <h6><i class="bi bi-funnel me-2"></i>Type d'activité</h6>
+      <div class="filter-buttons">
+        <button *ngFor="let type of typesActivites" 
+                class="filter-btn" 
+                [class.active]="filtreTypeActif === type.id"
+                (click)="appliquerFiltreType(type.id)"
+                [style.border-color]="type.couleur">
+          <span class="filter-icon">{{ type.icon }}</span>
+          {{ type.label }}
+        </button>
+      </div>
+    </div>
+    
+    <div class="filter-group">
+      <h6><i class="bi bi-filter me-2"></i>Statut</h6>
+      <div class="filter-buttons">
+        <button *ngFor="let filtre of filtresStatut" 
+                class="filter-btn" 
+                [class.active]="filtreStatutActif === filtre.id"
+                (click)="appliquerFiltreStatut(filtre.id)">
+          <span class="filter-icon">{{ filtre.icon }}</span>
+          {{ filtre.label }}
+        </button>
+      </div>
+    </div>
+    
+    <button class="btn btn-outline-secondary" (click)="reinitialiserFiltres()">
+      <i class="bi bi-x-circle me-1"></i>Réinitialiser
+    </button>
+  </div>
+
+  <!-- Vue Liste (par défaut) -->
+  <div *ngIf="modeVue === 'liste'" class="activites-liste">
+    <div *ngFor="let activite of activitesFiltrees" class="activite-card" [class.locked]="activite.estVerrouillee">
+      
+      <!-- En-tête de la carte -->
+      <div class="activite-header">
+        <div class="activite-type" [style.background-color]="getActiviteTypeColor(activite.type)">
+          <span class="type-icon">{{ getActiviteTypeIcon(activite.type) }}</span>
+          <span class="type-label">{{ getActiviteTypeLabel(activite.type) }}</span>
+        </div>
+        
+        <div class="activite-statut" [class]="getClasseStatut(activite.statut)">
+          <span class="statut-icon">{{ getIconeStatut(activite.statut) }}</span>
+          <span class="statut-label">{{ formatStatut(activite.statut) }}</span>
+        </div>
+      </div>
+
+      <!-- Corps de la carte -->
+      <div class="activite-body" (click)="selectionnerActivite(activite)">
+        <div class="activite-titre-section">
+          <h3 class="activite-titre">{{ activite.titre }}</h3>
+          <div class="activite-matiere">
+            <i class="bi bi-book"></i>
+            {{ activite.matiere }} • {{ activite.chapitre }}
+          </div>
+        </div>
+        
+        <p class="activite-description">{{ activite.description }}</p>
+        
+        <!-- Métadonnées -->
+        <div class="activite-metadata">
+          <div class="metadata-item">
+            <i class="bi bi-clock"></i>
+            <span>{{ activite.dureeEstimee }}</span>
+          </div>
+          <div class="metadata-item">
+            <i class="bi bi-bar-chart"></i>
+            <span [style.color]="getCouleurDifficulte(activite.difficulte)">
+              {{ formatDifficulte(activite.difficulte) }}
+            </span>
+          </div>
+          <div class="metadata-item">
+            <i class="bi bi-star"></i>
+            <span>{{ activite.points }} points</span>
+          </div>
+          <div class="metadata-item">
+            <i class="bi bi-calendar"></i>
+            <span>Échéance: {{ formaterDate(activite.dateLimite) }}</span>
+          </div>
+        </div>
+
+        <!-- Progression -->
+        <div *ngIf="activite.progression > 0" class="activite-progression">
+          <div class="progression-info">
+            <span>Progression</span>
+            <span>{{ activite.progression }}%</span>
+          </div>
+          <div class="progress">
+            <div class="progress-bar" [style.width.%]="activite.progression" 
+                 [style.background-color]="activite.statut === 'corrige' ? '#28a745' : '#4361ee'"></div>
+          </div>
+        </div>
+
+        <!-- Informations de soumission -->
+        <div *ngIf="activite.dateSoumission" class="soumission-info">
+          <i class="bi bi-check-circle"></i>
+          <span>Soumis le {{ activite.dateSoumission }}</span>
+          <span *ngIf="activite.pointsObtenus !== null" class="points-obtenus">
+            • {{ activite.pointsObtenus }}/{{ activite.points }} points
+          </span>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="activite-actions">
+        <button class="btn action-btn" 
+                [class]="getClasseBoutonPrincipal(activite)"
+                (click)="demarrerActivite(activite)"
+                [disabled]="activite.estVerrouillee">
+          <span class="action-icon">{{ getIconeBoutonPrincipal(activite) }}</span>
+          {{ getTexteBoutonPrincipal(activite) }}
+        </button>
+        
+        <button *ngIf="activite.statut === 'en-cours'" 
+                class="btn btn-success"
+                (click)="soumettreActivite(activite)">
+          <i class="bi bi-send"></i>
+          Soumettre
+        </button>
+        
+        <button class="btn btn-outline-secondary" 
+                (click)="selectionnerActivite(activite)">
+          <i class="bi bi-info-circle"></i>
+          Détails
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vue Calendrier (simplifiée) -->
+  <div *ngIf="modeVue === 'calendrier'" class="calendrier-view">
+    <div class="calendrier-header">
+      <h3>Échéances des activités</h3>
+      <div class="calendrier-legend">
+        <div class="legend-item">
+          <span class="legend-color" style="background-color: #dc3545;"></span>
+          <span>À faire</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-color" style="background-color: #4361ee;"></span>
+          <span>En cours</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-color" style="background-color: #28a745;"></span>
+          <span>Terminé</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="calendrier-grid">
+      <div *ngFor="let activite of activitesFiltrees" 
+           class="calendrier-item"
+           [style.border-color]="getCouleurDifficulte(activite.difficulte)"
+           (click)="selectionnerActivite(activite)">
+        
+        <div class="calendrier-date">
+          <i class="bi bi-calendar"></i>
+          {{ activite.dateLimite }}
+        </div>
+        
+        <div class="calendrier-content">
+          <h5>{{ activite.titre }}</h5>
+          <div class="calendrier-meta">
+            <span class="badge" [style.background-color]="getTypeInfo(activite.type).couleur">
+              {{ getActiviteTypeLabel(activite.type) }}
+            </span>
+            <span class="points">{{ activite.points }} pts</span>
+          </div>
+        </div>
+        
+        <div class="calendrier-statut" [class]="getClasseStatut(activite.statut)">
+          {{ getIconeStatut(activite.statut) }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panneau de détail -->
+  <div *ngIf="activiteSelectionnee" class="detail-panel">
+    <div class="detail-header">
+      <h5>Détails de l'activité</h5>
+      <button class="btn-close" (click)="activiteSelectionnee = null">
+        <i class="bi bi-x"></i>
+      </button>
+    </div>
+    
+    <div class="detail-body">
+      <div class="detail-type" [style.background-color]="getActiviteTypeColor(activiteSelectionnee.type)">
+        <span class="type-icon-large">{{ getActiviteTypeIcon(activiteSelectionnee.type) }}</span>
+        <span class="type-label">{{ getActiviteTypeLabel(activiteSelectionnee.type) }}</span>
+      </div>
+      
+      <h6>{{ activiteSelectionnee.titre }}</h6>
+      <p>{{ activiteSelectionnee.description }}</p>
+      
+      <div class="detail-grid">
+        <div class="detail-item">
+          <span class="label">Matière</span>
+          <span class="value">{{ activiteSelectionnee.matiere }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="label">Chapitre</span>
+          <span class="value">{{ activiteSelectionnee.chapitre }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="label">Séquence</span>
+          <span class="value">{{ activiteSelectionnee.sequence }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="label">Difficulté</span>
+          <span class="value" [style.color]="getCouleurDifficulte(activiteSelectionnee.difficulte)">
+            {{ formatDifficulte(activiteSelectionnee.difficulte) }}
+          </span>
+        </div>
+        <div class="detail-item">
+          <span class="label">Durée estimée</span>
+          <span class="value">{{ activiteSelectionnee.dureeEstimee }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="label">Points</span>
+          <span class="value">{{ activiteSelectionnee.points }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="label">Échéance</span>
+          <span class="value">{{ activiteSelectionnee.dateLimite }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="label">Statut</span>
+          <span class="value" [class]="getClasseStatut(activiteSelectionnee.statut)">
+            {{ formatStatut(activiteSelectionnee.statut) }}
+          </span>
+        </div>
+      </div>
+      
+      <div *ngIf="activiteSelectionnee.ressources && activiteSelectionnee.ressources.length > 0" class="ressources-section">
+        <h6>Ressources disponibles</h6>
+        <div class="ressources-list">
+          <div *ngFor="let ressource of activiteSelectionnee.ressources" class="ressource-item">
+            <i class="bi bi-paperclip"></i>
+            {{ ressource }}
+          </div>
+        </div>
+      </div>
+      
+      <div class="detail-actions">
+        <button class="btn btn-primary w-100 mb-2" 
+                (click)="demarrerActivite(activiteSelectionnee)"
+                [disabled]="activiteSelectionnee.estVerrouillee">
+          <i class="bi" [class.bi-play]="activiteSelectionnee.statut !== 'corrige'" 
+                       [class.bi-eye]="activiteSelectionnee.statut === 'corrige'"></i>
+          {{ getTexteBoutonPrincipal(activiteSelectionnee) }}
+        </button>
+        
+        <button *ngIf="activiteSelectionnee.statut === 'en-cours'" 
+                class="btn btn-success w-100"
+                (click)="soumettreActivite(activiteSelectionnee)">
+          <i class="bi bi-send"></i>
+          Soumettre maintenant
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

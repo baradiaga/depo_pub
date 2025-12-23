@@ -3,12 +3,14 @@ package com.moscepa.service;
 import com.moscepa.dto.QuestionnaireDetailDto;
 import com.moscepa.dto.QuestionDto;
 import com.moscepa.dto.ReponsePourQuestionDto;
+import com.moscepa.dto.GenerationRequestDto;
 import com.moscepa.entity.Chapitre;
 import com.moscepa.entity.Questionnaire;
 import com.moscepa.entity.Question;
 import com.moscepa.entity.Reponse;
 import com.moscepa.repository.ChapitreRepository;
 import com.moscepa.repository.QuestionnaireRepository;
+import com.moscepa.repository.QuestionRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +30,9 @@ public class QuestionnaireService {
     
     @Autowired
     private ChapitreRepository chapitreRepository;
+    
+    @Autowired
+    private QuestionRepository questionRepository;
 
     // ====================================================================
     // --- Récupérer tous les questionnaires avec leurs questions ---
@@ -214,6 +219,107 @@ public class QuestionnaireService {
             resultDto.getQuestions() != null ? resultDto.getQuestions().size() : 0);
         
         return resultDto;
+    }
+
+    // ====================================================================
+    // --- Générer un questionnaire depuis la banque de questions ---
+    // ====================================================================
+    @Transactional
+    public QuestionnaireDetailDto genererQuestionnaireDepuisBanque(GenerationRequestDto generationRequest) {
+        logger.info("=== 🚀 DÉBUT GÉNÉRATION QUESTIONNAIRE DEPUIS BANQUE ===");
+        logger.info("📋 Paramètres de génération:");
+        logger.info("  - Thèmes: {}", generationRequest.getThemes());
+        logger.info("  - Nombre de questions: {}", generationRequest.getNombreQuestions());
+        logger.info("  - Niveau: {}", generationRequest.getNiveau());
+        
+        // ======================
+        // 1. VALIDATIONS
+        // ======================
+        if (generationRequest.getThemes() == null || generationRequest.getThemes().isEmpty()) {
+            throw new IllegalArgumentException("Au moins un thème doit être spécifié");
+        }
+        
+        if (generationRequest.getNombreQuestions() <= 0) {
+            throw new IllegalArgumentException("Le nombre de questions doit être positif");
+        }
+        
+        // ======================
+        // 2. RÉCUPÉRER LES QUESTIONS DE LA BANQUE
+        // ======================
+        logger.info("🔍 Recherche des questions dans la banque...");
+        List<Question> questionsDisponibles = questionRepository
+                .findByThemesAndNiveau(generationRequest.getThemes(), generationRequest.getNiveau());
+        
+        logger.info("📊 Questions disponibles: {} question(s) trouvée(s)", questionsDisponibles.size());
+        
+        if (questionsDisponibles.isEmpty()) {
+            throw new IllegalStateException("Aucune question trouvée pour les critères spécifiés");
+        }
+        
+        // ======================
+        // 3. SÉLECTIONNER LES QUESTIONS
+        // ======================
+        int nombreQuestions = Math.min(generationRequest.getNombreQuestions(), questionsDisponibles.size());
+        List<Question> questionsSelectionnees = questionsDisponibles.stream()
+                .limit(nombreQuestions)
+                .collect(Collectors.toList());
+        
+        logger.info("✅ {} question(s) sélectionnée(s) pour le questionnaire", questionsSelectionnees.size());
+        
+        // ======================
+        // 4. CRÉER LE QUESTIONNAIRE
+        // ======================
+        Questionnaire questionnaire = new Questionnaire();
+        questionnaire.setTitre("Questionnaire généré - " + String.join(", ", generationRequest.getThemes()));
+        questionnaire.setDescription("Questionnaire généré automatiquement à partir de la banque de questions");
+        questionnaire.setDuree(60); // Durée par défaut
+        questionnaire.setAuteur("Système");
+        
+        // Trouver un chapitre par défaut (premier chapitre disponible)
+        Chapitre chapitreParDefaut = chapitreRepository.findAll().stream()
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Aucun chapitre disponible"));
+        questionnaire.setChapitre(chapitreParDefaut);
+        
+        // ======================
+        // 5. COPIER LES QUESTIONS SÉLECTIONNÉES
+        // ======================
+        logger.info("📝 Copie des questions sélectionnées...");
+        for (Question questionSource : questionsSelectionnees) {
+            Question nouvelleQuestion = new Question();
+            nouvelleQuestion.setEnonce(questionSource.getEnonce());
+            nouvelleQuestion.setTypeQuestion(questionSource.getTypeQuestion());
+            nouvelleQuestion.setPoints(questionSource.getPoints());
+            nouvelleQuestion.setQuestionnaire(questionnaire);
+            
+            // Copier les réponses
+            for (Reponse reponseSource : questionSource.getReponses()) {
+                Reponse nouvelleReponse = new Reponse();
+                nouvelleReponse.setTexte(reponseSource.getTexte());
+                nouvelleReponse.setCorrecte(reponseSource.isCorrecte());
+                nouvelleReponse.setQuestion(nouvelleQuestion);
+                nouvelleQuestion.getReponses().add(nouvelleReponse);
+            }
+            
+            questionnaire.getQuestions().add(nouvelleQuestion);
+        }
+        
+        // ======================
+        // 6. SAUVEGARDER
+        // ======================
+        logger.info("💾 Sauvegarde du questionnaire généré...");
+        Questionnaire saved = questionnaireRepository.save(questionnaire);
+        
+        // ======================
+        // 7. LOGS FINAUX
+        // ======================
+        logger.info("=== ✅ QUESTIONNAIRE GÉNÉRÉ AVEC SUCCÈS ===");
+        logger.info("📌 ID: {}", saved.getId());
+        logger.info("📌 Titre: {}", saved.getTitre());
+        logger.info("📌 Nombre de questions: {}", 
+            saved.getQuestions() != null ? saved.getQuestions().size() : 0);
+        
+        return new QuestionnaireDetailDto(saved);
     }
 
     // ====================================================================

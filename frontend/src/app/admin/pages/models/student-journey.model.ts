@@ -1,17 +1,20 @@
-import { CourseProgressDto } from './course-progress.model';
-import { ChapitreProgress } from './chapitre-progress.model';
-
 export interface StudentJourney {
-  studentId: number;
-  nomComplet: string;
-  email: string;
-  formationActuelle: string;
-  niveauEtude: string;
-  moyenneGeneraleTests: number;
-  testsPasses: number;
-  progressionParCours: CourseProgressDto[];
-  parcoursType: 'Recommandé' | 'Mixte' | 'Choisi';
+  id: number;
+  nom: string;
+  prenom: string;
+  email?: string;
+  parcoursType: 'RECOMMANDE' | 'CHOISI' | 'MIXTE';
   
-  // Optionnel: ajouter les chapitres si backend les fournit
-  chapitresProgress?: ChapitreProgress[];
+  // Ajoutez ces propriétés
+  nomComplet?: string;          // Pour "nomComplet"
+  formationActuelle?: string;   // Pour "formationActuelle"
+  niveauEtude?: string;         // Pour "niveauEtude"
+  moyenneGeneraleTests?: number; // Pour "moyenneGeneraleTests"
+  testsPasses?: number;         // Pour "testsPasses"
+  
+  // Propriétés déjà existantes (optionnelles)
+  scoreGlobal?: number;
+  pourcentageCompletion?: number;
+  tempsTotalPasse?: number;
+  dateDerniereActivite?: Date;
 }

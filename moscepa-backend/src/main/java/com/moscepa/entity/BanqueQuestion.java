@@ -70,7 +70,10 @@ public class BanqueQuestion {
     private Set<Tag> tags = new HashSet<>();
 
     // Constructeurs
-    public BanqueQuestion() {}
+    public BanqueQuestion() {
+        // Initialisation explicite pour plus de clarté
+        this.difficulte = Difficulte.MOYEN;
+    }
 
     // Getters et Setters
     public Long getId() { return id; }
@@ -83,10 +86,14 @@ public class BanqueQuestion {
     public void setTypeQuestion(TypeQuestion typeQuestion) { this.typeQuestion = typeQuestion; }
 
     public Integer getPoints() { return points; }
-    public void setPoints(Integer points) { this.points = points; }
+    public void setPoints(Integer points) { 
+        this.points = (points != null) ? points : 1; 
+    }
 
     public Difficulte getDifficulte() { return difficulte; }
-    public void setDifficulte(Difficulte difficulte) { this.difficulte = difficulte; }
+    public void setDifficulte(Difficulte difficulte) { 
+        this.difficulte = (difficulte != null) ? difficulte : Difficulte.MOYEN;
+    }
 
     public Chapitre getChapitre() { return chapitre; }
     public void setChapitre(Chapitre chapitre) { this.chapitre = chapitre; }
@@ -95,22 +102,34 @@ public class BanqueQuestion {
     public void setAuteur(Utilisateur auteur) { this.auteur = auteur; }
 
     public LocalDateTime getDateCreation() { return dateCreation; }
-    public void setDateCreation(LocalDateTime dateCreation) { this.dateCreation = dateCreation; }
+    public void setDateCreation(LocalDateTime dateCreation) { 
+        this.dateCreation = (dateCreation != null) ? dateCreation : LocalDateTime.now();
+    }
 
     public LocalDateTime getDateModification() { return dateModification; }
-    public void setDateModification(LocalDateTime dateModification) { this.dateModification = dateModification; }
+    public void setDateModification(LocalDateTime dateModification) { 
+        this.dateModification = (dateModification != null) ? dateModification : LocalDateTime.now();
+    }
 
     public StatutQuestion getStatut() { return statut; }
-    public void setStatut(StatutQuestion statut) { this.statut = statut; }
+    public void setStatut(StatutQuestion statut) { 
+        this.statut = (statut != null) ? statut : StatutQuestion.BROUILLON;
+    }
 
     public Integer getNombreUtilisations() { return nombreUtilisations; }
-    public void setNombreUtilisations(Integer nombreUtilisations) { this.nombreUtilisations = nombreUtilisations; }
+    public void setNombreUtilisations(Integer nombreUtilisations) { 
+        this.nombreUtilisations = (nombreUtilisations != null) ? nombreUtilisations : 0;
+    }
 
     public Double getTauxReussite() { return tauxReussite; }
-    public void setTauxReussite(Double tauxReussite) { this.tauxReussite = tauxReussite; }
+    public void setTauxReussite(Double tauxReussite) { 
+        this.tauxReussite = (tauxReussite != null) ? tauxReussite : 0.0;
+    }
 
     public Double getNoteQualite() { return noteQualite; }
-    public void setNoteQualite(Double noteQualite) { this.noteQualite = noteQualite; }
+    public void setNoteQualite(Double noteQualite) { 
+        this.noteQualite = (noteQualite != null) ? noteQualite : 0.0;
+    }
 
     public List<BanqueReponse> getReponses() { return reponses; }
     public void setReponses(List<BanqueReponse> reponses) { this.reponses = reponses; }

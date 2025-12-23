@@ -24,6 +24,14 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
 
     List<Question> findByQuestionnaireChapitreElementConstitutifId(Long elementConstitutifId);
 
+    // --- MÉTHODE AJOUTÉE POUR LA GÉNÉRATION DE QUESTIONNAIRE ---
+    
+    /**
+     * Trouve les questions dans la banque par thèmes et niveau
+     */
+    @Query("SELECT q FROM Question q LEFT JOIN FETCH q.reponses WHERE q.questionnaire IS NULL AND q.theme IN :themes AND q.niveau = :niveau")
+    List<Question> findByThemesAndNiveau(@Param("themes") List<String> themes, @Param("niveau") String niveau);
+    
     // --- MÉTHODES CORRIGÉES ET AJOUTÉES ---
     
     /**

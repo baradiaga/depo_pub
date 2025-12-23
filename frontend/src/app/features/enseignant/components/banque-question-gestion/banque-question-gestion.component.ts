@@ -6,7 +6,7 @@ import {
   BanqueQuestionCreation,
   BanqueQuestionDetail,
   TypeQuestion,
-  Difficulte,
+  Niveau,
   ElementConstitutifResponse,
   Chapitre
 } from '../../../../models/models';
@@ -32,8 +32,22 @@ export class BanqueQuestionGestionComponent implements OnInit {
   mesMatieres: ElementConstitutifResponse[] = [];
   chapitresDisponibles: Chapitre[] = [];
   typesQuestion: TypeQuestion[] = ['QCM', 'QCU', 'VRAI_FAUX', 'TEXTE_LIBRE'];
-  difficultes: Difficulte[] = ['FACILE', 'MOYEN', 'DIFFICILE'];
+  niveauxGenerique: Niveau[] = ['FACILE', 'INTERMEDIAIRE', 'DIFFICILE'];
+  
+  // AJOUT: Thèmes suggérés
+  themesSuggestions = [
+    'Algorithmie',
+    'Structures de données',
+    'Base de données',
+    'Réseaux',
+    'Sécurité',
+    'Développement web',
+    'Développement mobile',
+    'Tests',
+    'Design patterns'
+  ];
 
+  // Propriété locale pour stocker la matière sélectionnée
   selectedMatiereId: number | null = null;
 
   constructor(
@@ -53,8 +67,9 @@ export class BanqueQuestionGestionComponent implements OnInit {
       enonce: '',
       typeQuestion: 'QCU',
       points: 1,
-      difficulte: 'MOYEN',
-      chapitreId: null!,
+      chapitreId: null!, // Utilisation de l'assertion non-null
+      theme: '',
+      niveau: 'INTERMEDIAIRE',
       reponses: [
         { texte: '', correcte: true },
         { texte: '', correcte: false }
@@ -70,18 +85,31 @@ export class BanqueQuestionGestionComponent implements OnInit {
     );
   }
 
-  onMatiereChange(event: Event): void {
-    const selectElement = event.target as HTMLSelectElement;
-    const matiereId = +selectElement.value;
-
-    this.selectedMatiereId = matiereId;
+  onMatiereChange(): void {
+    const matiereId = this.selectedMatiereId;
+    
     this.chapitresDisponibles = [];
     this.questionForm.chapitreId = null!;
+    this.questionForm.theme = '';
 
     if (matiereId && matiereId !== 0) {
       this.chapitreService.getChapitresParMatiere(matiereId).subscribe(
-        data => this.chapitresDisponibles = data
+        data => {
+          this.chapitresDisponibles = data;
+          if (data.length > 0) {
+            this.questionForm.theme = data[0].nom;
+          }
+        }
       );
+    }
+  }
+
+  onChapitreChange(): void {
+    const chapitre = this.chapitresDisponibles.find(c => c.id === this.questionForm.chapitreId);
+    if (chapitre) {
+      if (!this.questionForm.theme || this.questionForm.theme.includes('chapitre')) {
+        this.questionForm.theme = chapitre.nom;
+      }
     }
   }
 
@@ -171,6 +199,14 @@ export class BanqueQuestionGestionComponent implements OnInit {
       alert("Les points doivent être supérieurs à 0.");
       return false;
     }
+    if (!this.questionForm.theme?.trim()) {
+      alert("Veuillez saisir un thème pour la question.");
+      return false;
+    }
+    if (!this.questionForm.niveau) {
+      alert("Veuillez sélectionner un niveau de difficulté.");
+      return false;
+    }
     if (['QCM', 'QCU'].includes(this.questionForm.typeQuestion) &&
       this.questionForm.reponses.length < 2) {
       alert("Les questions QCM/QCU doivent avoir au moins 2 réponses.");
@@ -206,7 +242,7 @@ export class BanqueQuestionGestionComponent implements OnInit {
       },
       error: err => {
         console.error("Erreur sauvegarde", err);
-        alert("Erreur lors de la sauvegarde.");
+        alert("Erreur lors de la sauvegarde : " + (err.error?.message || err.message));
       }
     }).add(() => this.isSaving = false);
   }
@@ -226,6 +262,7 @@ export class BanqueQuestionGestionComponent implements OnInit {
     this.isEditMode = true;
     this.questionIdToEdit = question.id;
 
+    // Trouver la matière associée au chapitre
     const matiere = this.mesMatieres.find(m =>
       m.chapitres?.some(c => c.id === question.chapitreId)
     );
@@ -243,10 +280,11 @@ export class BanqueQuestionGestionComponent implements OnInit {
       enonce: question.enonce,
       typeQuestion: question.typeQuestion,
       points: question.points,
-      difficulte: question.difficulte,
       chapitreId: question.chapitreId,
+      theme: question.theme || '',
+      niveau: question.niveau || 'INTERMEDIAIRE',
       reponses: question.reponses.map(r => ({ texte: r.texte, correcte: r.correcte })),
-      tags: [...question.tags]
+      tags: [...(question.tags || [])]
     };
   }
 

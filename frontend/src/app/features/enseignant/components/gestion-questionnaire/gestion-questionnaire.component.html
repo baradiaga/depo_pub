@@ -1,4 +1,5 @@
-<!-- Fichier : src/app/features/enseignant/components/gestion-questionnaire/gestion-questionnaire.component.html (Corrigé avec ngx-quill) -->
+<!-- Fichier : src/app/features/enseignant/components/gestion-questionnaire/gestion-questionnaire.component.html -->
+<!-- Version adaptée pour la génération depuis la banque -->
 
 <div class="container mt-4">
   <!-- ============================================= -->
@@ -9,9 +10,9 @@
       <h2>Création d'un Questionnaire</h2>
       <div class="col-md-4">
         <label for="modeCreation" class="form-label">Mode de création</label>
-        <select id="modeCreation" class="form-select" (change)="changerMode($event)">
+        <select id="modeCreation" class="form-select" [(ngModel)]="modeCreation" (change)="changerMode($event)">
           <option value="manuel">Manuel</option>
-          <option value="automatique">Automatique</option>
+          <option value="automatique">Automatique (depuis banque)</option>
         </select>
       </div>
     </div>
@@ -49,9 +50,6 @@
         </div>
         <div class="mb-3">
           <label class="form-label">Description</label>
-          <!-- ==================================================================== -->
-          <!-- === CORRECTION : On remplace <angular-editor> par <quill-editor> === -->
-          <!-- ==================================================================== -->
           <quill-editor 
             [(ngModel)]="questionnaire.description"
             [styles]="{ height: '150px' }">
@@ -60,7 +58,7 @@
 
         <hr>
 
-        <!-- Section des questions (INCHANGÉE) -->
+        <!-- Section des questions -->
         <h4 class="mt-4">Questions</h4>
         <div *ngFor="let question of questionnaire.questions; let i = index" class="card my-3">
           <div class="card-body">
@@ -145,59 +143,92 @@
         </div>
       </div>
 
-      <!-- ==================== MODE AUTOMATIQUE ==================== -->
+      <!-- ==================== MODE AUTOMATIQUE (DEPUIS BANQUE) ==================== -->
       <div *ngIf="modeCreation === 'automatique'">
         <div class="row">
           <div class="col-md-6 mb-3">
-            <label for="titreAuto" class="form-label">Titre du questionnaire <span class="text-danger">*</span></label>
-            <input type="text" id="titreAuto" class="form-control" [(ngModel)]="parametresGeneration.titre">
-          </div>
-          <div class="col-md-6 mb-3">
-            <label for="dureeAuto" class="form-label">Durée (en minutes)</label>
-            <input type="number" id="dureeAuto" class="form-control" [(ngModel)]="parametresGeneration.duree">
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-md-6 mb-3">
-            <label for="matiereAuto" class="form-label">Matière (pour filtrer les chapitres) <span class="text-danger">*</span></label>
+            <label for="matiereAuto" class="form-label">Matière (pour filtrer les thèmes) <span class="text-danger">*</span></label>
             <select id="matiereAuto" class="form-select" [(ngModel)]="matiereAutoId" (change)="onMatiereChange()">
               <option [ngValue]="null" disabled>-- Choisissez une matière --</option>
               <option *ngFor="let matiere of mesMatieres" [value]="matiere.id">{{ matiere.nom }}</option>
             </select>
           </div>
-          <div class="col-md-6 mb-3">
-            <label for="nombreQuestions" class="form-label">Nombre de questions à générer <span class="text-danger">*</span></label>
-            <input type="number" id="nombreQuestions" class="form-control" [(ngModel)]="parametresGeneration.nombreQuestions">
+          <div class="col-md-3 mb-3">
+            <label for="nombreQuestions" class="form-label">Nombre de questions <span class="text-danger">*</span></label>
+            <input type="number" id="nombreQuestions" class="form-control" [(ngModel)]="generationRequest.nombreQuestions" min="1" max="100">
+          </div>
+          <div class="col-md-3 mb-3">
+            <label for="niveau" class="form-label">Niveau de difficulté <span class="text-danger">*</span></label>
+            <select id="niveau" class="form-select" [(ngModel)]="generationRequest.niveau">
+              <option *ngFor="let niveau of niveauxDisponibles" [value]="niveau.value">{{ niveau.label }}</option>
+            </select>
           </div>
         </div>
+        
         <div class="mb-3" [hidden]="!matiereAutoId">
-          <label class="form-label">Chapitres à inclure <span class="text-danger">*</span></label>
+          <label class="form-label">Thèmes à inclure (sélectionnez les chapitres) <span class="text-danger">*</span></label>
           <div class="border p-3 rounded">
-            <div *ngIf="isLoadingChapitres" class="text-muted">Chargement...</div>
-            <div *ngFor="let chapitre of chapitresDisponibles" class="form-check">
-              <input class="form-check-input" type="checkbox" [id]="'chap-' + chapitre.id" (change)="toggleChapitre(chapitre.id)">
-              <label class="form-check-label" [for]="'chap-' + chapitre.id">{{ chapitre.nom }}</label>
+            <div *ngIf="isLoadingChapitres" class="text-muted">Chargement des chapitres...</div>
+            <div *ngFor="let chapitre of chapitresDisponibles" class="form-check mb-2">
+              <input 
+                class="form-check-input" 
+                type="checkbox" 
+                [id]="'theme-' + chapitre.id" 
+                [checked]="isThemeSelected(chapitre.id)"
+                (change)="toggleTheme(chapitre.id)">
+              <label class="form-check-label" [for]="'theme-' + chapitre.id">
+                {{ chapitre.nom }}
+                <small class="text-muted ms-2">(ID: {{ chapitre.id }})</small>
+              </label>
             </div>
             <div *ngIf="!isLoadingChapitres && chapitresDisponibles.length === 0" class="text-muted">
               Aucun chapitre disponible pour cette matière.
             </div>
+            <div *ngIf="generationRequest.themes.length > 0" class="mt-3">
+              <strong>Thèmes sélectionnés :</strong>
+              <div class="d-flex flex-wrap gap-2 mt-2">
+                <span *ngFor="let theme of generationRequest.themes" class="badge bg-primary">
+                  {{ theme }}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
+        
+        <div class="alert alert-info">
+          <i class="bi bi-info-circle me-2"></i>
+          Le questionnaire sera généré automatiquement avec des questions de la banque selon les critères sélectionnés.
+          Le titre sera généré automatiquement à partir des thèmes choisis.
+        </div>
+        
         <div class="d-flex justify-content-end mt-4">
-          <button class="btn btn-primary" (click)="genererQuestionnaire()" [disabled]="!parametresGenerationValides() || generationEnCours">
+          <button class="btn btn-primary" (click)="genererQuestionnaireDepuisBanque()" [disabled]="!generationRequestValide() || generationEnCours">
             <span *ngIf="generationEnCours" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
             {{ generationEnCours ? 'Génération en cours...' : 'Générer le Questionnaire' }}
           </button>
         </div>
+        
         <div *ngIf="questionnaireGenere" class="alert alert-success mt-4">
-          Questionnaire <strong>{{ questionnaireGenere.titre }}</strong> généré avec succès ! Il apparaît maintenant dans la liste ci-dessous.
+          <h5><i class="bi bi-check-circle me-2"></i>Questionnaire généré avec succès !</h5>
+          <p>
+            <strong>{{ questionnaireGenere.titre }}</strong><br>
+            <span *ngIf="questionnaireGenere.description">{{ questionnaireGenere.description }}</span>
+          </p>
+          <p class="mb-0">
+            <a [routerLink]="['/app/enseignant/questionnaires', questionnaireGenere.id]" class="btn btn-sm btn-success me-2">
+              <i class="bi bi-eye me-1"></i>Voir les détails
+            </a>
+            <button class="btn btn-sm btn-outline-secondary" (click)="chargerQuestionnaires()">
+              <i class="bi bi-arrow-clockwise me-1"></i>Actualiser la liste
+            </button>
+          </p>
         </div>
       </div>
     </div>
   </div>
 
   <!-- ============================================= -->
-  <!-- CARTE 2 : LISTE DES QUESTIONNAIRES (INCHANGÉ) -->
+  <!-- CARTE 2 : LISTE DES QUESTIONNAIRES EXISTANTS  -->
   <!-- ============================================= -->
   <div class="card shadow-sm mt-5">
     <div class="card-header d-flex justify-content-between align-items-center">
@@ -234,13 +265,13 @@
               <td>{{ q.duree }} min</td>
               <td class="text-center">
                 <button 
-    class="btn btn-sm btn-primary me-2" 
-    title="Voir les détails" 
-    [routerLink]="['/app/enseignant/questionnaires', q.id]">
-    Détails
-  </button>
+                  class="btn btn-sm btn-primary me-2" 
+                  title="Voir les détails" 
+                  [routerLink]="['/app/enseignant/questionnaires', q.id]">
+                  Détails
+                </button>
                 <button class="btn btn-sm btn-warning me-2" title="Modifier le questionnaire">Modifier</button>
-               <button class="btn btn-sm btn-danger" title="Supprimer le questionnaire" (click)="supprimerQuestionnaire(q.id, q.titre)">Supprimer</button>
+                <button class="btn btn-sm btn-danger" title="Supprimer le questionnaire" (click)="supprimerQuestionnaire(q.id, q.titre)">Supprimer</button>
               </td>
             </tr>
           </tbody>

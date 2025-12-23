@@ -4,7 +4,8 @@
 // === TYPES GÉNÉRAUX (Fournis par l'utilisateur)
 // ====================================================================
 export type TypeQuestion = 'QCM' | 'QCU' | 'VRAI_FAUX' | 'TEXTE_LIBRE';
-export type Difficulte = 'FACILE' | 'MOYEN' | 'DIFFICILE';
+export type Niveau = 'FACILE' | 'INTERMEDIAIRE' | 'DIFFICILE';
+
 export type StatutQuestion = 'BROUILLON' | 'VALIDEE' | 'ARCHIVEE';
 
 // ====================================================================
@@ -225,9 +226,10 @@ export interface BanqueQuestionCreation {
   enonce: string;
   typeQuestion: TypeQuestion;
   points: number;
-  difficulte: Difficulte;
   chapitreId: number;
-  reponses: BanqueReponseCreation[];
+  theme?: string;
+  niveau: Niveau;
+  reponses: ReponseCreation[];
   tags: string[];
 }
 
@@ -237,22 +239,19 @@ export interface BanqueReponseDetail {
   correcte: boolean;
 }
 
+// Interface pour l'affichage d'une question de la banque
 export interface BanqueQuestionDetail {
   id: number;
   enonce: string;
   typeQuestion: TypeQuestion;
   points: number;
-  difficulte: Difficulte;
   chapitreId: number;
-  chapitreNom: string;
-  auteurNom: string;
-  dateCreation: string;
-  noteQualite: number;
-  nombreUtilisations: number;
-  reponses: BanqueReponseDetail[];
+  chapitreNom?: string;
+  theme?: string;
+  niveau: Niveau;
+  reponses: ReponseDetail[];
   tags: string[];
-  chapitres: Chapitre[];
-  statut: StatutQuestion;
+  dateCreation?: string;
 }
 
 export interface EvaluationQuestion {
@@ -266,6 +265,10 @@ export interface ChapitrePayload {
   niveau: number;
   objectif: string;
   sections: { titre: string }[];
+  // Ajoute ces propriétés
+  typeActivite?: string;  // optionnel si backend l'attend
+  prerequis?: string;     // optionnel si backend l'attend
+  typeEvaluation?: string; // optionnel si backend l'attend
 }
 
 export interface SectionUpdatePayload {
@@ -320,4 +323,13 @@ export interface QuestionnaireManuel {
   duree: number;
   description: string;
   questions: QuestionPourCreation[];
+}
+export interface ReponseDetail {
+  id: number;
+  texte: string;
+  correcte: boolean;
+}
+export interface ReponseCreation {
+  texte: string;
+  correcte: boolean;
 }

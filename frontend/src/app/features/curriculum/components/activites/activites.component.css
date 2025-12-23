@@ -1,0 +1,375 @@
+/* =========================
+   VARIABLES GLOBALES
+========================= */
+:root {
+  --primary: #4361ee;
+  --success: #28a745;
+  --warning: #ffc107;
+  --danger: #dc3545;
+  --gray: #6c757d;
+  --bg-light: #f8f9fa;
+  --card-bg: #ffffff;
+  --border: #e0e0e0;
+  --radius: 14px;
+  --shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+}
+
+/* =========================
+   CONTAINER
+========================= */
+.activites-container {
+  padding: 24px;
+  background: var(--bg-light);
+  min-height: 100vh;
+  font-family: "Inter", "Segoe UI", sans-serif;
+}
+
+/* =========================
+   HEADER
+========================= */
+.activites-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  gap: 16px;
+}
+
+.page-title {
+  font-size: 26px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.page-subtitle {
+  color: var(--gray);
+  margin-top: 4px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* =========================
+   BADGE COMPLETION
+========================= */
+.stats-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.stats-progress {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  background: #f0f0f0;
+}
+
+.stats-progress span {
+  font-size: 14px;
+}
+
+.stats-text small {
+  color: var(--gray);
+}
+
+/* =========================
+   STAT CARDS
+========================= */
+.stats-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: var(--shadow);
+}
+
+.stat-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+}
+
+.stat-content h3 {
+  margin: 0;
+  font-weight: 700;
+}
+
+.stat-content p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--gray);
+}
+
+/* =========================
+   FILTRES
+========================= */
+.filters-section {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.filter-group h6 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.filter-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.filter-btn {
+  border: 2px solid var(--border);
+  background: transparent;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.filter-btn.active,
+.filter-btn:hover {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+/* =========================
+   LISTE ACTIVITÉS
+========================= */
+.activites-liste {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.activite-card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  border-left: 6px solid var(--primary);
+}
+
+.activite-card.locked {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* =========================
+   HEADER CARTE
+========================= */
+.activite-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #f4f6ff;
+}
+
+.activite-type,
+.activite-statut {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #fff;
+}
+
+/* =========================
+   BODY CARTE
+========================= */
+.activite-body {
+  padding: 16px;
+  cursor: pointer;
+}
+
+.activite-titre {
+  margin: 0 0 6px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.activite-matiere {
+  font-size: 13px;
+  color: var(--gray);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.activite-description {
+  margin: 12px 0;
+  color: #444;
+  font-size: 14px;
+}
+
+/* =========================
+   METADATA
+========================= */
+.activite-metadata {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+  font-size: 13px;
+}
+
+.metadata-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #555;
+}
+
+/* =========================
+   PROGRESSION
+========================= */
+.activite-progression {
+  margin-top: 14px;
+}
+
+.progress {
+  height: 8px;
+  background: #e9ecef;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  border-radius: 10px;
+}
+
+/* =========================
+   ACTIONS
+========================= */
+.activite-actions {
+  padding: 12px 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  background: #fafafa;
+  border-top: 1px solid var(--border);
+}
+
+.action-btn {
+  background: var(--primary);
+  color: #fff;
+  border-radius: 10px;
+  padding: 6px 14px;
+  font-size: 13px;
+}
+
+/* =========================
+   CALENDRIER
+========================= */
+.calendrier-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.calendrier-item {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 14px;
+  box-shadow: var(--shadow);
+  border-left: 5px solid var(--primary);
+  cursor: pointer;
+}
+
+.calendrier-date {
+  font-size: 13px;
+  color: var(--gray);
+  display: flex;
+  gap: 6px;
+}
+
+/* =========================
+   DETAIL PANEL
+========================= */
+.detail-panel {
+  position: fixed;
+  right: 0;
+  top: 0;
+  width: 380px;
+  height: 100%;
+  background: #fff;
+  box-shadow: -6px 0 20px rgba(0, 0, 0, 0.15);
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-header {
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+}
+
+.detail-body {
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  font-size: 13px;
+}
+
+.detail-item .label {
+  color: var(--gray);
+  font-size: 12px;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width: 768px) {
+  .activites-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .detail-panel {
+    width: 100%;
+  }
+}

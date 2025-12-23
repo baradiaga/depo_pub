@@ -1,4 +1,4 @@
-// Fichier : src/main/java/com/moscepa/service/ChapitreService.java (Version Finale Corrigée)
+// Fichier : src/main/java/com/moscepa/service/ChapitreService.java (Version Finale Corrigée avec les nouveaux champs)
 
 package com.moscepa.service;
 import com.moscepa.entity.ResultatTest;
@@ -10,8 +10,8 @@ import com.moscepa.entity.Section;
 import com.moscepa.repository.ChapitreRepository;
 import com.moscepa.repository.ElementConstitutifRepository;
 import jakarta.persistence.EntityNotFoundException;
-import org.slf4j.Logger; // <-- 1. AJOUT DE L'IMPORT
-import org.slf4j.LoggerFactory; // <-- 2. AJOUT DE L'IMPORT
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,9 +23,6 @@ import java.util.stream.Collectors;
 @Service
 public class ChapitreService {
 
-    // ====================================================================
-    // === CORRECTION : DÉCLARATION DU LOGGER                         ===
-    // ====================================================================
     private static final Logger log = LoggerFactory.getLogger(ChapitreService.class);
 
     @Autowired
@@ -53,6 +50,12 @@ public class ChapitreService {
         nouveauChapitre.setObjectif(payload.getObjectif());
         nouveauChapitre.setNiveau(payload.getNiveau());
         nouveauChapitre.setElementConstitutif(ecParent);
+        
+        // ========== AJOUT DES NOUVEAUX CHAMPS ==========
+        nouveauChapitre.setTypeActivite(payload.getTypeActivite());
+        nouveauChapitre.setPrerequis(payload.getPrerequis());
+        nouveauChapitre.setTypeEvaluation(payload.getTypeEvaluation());
+        // ===============================================
 
         if (payload.getSections() != null) {
             int ordreCompteur = 1;
@@ -126,30 +129,39 @@ public class ChapitreService {
         nouveauChapitre.setObjectif(dto.objectif);
         nouveauChapitre.setOrdre(nouvelOrdre);
         nouveauChapitre.setElementConstitutif(matiere);
+        
+        // ========== AJOUT DES NOUVEAUX CHAMPS (SI PRÉSENTS DANS LE DTO) ==========
+        // Note : Pour l'instant, ChapitreCreateDto ne contient pas ces champs
+        // Si tu veux les utiliser ici, il faut d'abord les ajouter au DTO
+        // nouveauChapitre.setTypeActivite(dto.typeActivite);
+        // nouveauChapitre.setPrerequis(dto.prerequis);
+        // nouveauChapitre.setTypeEvaluation(dto.typeEvaluation);
+        // =======================================================================
 
         Chapitre chapitreSauvegarde = chapitreRepository.save(nouveauChapitre);
         return new ChapitreContenuDto(chapitreSauvegarde);
     }
 
     @Transactional
-public void deleteChapitre(Long chapitreId) {
-    Chapitre chapitre = chapitreRepository.findById(chapitreId)
-        .orElseThrow(() -> new EntityNotFoundException(
-            "Impossible de supprimer : Chapitre non trouvé avec l'ID: " + chapitreId));
+    public void deleteChapitre(Long chapitreId) {
+        Chapitre chapitre = chapitreRepository.findById(chapitreId)
+            .orElseThrow(() -> new EntityNotFoundException(
+                "Impossible de supprimer : Chapitre non trouvé avec l'ID: " + chapitreId));
 
-    // Vérifier si des résultats existent pour les tests liés
-    boolean hasResults = chapitre.getTests().stream()
-        .anyMatch(test -> test.getResultats() != null && !test.getResultats().isEmpty());
+        // Vérifier si des résultats existent pour les tests liés
+        boolean hasResults = chapitre.getTests().stream()
+            .anyMatch(test -> test.getResultats() != null && !test.getResultats().isEmpty());
 
-    if (hasResults) {
-        throw new IllegalStateException(
-            "Suppression refusée : des résultats de tests existent pour ce chapitre.");
+        if (hasResults) {
+            throw new IllegalStateException(
+                "Suppression refusée : des résultats de tests existent pour ce chapitre.");
+        }
+
+        chapitreRepository.delete(chapitre);
+        log.info("Chapitre avec l'ID {} supprimé avec succès.", chapitreId);
     }
 
-    chapitreRepository.delete(chapitre);
-    log.info("Chapitre avec l'ID {} supprimé avec succès.", chapitreId);
-}
-// ============================================================
+    // ============================================================
     // === MÉTHODE DRY-RUN : LISTER LES RÉSULTATS BLOQUANTS =======
     // ============================================================
     @Transactional(readOnly = true)

@@ -1,1 +1,351 @@
-<p>sequences works!</p>
+<div class="learning-container">
+  <!-- Header avec navigation -->
+  <header class="learning-header">
+    <div class="header-left">
+      <button *ngIf="vueActive !== 'matieres'" class="btn-back" (click)="revenirMatieres()">
+        <i class="bi bi-arrow-left"></i>
+        Matières
+      </button>
+      <button *ngIf="vueActive === 'chapitres'" class="btn-back" (click)="revenirChapitres()">
+        <i class="bi bi-arrow-left"></i>
+        Chapitres
+      </button>
+    </div>
+    
+    <div class="header-center">
+      <h1 class="page-title">
+        <i class="bi bi-stack"></i>
+        Apprentissage
+      </h1>
+      <div class="breadcrumb">
+        <span *ngIf="vueActive === 'matieres'" class="active">Toutes les matières</span>
+        <span *ngIf="vueActive === 'chapitres'">{{ matiereSelectionnee?.nom }}</span>
+        <span *ngIf="vueActive === 'sequence'">{{ chapitreSelectionne?.titre }}</span>
+      </div>
+    </div>
+    
+    <div class="header-right">
+      <div class="progress-badge">
+        <div class="progress-circle" [style.background]="'conic-gradient(#4CAF50 ' + stats.progressionGlobale + '%, #f0f0f0 0)'">
+          <span>{{ stats.progressionGlobale }}%</span>
+        </div>
+        <div class="progress-text">
+          <small>Progression</small>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation principale -->
+  <nav class="main-nav">
+    <a routerLink="/sequences" class="nav-item active">
+      <i class="bi bi-collection-play"></i>
+      Séquences
+    </a>
+    <a routerLink="/activites" class="nav-item">
+      <i class="bi bi-pencil-square"></i>
+      Activités
+    </a>
+    <a routerLink="/evaluations" class="nav-item">
+      <i class="bi bi-clipboard-check"></i>
+      Évaluations
+    </a>
+  </nav>
+
+  <!-- Vue 1: Liste des matières -->
+  <div *ngIf="vueActive === 'matieres'" class="matieres-view">
+    <!-- Statistiques globales -->
+    <div class="stats-bar">
+      <div class="stat-item">
+        <span class="stat-value">{{ stats.matieresTotal }}</span>
+        <span class="stat-label">Matières</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value">{{ stats.sequencesTerminees }}/{{ stats.sequencesTotal }}</span>
+        <span class="stat-label">Séquences</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value">{{ stats.pointsAcquis }}</span>
+        <span class="stat-label">Points</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value">{{ stats.sequencesEnCours }}</span>
+        <span class="stat-label">En cours</span>
+      </div>
+    </div>
+
+    <!-- Liste des matières -->
+    <div class="matieres-grid">
+      <div *ngFor="let matiere of matieres" 
+           class="matiere-card" 
+           (click)="selectionnerMatiere(matiere)"
+           [style.border-color]="matiere.couleur">
+        
+        <div class="matiere-header">
+          <div class="matiere-icon" [style.background-color]="matiere.couleur + '20'">
+            <span class="icon">{{ matiere.icon }}</span>
+          </div>
+          <div class="matiere-info">
+            <h3 class="matiere-title">{{ matiere.nom }}</h3>
+            <div class="matiere-progress">
+              <div class="progress-bar">
+                <div class="progress-fill" 
+                     [style.width.%]="calculerProgressionMatiere(matiere)"
+                     [style.background-color]="matiere.couleur"></div>
+              </div>
+              <span class="progress-text">{{ calculerProgressionMatiere(matiere) }}%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="matiere-content">
+          <div class="matiere-stats">
+            <div class="stat">
+              <i class="bi bi-book"></i>
+              <span>{{ matiere.chapitres.length }} chapitres</span>
+            </div>
+            <div class="stat">
+              <i class="bi bi-list-check"></i>
+              <span>{{ getSequencesDeMatiere(matiere.id).length }} séquences</span>
+            </div>
+          </div>
+
+          <div class="matiere-actions">
+            <button class="btn btn-primary btn-sm">
+              Voir les chapitres
+              <i class="bi bi-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vue 2: Chapitres d'une matière -->
+  <div *ngIf="vueActive === 'chapitres'" class="chapitres-view">
+    <!-- En-tête de la matière -->
+    <div class="matiere-header-detail">
+      <div class="matiere-banner" [style.background-color]="matiereSelectionnee.couleur + '20'">
+        <div class="banner-content">
+          <div class="matiere-icon-large">
+            <span>{{ matiereSelectionnee.icon }}</span>
+          </div>
+          <div class="matiere-details">
+            <h2>{{ matiereSelectionnee.nom }}</h2>
+            <p>Explorez les chapitres et progressez dans votre apprentissage</p>
+            <div class="global-progress">
+              <span>Progression globale : <strong>{{ calculerProgressionMatiere(matiereSelectionnee) }}%</strong></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Liste des chapitres -->
+    <div class="chapitres-grid">
+      <div *ngFor="let chapitre of matiereSelectionnee.chapitres" 
+           class="chapitre-card"
+           (click)="selectionnerChapitre(chapitre)">
+        
+        <div class="chapitre-header">
+          <div class="chapitre-number">Chapitre {{ chapitre.id }}</div>
+          <div class="chapitre-progress" [class.completed]="calculerProgressionChapitre(chapitre) === 100">
+            <span>{{ calculerProgressionChapitre(chapitre) }}%</span>
+          </div>
+        </div>
+
+        <div class="chapitre-body">
+          <h3 class="chapitre-title">{{ chapitre.titre }}</h3>
+          <p class="chapitre-description">{{ chapitre.description }}</p>
+          
+          <!-- Séquence miniatures -->
+          <div class="sequences-mini">
+            <div *ngFor="let sequence of chapitre.sequences" 
+                 class="sequence-mini"
+                 [class.locked]="sequence.estVerrouillee"
+                 [class.completed]="sequence.statut === 'terminée'"
+                 [class.in-progress]="sequence.statut === 'en cours'">
+              <div class="sequence-mini-icon">{{ sequence.icon }}</div>
+              <div class="sequence-mini-info">
+                <span class="sequence-mini-title">{{ sequence.titre }}</span>
+                <div class="sequence-mini-status" [class]="getClasseStatut(sequence.statut)">
+                  {{ sequence.statut }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="chapitre-footer">
+            <div class="sequences-count">
+              <i class="bi bi-list-ul"></i>
+              {{ chapitre.sequences.length }} séquences
+            </div>
+            <button class="btn btn-outline-primary btn-sm">
+              Explorer
+              <i class="bi bi-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vue 3: Séquence d'un chapitre -->
+  <div *ngIf="vueActive === 'sequence'" class="sequences-view">
+    <!-- En-tête du chapitre -->
+    <div class="chapitre-header-detail">
+      <div class="chapitre-banner">
+        <h2>{{ chapitreSelectionne.titre }}</h2>
+        <p class="chapitre-subtitle">{{ chapitreSelectionne.description }}</p>
+        <div class="chapitre-progress-large">
+          <div class="progress-circle-large">
+            <svg width="60" height="60">
+              <circle cx="30" cy="30" r="25" fill="none" stroke="#f0f0f0" stroke-width="5"/>
+              <circle cx="30" cy="30" r="25" fill="none" 
+                      [attr.stroke]="getCouleurProgression(calculerProgressionChapitre(chapitreSelectionne))"
+                      stroke-width="5" 
+                      [attr.stroke-dasharray]="getCircumference(25)"
+                      [attr.stroke-dashoffset]="getDashOffset(25, calculerProgressionChapitre(chapitreSelectionne))"/>
+              <text x="30" y="35" text-anchor="middle" font-size="12" fill="#333">
+                {{ calculerProgressionChapitre(chapitreSelectionne) }}%
+              </text>
+            </svg>
+          </div>
+          <div class="progress-info">
+            <span class="progress-label">Progression du chapitre</span>
+            <span class="progress-detail">{{ getSequencesTermineesCount(chapitreSelectionne) }}/{{ chapitreSelectionne.sequences.length }} séquences</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Liste des séquences -->
+    <div class="sequences-list">
+      <div *ngFor="let sequence of chapitreSelectionne.sequences; let i = index" 
+           class="sequence-card"
+           [class.locked]="sequence.estVerrouillee"
+           [class.selected]="sequenceSelectionnee?.id === sequence.id">
+        
+        <div class="sequence-header">
+          <div class="sequence-number">
+            <span class="number">{{ i + 1 }}</span>
+          </div>
+          <div class="sequence-icon" [style.background-color]="sequence.badgeColor + '20'">
+            <span>{{ sequence.icon }}</span>
+          </div>
+          <div class="sequence-info">
+            <h4 class="sequence-title">{{ sequence.titre }}</h4>
+            <div class="sequence-tags">
+              <span class="tag" [class]="getClasseStatut(sequence.statut)">
+                {{ sequence.statut }}
+              </span>
+              <span class="tag">
+                <i class="bi bi-clock"></i> {{ sequence.duree }}
+              </span>
+              <span class="tag">
+                <i class="bi bi-star"></i> {{ sequence.points }} points
+              </span>
+            </div>
+          </div>
+          <div class="sequence-progress">
+            <div class="progress-circle-small">
+              <svg width="40" height="40">
+                <circle cx="20" cy="20" r="15" fill="none" stroke="#f0f0f0" stroke-width="3"/>
+                <circle cx="20" cy="20" r="15" fill="none" 
+                        [attr.stroke]="getCouleurProgression(sequence.progression)"
+                        stroke-width="3" 
+                        [attr.stroke-dasharray]="getCircumference(15)"
+                        [attr.stroke-dashoffset]="getDashOffset(15, sequence.progression)"/>
+              </svg>
+              <span class="progress-text">{{ sequence.progression }}%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="sequence-body">
+          <p class="sequence-description">{{ sequence.description }}</p>
+          
+          <div class="sequence-ressources">
+            <div class="ressources-label">Ressources :</div>
+            <div class="ressources-list">
+              <span *ngFor="let ressource of sequence.ressources" class="ressource-tag">
+                {{ ressource }}
+              </span>
+            </div>
+          </div>
+
+          <div class="sequence-stats">
+            <div class="stat">
+              <i class="bi bi-currency-dollar"></i>
+              <span>{{ sequence.pointsAcquis }}/{{ sequence.points }} points</span>
+            </div>
+            <div class="stat">
+              <i class="bi bi-check-circle"></i>
+              <span>{{ sequence.progression }}% complété</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="sequence-footer">
+          <div class="sequence-actions">
+            <button class="btn btn-primary"
+                    [class]="getClasseBoutonAction(sequence)"
+                    (click)="demarrerSequence(sequence)"
+                    [disabled]="sequence.estVerrouillee">
+              <span class="action-icon">{{ getIconeAction(sequence) }}</span>
+              {{ getTexteAction(sequence) }}
+            </button>
+            <button class="btn btn-outline-secondary" 
+                    (click)="selectionnerSequence(sequence)">
+              <i class="bi bi-info-circle"></i>
+              Détails
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section de détail (si séquence sélectionnée) -->
+  <div *ngIf="sequenceSelectionnee" class="detail-panel">
+    <div class="detail-header">
+      <h5>Détails de la séquence</h5>
+      <button class="btn-close" (click)="sequenceSelectionnee = null">
+        <i class="bi bi-x"></i>
+      </button>
+    </div>
+    <div class="detail-body">
+      <div class="detail-icon">{{ sequenceSelectionnee.icon }}</div>
+      <h6>{{ sequenceSelectionnee.titre }}</h6>
+      <p>{{ sequenceSelectionnee.description }}</p>
+      
+      <div class="detail-grid">
+        <div class="detail-item">
+          <span class="label">Statut</span>
+          <span class="value" [class]="getClasseStatut(sequenceSelectionnee.statut)">
+            {{ sequenceSelectionnee.statut }}
+          </span>
+        </div>
+        <div class="detail-item">
+          <span class="label">Durée</span>
+          <span class="value">{{ sequenceSelectionnee.duree }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="label">Points</span>
+          <span class="value">{{ sequenceSelectionnee.pointsAcquis }}/{{ sequenceSelectionnee.points }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="label">Progression</span>
+          <span class="value">{{ sequenceSelectionnee.progression }}%</span>
+        </div>
+      </div>
+
+      <div class="detail-actions">
+        <button class="btn btn-primary w-100" (click)="demarrerSequence(sequenceSelectionnee)">
+          <i class="bi bi-play-fill"></i>
+          {{ getTexteAction(sequenceSelectionnee) }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

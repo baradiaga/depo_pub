@@ -9,13 +9,15 @@ import { CourseProgressDto } from '../models/course-progress.model';
 })
 export class StudentDetailComponent {
   @Input() studentJourney!: StudentJourney; // le parcours reçu depuis le parent
+  @Input() courseProgressList: CourseProgressDto[] = []; // Ajout: recevoir la progression en input
   @Output() close = new EventEmitter<void>(); // pour fermer la vue
 
   closeDetail() {
     this.close.emit();
   }
 
+  // Méthode corrigée: utiliser l'input courseProgressList
   getCourseProgressList(): CourseProgressDto[] {
-    return this.studentJourney?.progressionParCours || [];
+    return this.courseProgressList || [];
   }
 }

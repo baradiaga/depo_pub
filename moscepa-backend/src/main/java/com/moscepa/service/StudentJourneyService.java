@@ -2,6 +2,7 @@ package com.moscepa.service;
 
 import com.moscepa.dto.CourseProgressDto;
 import com.moscepa.dto.StudentJourneyDto;
+import com.moscepa.dto.StudentJourneyFrontDto;
 import com.moscepa.entity.ResultatTest;
 import com.moscepa.entity.Test;
 import com.moscepa.entity.Utilisateur;
@@ -23,11 +24,14 @@ public class StudentJourneyService {
 
     private final UtilisateurRepository utilisateurRepository;
     private final ResultatTestRepository resultatTestRepository;
+    private final FrontendMapperService mapperService;
 
     public StudentJourneyService(UtilisateurRepository utilisateurRepository,
-                                 ResultatTestRepository resultatTestRepository) {
+                                 ResultatTestRepository resultatTestRepository,
+                                 FrontendMapperService mapperService) {
         this.utilisateurRepository = utilisateurRepository;
         this.resultatTestRepository = resultatTestRepository;
+        this.mapperService = mapperService;
     }
 
     /**
@@ -89,24 +93,39 @@ public class StudentJourneyService {
     }
 
     /**
+     * Version frontend de getStudentJourney
+     */
+    public StudentJourneyFrontDto getStudentJourneyForFrontend(Long etudiantId) {
+        StudentJourneyDto backendDto = getStudentJourney(etudiantId);
+        return mapperService.toFrontDto(backendDto);
+    }
+
+    /**
      * Récupère tous les parcours étudiants (admin) avec filtrage optionnel par type.
      */
     public List<StudentJourneyDto> getAllJourneys(String type) {
         List<Utilisateur> etudiants = utilisateurRepository.findByRole(Role.ETUDIANT);
 
         return etudiants.stream()
-        .map(etudiant -> getStudentJourney(etudiant.getId())) // <-- passer l'ID ici
+        .map(etudiant -> getStudentJourney(etudiant.getId()))
         .filter(dto -> type == null || type.isEmpty() ||
                 (dto.getParcoursType() != null && dto.getParcoursType().equalsIgnoreCase(type)))
         .collect(Collectors.toList());
+    }
 
+    /**
+     * Version frontend de getAllJourneys
+     */
+    public List<StudentJourneyFrontDto> getAllJourneysForFrontend(String type) {
+        List<StudentJourneyDto> backendList = getAllJourneys(type);
+        return mapperService.toFrontDtoList(backendList);
     }
 
     /**
      * Récupère les parcours étudiants pour les étudiants inscrits à une formation gérée par l'enseignant.
      */
     public List<StudentJourneyDto> getStudentsForTeacher(Long teacherId) {
-        // 1. Formations créées par l’enseignant
+        // 1. Formations créées par l'enseignant
         List<Formation> formations = utilisateurRepository.findById(teacherId)
                 .orElseThrow(() -> new EntityNotFoundException("Enseignant non trouvé."))
                 .getFormationsCrees();
@@ -123,5 +142,13 @@ public class StudentJourneyService {
         return etudiants.stream()
                 .map(etudiant -> getStudentJourney(etudiant.getId()))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Version frontend de getStudentsForTeacher
+     */
+    public List<StudentJourneyFrontDto> getStudentsForTeacherForFrontend(Long teacherId) {
+        List<StudentJourneyDto> backendList = getStudentsForTeacher(teacherId);
+        return mapperService.toFrontDtoList(backendList);
     }
 }

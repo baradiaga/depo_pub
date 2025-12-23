@@ -1,8 +1,8 @@
-// Fichier : src/main/java/com/moscepa/dto/SectionCreateDto.java (Nouveau)
+// Fichier : src/main/java/com/moscepa/dto/SectionCreateDto.java
 
 package com.moscepa.dto;
 
-import com.moscepa.entity.TypeSection; // Assurez-vous d'importer votre enum
+import com.moscepa.entity.TypeSection;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
