@@ -1,0 +1,61 @@
+<div class="page-container" *ngIf="!loading; else loadingTpl">
+  
+  <header class="mini-header">
+    <button (click)="retour()" class="btn-back">⬅ Accueil</button>
+    <div class="title-area">
+      <h1>Mes Enseignements</h1>
+      <p>Suivez votre progression par matière</p>
+    </div>
+  </header>
+
+  <div class="search-bar">
+    <div class="input-wrapper">
+      <span class="icon">🔍</span>
+      <input type="text" [(ngModel)]="searchTerm" placeholder="Filtrer vos matières...">
+    </div>
+    <div class="badge-count">{{ matieresFiltrees.length }} Matières</div>
+  </div>
+
+  <div class="cours-list">
+    <!-- Message si vide -->
+    <div class="empty-state" *ngIf="matieresFiltrees.length === 0">
+      Aucune matière trouvée.
+    </div>
+
+    <!-- Si votre boucle est : *ngFor="let m of matieresFiltrees" -->
+<div class="cours-card" *ngFor="let m of matieresFiltrees" (click)="ouvrirCours(m)">
+
+      <div class="cours-icon">{{ m.nom.charAt(0) }}</div>
+      
+      <div class="cours-info">
+        <div class="cours-header-row">
+          <span class="cours-code">{{ m.code }}</span>
+          <span class="chapitre-count">{{ m.chapitres?.length || 0 }} Chapitres</span>
+        </div>
+        <h3>{{ m.nom }}</h3>
+        <p class="description">{{ m.description || 'Aucune description disponible.' }}</p>
+        
+        <div class="progress-container">
+          <div class="progress-labels">
+            <span>Complétion</span>
+            <span>{{ calculerProgression(m) }}%</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" [style.width.%]="calculerProgression(m)"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cours-action">
+        <span class="btn-go">Ouvrir</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #loadingTpl>
+  <div class="loader-overlay">
+    <div class="spinner"></div>
+    <p>Synchronisation de vos matières...</p>
+  </div>
+</ng-template>

@@ -19,6 +19,7 @@ import { PageNotFoundComponent } from './components/page-not-found/page-not-foun
 import { DashboardDirective } from './directives/dashboard.directive';
 import { SafeUrlPipe } from './pipes/safe-url.pipe';
 import { VueCoursComponent } from '../features/student/components/vue-cours/vue-cours.component';
+import { GlobalPlayerComponent } from './components/global-player/global-player.component';
 
 @NgModule({
   declarations: [
@@ -32,13 +33,15 @@ import { VueCoursComponent } from '../features/student/components/vue-cours/vue-
     DashboardDirective,
     PageNotFoundComponent,
     SafeUrlPipe,
-    VueCoursComponent
+    VueCoursComponent,
+    
   ],
   imports: [
     CommonModule,
     RouterModule,
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    GlobalPlayerComponent,
   ],
   exports: [
     DashboardComponent,
@@ -55,6 +58,7 @@ import { VueCoursComponent } from '../features/student/components/vue-cours/vue-
     FormsModule,
     ReactiveFormsModule,
     SafeUrlPipe,
+    GlobalPlayerComponent,
   ]
 })
 export class SharedModule {}

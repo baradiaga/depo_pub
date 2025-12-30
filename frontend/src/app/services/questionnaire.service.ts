@@ -25,6 +25,7 @@ export interface QuestionnaireDetail {
   titre: string;
   description: string;
   duree: number;
+  type: 'EXERCICE' | 'QUIZ' | 'TEST';
   questions: Question[];
   dateCreation?: string;
   chapitreId?: number;
@@ -42,11 +43,13 @@ export interface Test {
 }
 
 export interface QuestionnairePayload {
+  id?: number; 
   titre: string;
   chapitreId: number;
   duree?: number;
   description: string;
   questions: any[];
+  type: 'EXERCICE' | 'TEST' | 'QUIZ';
 }
 
 export interface ParametresGeneration {
@@ -103,9 +106,20 @@ export class QuestionnaireService {
     });
   }
 
-  sauvegarderQuestionnaire(questionnaire: QuestionnairePayload): Observable<void> {
-    return this.http.post<void>(this.apiUrl, questionnaire);
+  // src/app/services/questionnaire.service.ts
+
+sauvegarderQuestionnaire(questionnaire: QuestionnairePayload): Observable<void> {
+  // 1. Si le questionnaire possède un ID, on appelle l'URL de modification avec PUT
+  if (questionnaire.id) {
+    console.log(`📡 Modification du questionnaire ID: ${questionnaire.id}`);
+    return this.http.put<void>(`${this.apiUrl}/${questionnaire.id}`, questionnaire);
   }
+  
+  // 2. Sinon, on appelle l'URL de création avec POST
+  console.log('📡 Création d\'un nouveau questionnaire');
+  return this.http.post<void>(this.apiUrl, questionnaire);
+}
+
 
   // ============================================
   // GÉNÉRATION DE QUESTIONNAIRE - NOUVELLE MÉTHODE

@@ -1,7 +1,6 @@
 package com.moscepa.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.util.ArrayList;
@@ -24,16 +23,22 @@ public class Test {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Column(name = "tentatives_max")
+    private Integer tentativesMax = 1; // valeur par défaut
+
+    @Column(name = "tentatives_illimitees")
+    private Boolean tentativesIllimitees = false; // objet pour éviter null
+
     // Relation avec Chapitre
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chapitre_id", nullable = false)
-    @JsonBackReference("chapitre-tests")  // Si Chapitre a une liste de tests
+    @JsonBackReference("chapitre-tests")
     private Chapitre chapitre;
 
     // Relation avec Questionnaire
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "questionnaire_id")
-    @JsonBackReference("questionnaire-tests")  // Même nom que dans Questionnaire
+    @JsonBackReference("questionnaire-tests")
     private Questionnaire questionnaire;
 
     // Relation ManyToMany avec Question
@@ -43,18 +48,18 @@ public class Test {
         joinColumns = @JoinColumn(name = "test_id"),
         inverseJoinColumns = @JoinColumn(name = "question_id")
     )
-    @JsonManagedReference("test-questions")  // Gère les questions côté test
+    @JsonManagedReference("test-questions")
     private List<Question> questions = new ArrayList<>();
 
-    // 🔥 Relation avec ResultatTest (sans cascade REMOVE)
+    // Relation avec ResultatTest
     @OneToMany(mappedBy = "test", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
-    @JsonManagedReference("test-resultats")  // Gère les résultats côté test
+    @JsonManagedReference("test-resultats")
     private List<ResultatTest> resultats = new ArrayList<>();
 
-    // 🔥 Relation vers ElementConstitutif pour corriger le mappedBy
+    // Relation vers ElementConstitutif
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "element_constitutif_id")
-    @JsonBackReference("elementConstitutif-tests")  // Si ElementConstitutif a une liste de tests
+    @JsonBackReference("elementConstitutif-tests")
     private ElementConstitutif elementConstitutif;
 
     // --- Helpers ---
@@ -93,6 +98,18 @@ public class Test {
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
 
+    public Integer getTentativesMax() { return tentativesMax; }
+    public void setTentativesMax(Integer tentativesMax) {
+        if (tentativesMax != null && tentativesMax >= 0) {
+            this.tentativesMax = tentativesMax;
+        }
+    }
+
+    public Boolean getTentativesIllimitees() { return tentativesIllimitees; }
+    public void setTentativesIllimitees(Boolean tentativesIllimitees) {
+        this.tentativesIllimitees = tentativesIllimitees != null && tentativesIllimitees;
+    }
+
     public Chapitre getChapitre() { return chapitre; }
     public void setChapitre(Chapitre chapitre) { this.chapitre = chapitre; }
 
@@ -116,6 +133,8 @@ public class Test {
                 ", titre='" + titre + '\'' +
                 ", duree=" + duree +
                 ", description='" + description + '\'' +
+                ", tentativesMax=" + tentativesMax +
+                ", tentativesIllimitees=" + tentativesIllimitees +
                 '}';
     }
 

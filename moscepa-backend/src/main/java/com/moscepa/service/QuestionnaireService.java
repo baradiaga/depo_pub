@@ -1,4 +1,5 @@
 package com.moscepa.service;
+import com.moscepa.entity.TypeQuestionnaire; 
 
 import com.moscepa.dto.QuestionnaireDetailDto;
 import com.moscepa.dto.QuestionDto;
@@ -107,7 +108,12 @@ public class QuestionnaireService {
                 });
         
         logger.info("✅ Chapitre trouvé: {} (ID: {})", chapitre.getNom(), chapitre.getId());
-        
+        // Dans la section 1. VALIDATIONS
+if (dto.getType() == null) {
+    logger.error("❌ Type de questionnaire manquant dans le DTO");
+    throw new IllegalArgumentException("Le type de questionnaire (EXERCICE, TEST, QUIZ) est obligatoire");
+}
+
         // ======================
         // 3. CRÉER LE QUESTIONNAIRE
         // ======================
@@ -116,7 +122,7 @@ public class QuestionnaireService {
         questionnaire.setDescription(dto.getDescription());
         questionnaire.setDuree(dto.getDuree());
         questionnaire.setChapitre(chapitre);
-        
+        questionnaire.setType(dto.getType()); 
         // Auteur par défaut
         if (questionnaire.getAuteur() == null) {
             questionnaire.setAuteur("Système");
@@ -220,7 +226,7 @@ public class QuestionnaireService {
         
         return resultDto;
     }
-
+    
     // ====================================================================
     // --- Générer un questionnaire depuis la banque de questions ---
     // ====================================================================
@@ -325,28 +331,57 @@ public class QuestionnaireService {
     // ====================================================================
     // --- Mettre à jour un questionnaire existant ---
     // ====================================================================
-    @Transactional
+        @Transactional
     public QuestionnaireDetailDto updateQuestionnaire(Long id, QuestionnaireDetailDto dto) {
         logger.info("Service: Mise à jour du questionnaire ID: {}", id);
         
         Questionnaire existing = questionnaireRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Questionnaire non trouvé avec l'ID: " + id));
         
-        // Mise à jour des champs
+        // 1. Mise à jour des champs (Ajout du TYPE)
         existing.setTitre(dto.getTitre());
         existing.setDescription(dto.getDescription());
         existing.setDuree(dto.getDuree());
+        existing.setType(dto.getType()); // ⚡ INDISPENSABLE pour 2025
         
-        // Mise à jour du chapitre si fourni
+        // 2. Mise à jour du chapitre
         if (dto.getChapitreId() != null) {
             Chapitre chapitre = chapitreRepository.findById(dto.getChapitreId())
                     .orElseThrow(() -> new IllegalArgumentException("Chapitre non trouvé"));
             existing.setChapitre(chapitre);
         }
+
+        // 3. Mise à jour des questions (Pour éviter les doublons de questionnaires/questions)
+        // On vide la liste existante pour forcer le remplacement par les nouvelles données du DTO
+        existing.getQuestions().clear();
         
-        logger.info("✅ Questionnaire ID {} mis à jour", id);
-        return new QuestionnaireDetailDto(existing);
+        if (dto.getQuestions() != null && !dto.getQuestions().isEmpty()) {
+            for (QuestionDto qDto : dto.getQuestions()) {
+                Question question = new Question();
+                question.setEnonce(qDto.getEnonce());
+                question.setTypeQuestion(qDto.getType());
+                question.setPoints(qDto.getPoints());
+                question.setQuestionnaire(existing); // ⚡ LIEN BIDIRECTIONNEL
+                
+                if (qDto.getReponses() != null) {
+                    for (ReponsePourQuestionDto rDto : qDto.getReponses()) {
+                        Reponse reponse = new Reponse();
+                        reponse.setTexte(rDto.getTexte());
+                        reponse.setCorrecte(rDto.isCorrecte());
+                        reponse.setQuestion(question);
+                        question.getReponses().add(reponse);
+                    }
+                }
+                existing.getQuestions().add(question);
+            }
+        }
+        
+        // 4. Sauvegarde explicite
+        Questionnaire saved = questionnaireRepository.save(existing);
+        logger.info("✅ Questionnaire ID {} mis à jour avec son type et ses questions", id);
+        return new QuestionnaireDetailDto(saved);
     }
+
 
     // ====================================================================
     // --- Supprimer un questionnaire ---

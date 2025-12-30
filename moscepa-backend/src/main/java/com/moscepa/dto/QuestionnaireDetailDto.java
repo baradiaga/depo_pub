@@ -1,6 +1,7 @@
 package com.moscepa.dto;
 
 import com.moscepa.entity.Questionnaire;
+import com.moscepa.entity.TypeQuestionnaire;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -8,6 +9,8 @@ public class QuestionnaireDetailDto {
 
     private Long id;
     private String titre;
+    private TypeQuestionnaire type; // Assurez-vous d'importer 
+
     private String description;
     private int duree;
     private Long chapitreId; // ⚡ CHAMP CRITIQUE
@@ -23,6 +26,7 @@ public class QuestionnaireDetailDto {
     public QuestionnaireDetailDto(Questionnaire q) {
         this.id = q.getId();
         this.titre = q.getTitre();
+         this.type = q.getType();
         this.description = q.getDescription();
         this.duree = q.getDuree();
         
@@ -45,6 +49,7 @@ public class QuestionnaireDetailDto {
         Questionnaire q = new Questionnaire();
         q.setId(this.id);
         q.setTitre(this.titre);
+        q.setType(this.type);
         q.setDescription(this.description);
         q.setDuree(this.duree);
         
@@ -61,6 +66,8 @@ public class QuestionnaireDetailDto {
 
     public String getTitre() { return titre; }
     public void setTitre(String titre) { this.titre = titre; }
+    public TypeQuestionnaire getType() { return type; }
+    public void setType(TypeQuestionnaire type) { this.type = type; }
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }

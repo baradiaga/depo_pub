@@ -21,6 +21,7 @@ import { Chapitre, ElementConstitutifResponse, QuestionnaireManuel, QuestionPour
 export class GestionQuestionnaireComponent implements OnInit {
 
   // --- PROPRIÉTÉS ---
+  questionnaireIdEnModification: number | null = null;
   listeQuestionnaires: QuestionnaireDetail[] = [];
   chargementListe = false;
   modeCreation: 'manuel' | 'automatique' = 'manuel';
@@ -34,9 +35,11 @@ export class GestionQuestionnaireComponent implements OnInit {
     titre: '', 
     matiereId: null, 
     chapitreId: null, 
-    duree: 0, 
+    duree: 10, 
     description: '', 
-    questions: []
+    questions: [],
+    typeQuestionnaire: 'TEST',
+    
   };
   
   // NOUVEAUX PARAMÈTRES POUR LA GÉNÉRATION DEPUIS BANQUE
@@ -151,7 +154,8 @@ export class GestionQuestionnaireComponent implements OnInit {
       chapitreId: null, 
       duree: 0, 
       description: '', 
-      questions: [] 
+      questions: [] ,
+      typeQuestionnaire: 'EXERCICE'
     };
     this.chapitresDisponibles = [];
   }
@@ -169,6 +173,50 @@ export class GestionQuestionnaireComponent implements OnInit {
     });
     return valide;
   }
+   modifierQuestionnaire(q: QuestionnaireDetail): void {
+  console.log('🔄 Modification questionnaire:', q);
+
+  // 1️⃣ Pré-remplir le formulaire manuel
+  this.modeCreation = 'manuel';
+
+  // Assigner les propriétés principales
+  this.questionnaire.titre = q.titre;
+  this.questionnaire.description = q.description ?? '';
+  this.questionnaire.duree = q.duree ?? 0;
+  this.questionnaire.matiereId = q.matiereId ?? null;
+  this.questionnaire.chapitreId = q.chapitreId ?? null;
+  this.questionnaireIdEnModification = q.id;
+
+  // Si tu veux gérer le type de questionnaire (test, quiz, exercice)
+  this.questionnaire.typeQuestionnaire = (q as any).typeQuestionnaire ?? 'test'; // par défaut
+
+  // 2️⃣ Charger les chapitres pour la matière
+  if (this.questionnaire.matiereId) {
+    this.onMatiereChange();
+  }
+
+  // 3️⃣ Pré-remplir les questions
+  const typeMap: { [key: string]: 'qcm' | 'qcu' | 'vrai_faux' | 'texte_libre' } = {
+    'QCM': 'qcm',
+    'QCU': 'qcu',
+    'VRAI_FAUX': 'vrai_faux',
+    'TEXTE_LIBRE': 'texte_libre'
+  };
+
+  this.questionnaire.questions = q.questions.map((question: any) => ({
+    type: typeMap[question.type] ?? 'qcm',
+    enonce: question.enonce,
+    points: question.points ?? 1,
+    difficulte: question.difficulte ?? 'moyen',
+    reponses: question.reponses?.map((r: any) => ({
+      texte: r.texte ?? '',
+      correcte: r.correcte ?? false
+    })) ?? [],
+    reponseVraiFaux: question.reponseVraiFaux ?? null
+  }));
+
+  console.log('✅ Formulaire pré-rempli:', this.questionnaire);
+}
 
   // NOUVELLE MÉTHODE DE VALIDATION POUR LA GÉNÉRATION
   generationRequestValide(): boolean {
@@ -344,144 +392,74 @@ export class GestionQuestionnaireComponent implements OnInit {
   // === MÉTHODE DE SAUVEGARDE AVEC LOGS COMPLETS ===
   // ====================================================================
   sauvegarderQuestionnaire(): void {
-    console.log('=== 🚀 DÉBUT SAUVEGARDE QUESTIONNAIRE ===');
-    
-    // 1. VALIDATION
-    if (!this.questionnaireValide()) {
-      console.error('❌ Validation échouée');
-      alert("Veuillez remplir tous les champs obligatoires (titre, matière, chapitre) et ajouter au moins une question.");
-      return;
-    }
-    
-    console.log('✅ Validation réussie');
+  console.log('=== 🚀 DÉBUT SAUVEGARDE QUESTIONNAIRE ===');
 
-    // 2. PRÉPARATION DU PAYLOAD AVEC TRANSFORMATION
-    console.log('📦 Préparation du payload...');
-    
-    // Transformation des questions pour le backend
-    const questionsPourBackend = this.questionnaire.questions.map((q, index) => {
-      console.log(`  Question ${index} brute:`, q);
-      
-      // Mapping des types (frontend → backend)
-      const typeBackend = this.mapTypeQuestion(q.type);
-      console.log(`    Type: ${q.type} → ${typeBackend}`);
-      
-      // Transformation des réponses
-      const reponsesTransformees = q.reponses?.map((r, rIndex) => {
-        console.log(`    Réponse ${rIndex}: texte="${r.texte}", correcte=${r.correcte}`);
-        return {
-          texte: r.texte,
-          correcte: r.correcte
-        };
-      }) || [];
-      
-      const questionTransformee = {
-        enonce: q.enonce,
-        type: typeBackend,
-        points: q.points || 1,
-        reponses: reponsesTransformees
-      };
-      
-      console.log(`  Question ${index} transformée:`, questionTransformee);
-      return questionTransformee;
-    });
-    
-    // Création du payload final
-    const payload: QuestionnairePayload = {
-      titre: this.questionnaire.titre,
-      chapitreId: this.questionnaire.chapitreId!,
-      duree: this.questionnaire.duree || 0,
-      description: this.questionnaire.description,
-      questions: questionsPourBackend
-    };
-    
-    console.log('📤 Payload final à envoyer:');
-    console.log(JSON.stringify(payload, null, 2));
-    console.log('📊 Statistiques:');
-    console.log(`  - Titre: ${payload.titre}`);
-    console.log(`  - ChapitreId: ${payload.chapitreId}`);
-    console.log(`  - Nombre de questions: ${payload.questions.length}`);
-    console.log(`  - Total réponses: ${payload.questions.reduce((acc, q) => acc + (q.reponses?.length || 0), 0)}`);
-
-    // 3. ENVOI AU BACKEND
-    console.log('🔄 Envoi au backend...');
-    this.sauvegardeEnCours = true;
-
-    this.questionnaireService.sauvegarderQuestionnaire(payload).pipe(
-      switchMap((questionnaireCree: any) => {
-        console.log('=== ✅ ÉTAPE 1/2: QUESTIONNAIRE CRÉÉ ===');
-        console.log('Réponse backend:', questionnaireCree);
-        
-        if (!questionnaireCree) {
-          console.error('❌ Réponse backend vide');
-          throw new Error("La création du questionnaire a échoué.");
-        }
-        
-        console.log(`✅ Questionnaire créé avec ID: ${questionnaireCree.id}`);
-        console.log(`📋 Titre: ${questionnaireCree.titre}`);
-        console.log(`📊 Questions créées: ${questionnaireCree.questions?.length || 0}`);
-        
-        // Vérification des IDs de questions
-        if (!questionnaireCree.questions || questionnaireCree.questions.length === 0) {
-          console.warn('⚠️ Aucune question retournée dans la réponse');
-          // On continue quand même sans créer de test
-          return [null];
-        }
-        
-        const questionIds = questionnaireCree.questions.map((q: any) => q.id);
-        console.log(`🔑 IDs des questions créées:`, questionIds);
-        
-        // Création de la requête pour le test
-        const testRequest: CreateTestRequest = {
-          titre: questionnaireCree.titre,
-          chapitreId: questionnaireCree.chapitreId,
-          questionIds: questionIds
-        };
-        
-        console.log('=== 🚀 ÉTAPE 2/2: CRÉATION DU TEST ===');
-        console.log('Payload test:', testRequest);
-        
-        return this.testService.createTest(testRequest);
-      })
-    ).subscribe({
-      next: (testCree: any) => {
-        console.log('=== 🎉 PROCESSUS TERMINÉ ===');
-        
-        if (testCree) {
-          console.log('✅ Test créé avec succès:', testCree);
-          alert("Questionnaire et test créés avec succès !");
-        } else {
-          console.log('✅ Questionnaire créé (sans test)');
-          alert("Questionnaire créé avec succès !");
-        }
-        
-        this.reinitialiserFormulaireManuel();
-        this.chargerQuestionnaires();
-        this.sauvegardeEnCours = false;
-        
-        console.log('🔄 Formulaire réinitialisé');
-        console.log('🔄 Liste des questionnaires rechargée');
-      },
-      error: (err) => {
-        console.error('=== ❌ ERREUR LORS DE LA SAUVEGARDE ===');
-        console.error('Erreur complète:', err);
-        console.error('Message:', err.message);
-        console.error('Status:', err.status);
-        console.error('Erreur backend:', err.error);
-        
-        let messageErreur = "Une erreur est survenue lors de la sauvegarde.";
-        
-        if (err.error?.message) {
-          messageErreur = err.error.message;
-        } else if (err.message) {
-          messageErreur = err.message;
-        }
-        
-        alert("Erreur: " + messageErreur);
-        this.sauvegardeEnCours = false;
-      }
-    });
+  // 1️⃣ Validation formulaire
+  if (!this.questionnaireValide()) {
+    console.error('❌ Validation échouée');
+    alert("Veuillez remplir tous les champs obligatoires (titre, matière, chapitre) et ajouter au moins une question.");
+    return;
   }
+  console.log('✅ Validation réussie');
+
+  // 2️⃣ Assurer que typeQuestionnaire est défini
+  if (!this.questionnaire.typeQuestionnaire) {
+    console.warn('⚠️ typeQuestionnaire manquant, affectation par défaut à EXERCICE');
+    this.questionnaire.typeQuestionnaire = 'EXERCICE';
+  }
+
+  // 3️⃣ Préparer le payload
+  const questionsPourBackend = this.questionnaire.questions.map((q, index) => {
+    console.log(`  Question ${index} brute:`, q);
+
+    const typeBackend = this.mapTypeQuestion(q.type);
+    console.log(`    Type: ${q.type} → ${typeBackend}`);
+
+    const reponsesTransformees = q.reponses?.map((r, rIndex) => ({
+      texte: r.texte,
+      correcte: r.correcte
+    })) || [];
+
+    return {
+      enonce: q.enonce,
+      type: typeBackend,
+      points: q.points || 1,
+      reponses: reponsesTransformees
+    };
+  });
+
+  const payload: QuestionnairePayload = {
+    
+    id: this.questionnaireIdEnModification || undefined, 
+    titre: this.questionnaire.titre,
+    chapitreId: this.questionnaire.chapitreId!,
+    duree: this.questionnaire.duree || 0,
+    description: this.questionnaire.description,
+    questions: questionsPourBackend,
+    type: this.questionnaire.typeQuestionnaire
+  };
+
+  console.log('📤 Payload final à envoyer:', JSON.stringify(payload, null, 2));
+
+  // 4️⃣ Envoi au backend
+  this.sauvegardeEnCours = true;
+  this.questionnaireService.sauvegarderQuestionnaire(payload).subscribe({
+    next: (res) => {
+      console.log('✅ Questionnaire créé avec succès:', res);
+      alert('Questionnaire créé avec succès !');
+      this.reinitialiserFormulaireManuel();
+      this.chargerQuestionnaires();
+      this.sauvegardeEnCours = false;
+    },
+    error: (err) => {
+      console.error('❌ Erreur lors de la sauvegarde:', err);
+      let messageErreur = err.error?.message || err.message || "Erreur inconnue.";
+      alert("Erreur: " + messageErreur);
+      this.sauvegardeEnCours = false;
+    }
+  });
+}
+
 
   // ====================================================================
   // === MÉTHODES UTILITAIRES ===

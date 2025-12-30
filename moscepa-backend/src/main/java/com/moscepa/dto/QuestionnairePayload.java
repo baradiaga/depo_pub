@@ -3,19 +3,26 @@ package com.moscepa.dto;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import java.util.List;
+import com.moscepa.entity.TypeQuestionnaire;
 
 public class QuestionnairePayload {
 
     @NotBlank(message = "Le titre ne peut pas être vide.")
     @Size(min = 3, max = 255, message = "Le titre doit contenir entre 3 et 255 caractères.")
     private String titre;
-
+    
     @NotBlank(message = "La matière ne peut pas être vide.")
     private String matiere;
 
     @NotNull(message = "L'ID du chapitre est obligatoire.")
     @Positive(message = "L'ID du chapitre doit être un nombre positif.")
     private Long chapitreId;
+    
+       
+    
+    @NotNull(message = "Le type de questionnaire est obligatoire.")
+    private TypeQuestionnaire type; 
+
 
     @Positive(message = "La durée doit être un nombre positif.")
     private int duree;
@@ -32,7 +39,11 @@ public class QuestionnairePayload {
     public String getMatiere() { return matiere; }
     public void setMatiere(String matiere) { this.matiere = matiere; }
     public Long getChapitreId() { return chapitreId; }
-    public void setChapitreId(Long chapitreId) { this.chapitreId = chapitreId; }
+    public void setChapitreId(Long chapitreId) { this.chapitreId = chapitreId; } 
+    
+    public TypeQuestionnaire getType() { return type; }
+    public void setType(TypeQuestionnaire type) { this.type = type; }
+
     public int getDuree() { return duree; }
     public void setDuree(int duree) { this.duree = duree; }
     public String getDescription() { return description; }

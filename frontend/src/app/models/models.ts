@@ -323,6 +323,7 @@ export interface QuestionnaireManuel {
   duree: number;
   description: string;
   questions: QuestionPourCreation[];
+ typeQuestionnaire: 'EXERCICE' | 'TEST' | 'QUIZ';
 }
 export interface ReponseDetail {
   id: number;

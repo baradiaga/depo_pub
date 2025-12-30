@@ -202,14 +202,15 @@ export class QuestionnaireDetailsViewComponentComponent implements OnInit {
   }
   
   // Vérifie si une question a des réponses
-  hasReponses(question: Question): boolean {
-    return question.reponses && question.reponses.length > 0;
-  }
+ hasReponses(question: Question): boolean {
+  return question.reponses !== undefined && question.reponses.length > 0;
+}
+
   
   // Retourne la réponse correcte pour les questions à réponse unique
   getCorrectAnswer(question: Question): string | null {
     if (!this.hasReponses(question)) return null;
-    const correct = question.reponses.find(r => r.correcte);
+    const correct = question.reponses?.find(r => r.correcte);
     return correct ? correct.texte : null;
   }
 

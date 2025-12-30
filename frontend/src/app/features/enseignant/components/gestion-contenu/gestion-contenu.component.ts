@@ -10,7 +10,7 @@ import { GestionContenuService } from '../../../../services/gestion-contenu.serv
 import { FormChapitreComponent } from '../form-chapitre/form-chapitre.component';
 import { FormSectionComponent } from '../form-section/form-section.component';
 import { FileUploadService } from '../../../../services/file-upload.service';
-
+import { PlayerService } from '../../../../services/player.service';
 @Component({
   selector: 'app-gestion-contenu',
   templateUrl: './gestion-contenu.component.html',
@@ -37,7 +37,8 @@ export class GestionContenuComponent implements OnInit {
     private fb: FormBuilder,
     public fileUploadService: FileUploadService,
     private router: Router,
-    private cdRef: ChangeDetectorRef
+    private cdRef: ChangeDetectorRef,
+     private playerService: PlayerService,
   ) {
     this.formEditionSection = this.fb.group({
       titre: ['', Validators.required],
@@ -201,4 +202,13 @@ export class GestionContenuComponent implements OnInit {
     if (!filePath) return '';
     return filePath.split('/').pop() || filePath;
   }
+    lireRessource(url: string | undefined): void {
+    if (!url) {
+      this.toastr.warning("Aucun lien ou fichier n'est associé à cette section.");
+      return;
+    }
+    // Ouvre le lecteur global que nous avons configuré
+    this.playerService.open(url);
+  }
 }
+

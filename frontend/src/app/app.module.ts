@@ -7,7 +7,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { CoreModule } from './core/core.module'; // <-- NOTRE NOUVEAU COREMODULE
 import { SharedModule } from './shared/shared.module'; // <-- NOTRE NOUVEAU SHAREDMODULE
 import { AppRoutingModule } from './app-routing.module';
-
+import { GlobalPlayerComponent } from './shared/components/global-player/global-player.component';
 // --- 2. Importez les modules externes (bibliothèques tierces ) ---
 import { ToastrModule } from 'ngx-toastr';
 import { QuillModule } from 'ngx-quill';// --- 3. Importez uniquement le composant racine de l'application ---
@@ -28,6 +28,7 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
     BrowserAnimationsModule,
     HttpClientModule,
     CoreModule,
+    GlobalPlayerComponent,
 
     // --- 5. Modules de fonctionnalités et de routing ---
     AppRoutingModule, // Doit venir après CoreModule si des routes utilisent ses layouts

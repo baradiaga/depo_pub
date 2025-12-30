@@ -69,11 +69,11 @@ public class DataInitializer implements CommandLineRunner {
                     createSousFonctionnalite("Gestion des Permissions", "gestion_permissions_admin", "/app/admin/permissions")),
                createFonctionnalite("Gestion des formations", "gestion_formations", "book",
     createSousFonctionnalite("Etablissement", "etablissement", "/app/enseignant/etablissements"),
-    createSousFonctionnalite("UEFR", "uefr", "/app/enseignant/uefr"),
+    createSousFonctionnalite("UFR", "uefr", "/app/enseignant/uefr"),
     createSousFonctionnalite("Département", "departement", "/app/enseignant/departements"),
 
-    createSousFonctionnalite("offre de formations", "liste_formations", "/app/admin/formations"),
-    createSousFonctionnalite("liste formation", "gerer_inscriptions", "/app/enseignant/listeformation")
+    createSousFonctionnalite("Offre de formations", "liste_formations", "/app/enseignant/formations"),
+    createSousFonctionnalite("Liste formation", "gerer_inscriptions", "/app/enseignant/listeformation")
 ),
 
                 createFonctionnalite("Gestion des maquettes", "gestion_maquettes", "layout",

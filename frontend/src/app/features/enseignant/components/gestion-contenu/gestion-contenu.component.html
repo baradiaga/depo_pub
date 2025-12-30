@@ -101,23 +101,34 @@
                   <div *ngIf="!section.contenu" class="text-muted fst-italic">Contenu vide.</div>
                 </div>
                 <div *ngSwitchCase="'VIDEO'">
-                  <div *ngIf="section.contenu; else noVideoUrl" class="ratio ratio-16x9">
-                    <iframe [src]="section.contenu | safeUrl" title="Lecteur vidéo" allowfullscreen></iframe>
-                  </div>
-                  <ng-template #noVideoUrl>
-                    <div class="text-muted fst-italic">Aucune URL de vidéo n'a été fournie.</div>
-                  </ng-template>
-                </div>
+    <div *ngIf="section.contenu; else noVideoUrl" class="d-grid shadow-sm p-3 border rounded bg-light">
+      <div class="d-flex align-items-center justify-content-between">
+        <span><i class="bi bi-play-btn-fill me-2 text-danger"></i> Vidéo prête</span>
+        <!-- Utilisation de votre service -->
+        <button class="btn btn-sm text-white" style="background-color: #1c5980;" (click)="lireRessource(section.contenu)">
+          <i class="bi bi-play-circle me-1"></i> Visionner la vidéo
+        </button>
+      </div>
+    </div>
+    <ng-template #noVideoUrl>
+      <div class="text-muted fst-italic">Aucune URL de vidéo n'a été fournie.</div>
+    </ng-template>
+  </div>
                 <div *ngSwitchCase="'FICHIER'">
-                  <div *ngIf="section.contenu; else noFile">
-                    <a [href]="'http://localhost:8080' + section.contenu" target="_blank" class="btn btn-sm btn-outline-dark">
-                      <i class="bi bi-download me-2"></i> Télécharger le fichier
-                    </a>
-                  </div>
-                  <ng-template #noFile>
-                    <div class="text-muted fst-italic">Aucun fichier n'a été associé.</div>
-                  </ng-template>
-                </div>
+    <div *ngIf="section.contenu; else noFile" class="d-flex gap-2">
+      <!-- Bouton Télécharger original -->
+      <a [href]="'http://localhost:8080' + section.contenu" target="_blank" class="btn btn-sm btn-outline-dark">
+        <i class="bi bi-download me-1"></i> Télécharger
+      </a>
+      <!-- Nouveau bouton Prévisualiser (Lecteur Global) -->
+      <button class="btn btn-sm text-white" style="background-color: #1c5980;" (click)="lireRessource(section.contenu)">
+        <i class="bi bi-eye me-1"></i> Prévisualiser
+      </button>
+    </div>
+    <ng-template #noFile>
+      <div class="text-muted fst-italic">Aucun fichier n'a été associé.</div>
+    </ng-template>
+  </div>
                 <div *ngSwitchCase="'QUIZ'">
                   <div class="d-flex align-items-center">
                     <i class="bi bi-patch-question-fill text-primary me-2"></i>

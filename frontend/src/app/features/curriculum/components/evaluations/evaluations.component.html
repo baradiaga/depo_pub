@@ -1,420 +1,161 @@
-<div class="evaluations-container">
-  <!-- Header -->
-  <header class="evaluations-header">
-    <div class="header-left">
-      <h1 class="page-title">
-        <i class="bi bi-clipboard-check"></i>
-        Mes Évaluations
-      </h1>
-      <p class="page-subtitle">Validez vos compétences et obtenez vos certificats</p>
-    </div>
-    
-    <div class="header-right">
-      <div class="stats-badge">
-        <div class="stats-progress" [style.background]="'conic-gradient(#4CAF50 ' + stats.tauxReussiteGlobal + '%, #f0f0f0 0)'">
-          <span>{{ stats.tauxReussiteGlobal }}%</span>
-        </div>
-        <div class="stats-text">
-          <small>Taux de réussite</small>
-        </div>
-      </div>
-      
-      <button class="btn btn-outline-primary" (click)="toggleModeVue()">
-        <i class="bi" [class.bi-grid]="modeVue === 'liste'" [class.bi-list-ul]="modeVue === 'grille'"></i>
-        {{ modeVue === 'liste' ? 'Vue Grille' : 'Vue Liste' }}
-      </button>
-    </div>
-  </header>
-
-  <!-- Statistiques -->
-  <div class="stats-section">
-    <div class="stat-card">
-      <div class="stat-icon" style="background-color: #e3f2fd;">
-        <i class="bi bi-calendar" style="color: #ffc107;"></i>
-      </div>
-      <div class="stat-content">
-        <h3>{{ stats.aVenir }}</h3>
-        <p>À venir</p>
-      </div>
-    </div>
-    
-    <div class="stat-card">
-      <div class="stat-icon" style="background-color: #fff3cd;">
-        <i class="bi bi-clock" style="color: #4361ee;"></i>
-      </div>
-      <div class="stat-content">
-        <h3>{{ stats.enCours }}</h3>
-        <p>En cours</p>
-      </div>
-    </div>
-    
-    <div class="stat-card">
-      <div class="stat-icon" style="background-color: #d1ecf1;">
-        <i class="bi bi-check-circle" style="color: #17a2b8;"></i>
-      </div>
-      <div class="stat-content">
-        <h3>{{ stats.terminees }}</h3>
-        <p>Terminées</p>
-      </div>
-    </div>
-    
-    <div class="stat-card">
-      <div class="stat-icon" style="background-color: #d4edda;">
-        <i class="bi bi-graph-up" style="color: #28a745;"></i>
-      </div>
-      <div class="stat-content">
-        <h3>{{ stats.corrigees }}</h3>
-        <p>Corrigées</p>
-      </div>
-    </div>
-    
-    <div class="stat-card">
-      <div class="stat-icon" style="background-color: #f8d7da;">
-        <i class="bi bi-star" style="color: #dc3545;"></i>
-      </div>
-      <div class="stat-content">
-        <h3>{{ stats.moyenneGenerale }}/20</h3>
-        <p>Moyenne</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- Filtres -->
-  <div class="filters-section">
-    <div class="filter-group">
-      <h6><i class="bi bi-funnel me-2"></i>Type d'évaluation</h6>
-      <div class="filter-buttons">
-        <button *ngFor="let type of typesEvaluations" 
-                class="filter-btn" 
-                [class.active]="filtreTypeActif === type.id"
-                (click)="appliquerFiltreType(type.id)"
-                [style.border-color]="type.couleur">
-          <span class="filter-icon">{{ type.icon }}</span>
-          {{ type.label }}
-        </button>
-      </div>
-    </div>
-    
-    <div class="filter-group">
-      <h6><i class="bi bi-filter me-2"></i>Statut</h6>
-      <div class="filter-buttons">
-        <button *ngFor="let filtre of filtresStatut" 
-                class="filter-btn" 
-                [class.active]="filtreStatutActif === filtre.id"
-                (click)="appliquerFiltreStatut(filtre.id)">
-          <span class="filter-icon">{{ filtre.icon }}</span>
-          {{ filtre.label }}
-        </button>
-      </div>
-    </div>
-    
-    <button class="btn btn-outline-secondary" (click)="reinitialiserFiltres()">
-      <i class="bi bi-x-circle me-1"></i>Réinitialiser
+<div class="eval-container">
+  
+  <!-- HEADER DE NAVIGATION (Visible uniquement hors test) -->
+  <div class="header-nav" *ngIf="vue !== 'LECTEUR'">
+    <button *ngIf="vue !== 'MATIERES'" class="btn-back" (click)="retour()">
+      <i class="pi pi-arrow-left"></i> Retour
     </button>
+    <h4 class="page-title">Centre d'Évaluation</h4>
   </div>
 
-  <!-- Vue Liste (par défaut) -->
-  <div *ngIf="modeVue === 'liste'" class="evaluations-liste">
-    <div *ngFor="let evaluation of evaluationsFiltrees" class="evaluation-card">
-      
-      <!-- En-tête de la carte -->
-      <div class="evaluation-header">
-        <div class="evaluation-type" [style.background-color]="getEvaluationTypeColor(evaluation.type)">
-          <span class="type-icon">{{ getEvaluationTypeIcon(evaluation.type) }}</span>
-          <span class="type-label">{{ getEvaluationTypeLabel(evaluation.type) }}</span>
-        </div>
-        
-        <div class="evaluation-statut" [class]="getClasseStatut(evaluation.statut)">
-          <span class="statut-icon">{{ getIconeStatut(evaluation.statut) }}</span>
-          <span class="statut-label">{{ formatStatut(evaluation.statut) }}</span>
-        </div>
-      </div>
+  <!-- ÉTAT DE CHARGEMENT -->
+  <div *ngIf="loading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Synchronisation avec le serveur...</p>
+  </div>
 
-      <!-- Corps de la carte -->
-      <div class="evaluation-body" (click)="selectionnerEvaluation(evaluation)">
-        <div class="evaluation-titre-section">
-          <h3 class="evaluation-titre">{{ evaluation.titre }}</h3>
-          <div class="evaluation-matiere">
-            <i class="bi bi-book"></i>
-            {{ evaluation.matiere }} • {{ evaluation.chapitre }}
-          </div>
+  <!-- VUE 1 : SÉLECTION DE LA MATIÈRE -->
+  <div class="view-step" *ngIf="vue === 'MATIERES' && !loading">
+    <p class="step-instruction">Choisissez un enseignement pour voir les tests disponibles :</p>
+    <div class="matiere-grid">
+      <div class="matiere-item" *ngFor="let m of matieres" (click)="choisirMatiere(m)">
+        <div class="icon">📚</div>
+        <div class="content">
+          <span class="nom">{{ m.nom }}</span>
+          <span class="details">{{ m.code }} • {{ m.chapitres?.length || 0 }} Chapitres</span>
         </div>
-        
-        <p class="evaluation-description">{{ evaluation.description }}</p>
-        
-        <!-- Métadonnées -->
-        <div class="evaluation-metadata">
-          <div class="metadata-item">
-            <i class="bi bi-calendar"></i>
-            <span>{{ formaterDate(evaluation.date) }}</span>
-          </div>
-          <div class="metadata-item">
-            <i class="bi bi-clock"></i>
-            <span>{{ evaluation.duree }}</span>
-          </div>
-          <div class="metadata-item">
-            <i class="bi bi-bar-chart"></i>
-            <span [style.color]="getCouleurDifficulte(evaluation.difficulte)">
-              {{ formatDifficulte(evaluation.difficulte) }}
-            </span>
-          </div>
-          <div class="metadata-item">
-            <i class="bi bi-star"></i>
-            <span>{{ evaluation.pointsMax }} points</span>
-          </div>
-        </div>
-
-        <!-- Résultats (si disponibles) -->
-        <div *ngIf="evaluation.note !== null" class="evaluation-resultats">
-          <div class="resultats-grid">
-            <div class="resultat-item">
-              <span class="resultat-label">Note</span>
-              <span class="resultat-value" [style.color]="getCouleurNote(evaluation.note)">
-                {{ evaluation.note }}/20
-              </span>
-            </div>
-            <div class="resultat-item">
-              <span class="resultat-label">Points</span>
-              <span class="resultat-value">
-                {{ evaluation.pointsObtenus }}/{{ evaluation.pointsMax }}
-              </span>
-            </div>
-            <div class="resultat-item">
-              <span class="resultat-label">Taux de réussite</span>
-              <span class="resultat-value">
-                {{ getPourcentageReussite(evaluation) }}%
-              </span>
-            </div>
-            <div class="resultat-item">
-              <span class="resultat-label">Tentatives</span>
-              <span class="resultat-value">
-                {{ evaluation.tentatives }}/{{ evaluation.tentativesMax }}
-              </span>
-            </div>
-          </div>
-          
-          <!-- Barre de progression -->
-          <div *ngIf="evaluation.note !== null" class="evaluation-progression">
-            <div class="progression-info">
-              <span>Performance</span>
-              <span>{{ getPourcentageReussite(evaluation) }}%</span>
-            </div>
-            <div class="progress">
-              <div class="progress-bar" 
-                   [style.width.%]="getPourcentageReussite(evaluation)" 
-                   [style.background-color]="getCouleurNote(evaluation.note)">
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Compétences -->
-        <div *ngIf="evaluation.competences && evaluation.competences.length > 0" class="competences-section">
-          <div class="competences-label">Compétences évaluées :</div>
-          <div class="competences-list">
-            <span *ngFor="let competence of evaluation.competences" class="competence-tag">
-              {{ competence }}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Actions -->
-      <div class="evaluation-actions">
-        <button class="btn action-btn" 
-                [class]="getClasseBoutonPrincipal(evaluation)"
-                (click)="demarrerEvaluation(evaluation)"
-                [disabled]="evaluation.statut === 'a-venir'">
-          <span class="action-icon">{{ getIconeBoutonPrincipal(evaluation) }}</span>
-          {{ getTexteBoutonPrincipal(evaluation) }}
-        </button>
-        
-        <button *ngIf="evaluation.statut === 'en-cours'" 
-                class="btn btn-success"
-                (click)="soumettreEvaluation(evaluation)">
-          <i class="bi bi-send"></i>
-          Soumettre
-        </button>
-        
-        <button class="btn btn-outline-secondary" 
-                (click)="selectionnerEvaluation(evaluation)">
-          <i class="bi bi-info-circle"></i>
-          Détails
-        </button>
+        <i class="pi pi-chevron-right"></i>
       </div>
     </div>
   </div>
 
-  <!-- Vue Grille -->
-  <div *ngIf="modeVue === 'grille'" class="evaluations-grille">
-    <div class="grille-grid">
-      <div *ngFor="let evaluation of evaluationsFiltrees" 
-           class="grille-card"
-           [class]="getClasseStatut(evaluation.statut)"
-           (click)="selectionnerEvaluation(evaluation)">
-        
-        <div class="grille-header">
-          <div class="grille-type" [style.background-color]="getEvaluationTypeColor(evaluation.type)">
-            <span class="type-icon">{{ getEvaluationTypeIcon(evaluation.type) }}</span>
-          </div>
-          <div class="grille-statut">
-            {{ getIconeStatut(evaluation.statut) }}
-          </div>
+  <!-- VUE 2 : LISTE DES ÉVALUATIONS FILTRÉES -->
+  <div class="view-step" *ngIf="vue === 'EVALUATIONS' && !loading">
+    <div class="matiere-header-info">
+      <h5>{{ matiereSelectionnee?.nom }}</h5>
+      <p>Sélectionnez l'activité que vous souhaitez démarrer.</p>
+    </div>
+
+    <div class="groups-container">
+      <!-- Section EXERCICES -->
+      <div class="group-box" *ngIf="exercices.length > 0">
+        <p class="group-label">✍️ Exercices d'entraînement</p>
+        <div class="eval-card-item" *ngFor="let ex of exercices" (click)="lancerEvaluation(ex.id)">
+          <span class="card-title">{{ ex.titre }}</span>
+          <span class="card-meta">{{ ex.questions?.length || 0 }} questions</span>
         </div>
-        
-        <div class="grille-body">
-          <h5 class="grille-titre">{{ evaluation.titre }}</h5>
-          <p class="grille-description">{{ evaluation.description }}</p>
-          
-          <div class="grille-meta">
-            <div class="meta-item">
-              <i class="bi bi-calendar"></i>
-              {{ formaterDate(evaluation.date) }}
-            </div>
-            <div class="meta-item">
-              <i class="bi bi-clock"></i>
-              {{ evaluation.duree }}
-            </div>
-          </div>
-          
-          <div *ngIf="evaluation.note !== null" class="grille-note">
-            <div class="note-circle" [style.background]="getCouleurNote(evaluation.note)">
-              <span>{{ evaluation.note }}</span>
-            </div>
-            <div class="note-label">/20</div>
-          </div>
-          
-          <div *ngIf="evaluation.note === null" class="grille-info">
-            <span [style.color]="getCouleurDifficulte(evaluation.difficulte)">
-              {{ formatDifficulte(evaluation.difficulte) }}
-            </span>
-            <span class="points">{{ evaluation.pointsMax }} pts</span>
-          </div>
+      </div>
+
+      <!-- Section QUIZ -->
+      <div class="group-box" *ngIf="quizs.length > 0">
+        <p class="group-label quiz">🧠 Quiz de connaissances</p>
+        <div class="eval-card-item quiz" *ngFor="let q of quizs" (click)="lancerEvaluation(q.id)">
+          <span class="card-title">{{ q.titre }}</span>
         </div>
-        
-        <div class="grille-footer">
-          <span class="matiere">{{ evaluation.matiere }}</span>
-          <button class="btn btn-sm btn-outline-primary"
-                  (click)="demarrerEvaluation(evaluation); $event.stopPropagation()"
-                  [disabled]="evaluation.statut === 'a-venir'">
-            {{ getTexteBoutonPrincipal(evaluation) }}
-          </button>
+      </div>
+
+      <!-- Section TESTS -->
+      <div class="group-box" *ngIf="tests.length > 0">
+        <p class="group-label test">🏆 Tests de niveau</p>
+        <div class="eval-card-item test" *ngFor="let t of tests" (click)="lancerEvaluation(t.id)">
+          <span class="card-title">{{ t.titre }}</span>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Panneau de détail -->
-  <div *ngIf="evaluationSelectionnee" class="detail-panel">
-    <div class="detail-header">
-      <h5>Détails de l'évaluation</h5>
-      <button class="btn-close" (click)="evaluationSelectionnee = null">
-        <i class="bi bi-x"></i>
-      </button>
+  <!-- VUE 3 : LECTEUR DE TEST (CORRIGÉ) -->
+  <div class="player-view" *ngIf="vue === 'LECTEUR' && questionnaireEnCours">
+    <div class="player-header">
+      <button class="btn-exit" (click)="retour()">✕ Quitter le test</button>
+      <div class="test-info">
+        <h5>{{ questionnaireEnCours.titre }}</h5>
+        <div class="timer" *ngIf="tempsRestant > 0">⏱️ {{ formatTemps() }}</div>
+      </div>
     </div>
+
+    <div class="questions-scroll-area">
+      <div class="q-card-box" *ngFor="let q of questionnaireEnCours.questions; let i = index">
+        <p class="q-enonce"><strong>Question {{ i + 1 }} :</strong> {{ q.enonce }}</p>
+
+        <!-- MOTEUR DE RENDU DYNAMIQUE -->
+        <div [ngSwitch]="q.type.toUpperCase()" class="options-wrapper">
+          
+          <!-- CAS : VRAI_FAUX (ALIGNÉ RÉFÉRENT) -->
+          <div *ngSwitchCase="'VRAI_FAUX'" class="vf-layout">
+            <label class="vf-btn-label">
+              <input type="radio" [name]="'q'+q.id" (change)="choisirReponseVraiFaux(q.id, true)">
+              <div class="vf-design">VRAI</div>
+            </label>
+            <label class="vf-btn-label">
+              <input type="radio" [name]="'q'+q.id" (change)="choisirReponseVraiFaux(q.id, false)">
+              <div class="vf-design">FAUX</div>
+            </label>
+          </div>
+
+          <!-- CAS : QCU -->
+          <div *ngSwitchCase="'QCU'" class="std-options">
+            <label *ngFor="let r of q.reponses" class="option-row">
+              <input type="radio" [name]="'q'+q.id" (change)="choisirReponse(q.id, r.id)">
+              <span class="option-text">{{ r.texte }}</span>
+            </label>
+          </div>
+
+          <!-- CAS : QCM -->
+          <div *ngSwitchCase="'QCM'" class="std-options">
+            <label *ngFor="let r of q.reponses" class="option-row">
+              <input type="checkbox" (change)="choisirReponseMultiple(q.id, r.id, $event)">
+              <span class="option-text">{{ r.texte }}</span>
+            </label>
+          </div>
+
+          <!-- CAS : TEXTE LIBRE (ÉLARGIE) -->
+          <div *ngSwitchCase="'TEXTE_LIBRE'" class="text-input-area">
+            <textarea class="custom-textarea" 
+                      placeholder="Rédigez votre réponse ici..." 
+                      (input)="saisirReponseTexte(q.id, $event)"></textarea>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="player-footer">
+      <button class="btn-primary-submit" (click)="soumettre()">Valider et Envoyer mes réponses</button>
+    </div>
+  </div>
+
+   <!-- VUE 4 : ÉCRAN DE RÉSULTATS (CORRIGÉ POUR 2025) -->
+<!-- VUE 4 : ÉCRAN DE RÉSULTATS (CORRIGÉ 2025) -->
+<div class="result-view-container" *ngIf="vue === 'RESULTAT' && resultatFinal">
+  <div class="result-card">
+    <div class="result-icon">🎯</div>
+    <h2>Test terminé !</h2>
     
-    <div class="detail-body">
-      <div class="detail-type" [style.background-color]="getEvaluationTypeColor(evaluationSelectionnee.type)">
-        <span class="type-icon-large">{{ getEvaluationTypeIcon(evaluationSelectionnee.type) }}</span>
-        <span class="type-label">{{ getEvaluationTypeLabel(evaluationSelectionnee.type) }}</span>
+    <div class="final-score">
+      <!-- Calcul du score en pourcentage -->
+      <div class="circle-progress" *ngIf="resultatFinal.totalPointsPossible > 0">
+        {{ ((resultatFinal.scoreObtenu / resultatFinal.totalPointsPossible) * 100).toFixed(0) }}%
       </div>
       
-      <h6>{{ evaluationSelectionnee.titre }}</h6>
-      <p>{{ evaluationSelectionnee.description }}</p>
-      
-      <div class="detail-grid">
-        <div class="detail-item">
-          <span class="label">Matière</span>
-          <span class="value">{{ evaluationSelectionnee.matiere }}</span>
-        </div>
-        <div class="detail-item">
-          <span class="label">Chapitre</span>
-          <span class="value">{{ evaluationSelectionnee.chapitre }}</span>
-        </div>
-        <div class="detail-item">
-          <span class="label">Date</span>
-          <span class="value">{{ formaterDate(evaluationSelectionnee.date) }}</span>
-        </div>
-        <div class="detail-item">
-          <span class="label">Durée</span>
-          <span class="value">{{ evaluationSelectionnee.duree }}</span>
-        </div>
-        <div class="detail-item">
-          <span class="label">Difficulté</span>
-          <span class="value" [style.color]="getCouleurDifficulte(evaluationSelectionnee.difficulte)">
-            {{ formatDifficulte(evaluationSelectionnee.difficulte) }}
-          </span>
-        </div>
-        <div class="detail-item">
-          <span class="label">Points maximum</span>
-          <span class="value">{{ evaluationSelectionnee.pointsMax }}</span>
-        </div>
-        <div class="detail-item">
-          <span class="label">Statut</span>
-          <span class="value" [class]="getClasseStatut(evaluationSelectionnee.statut)">
-            {{ formatStatut(evaluationSelectionnee.statut) }}
-          </span>
-        </div>
-        <div *ngIf="evaluationSelectionnee.note !== null" class="detail-item">
-          <span class="label">Note</span>
-          <span class="value" [style.color]="getCouleurNote(evaluationSelectionnee.note)">
-            {{ evaluationSelectionnee.note }}/20
-          </span>
-        </div>
-        <div *ngIf="evaluationSelectionnee.pointsObtenus !== null" class="detail-item">
-          <span class="label">Points obtenus</span>
-          <span class="value">{{ evaluationSelectionnee.pointsObtenus }}/{{ evaluationSelectionnee.pointsMax }}</span>
-        </div>
-        <div *ngIf="evaluationSelectionnee.tauxReussite !== null" class="detail-item">
-          <span class="label">Taux de réussite</span>
-          <span class="value">{{ getPourcentageReussite(evaluationSelectionnee) }}%</span>
-        </div>
-        <div class="detail-item">
-          <span class="label">Tentatives</span>
-          <span class="value">{{ evaluationSelectionnee.tentatives }}/{{ evaluationSelectionnee.tentativesMax }}</span>
-        </div>
-      </div>
-      
-      <!-- Compétences -->
-      <div *ngIf="evaluationSelectionnee.competences && evaluationSelectionnee.competences.length > 0" 
-           class="competences-section">
-        <h6>Compétences évaluées</h6>
-        <div class="competences-list">
-          <div *ngFor="let competence of evaluationSelectionnee.competences" class="competence-item">
-            <i class="bi bi-check-circle"></i>
-            {{ competence }}
-          </div>
-        </div>
-      </div>
-      
-      <!-- Ressources -->
-      <div *ngIf="evaluationSelectionnee.ressources && evaluationSelectionnee.ressources.length > 0" 
-           class="ressources-section">
-        <h6>Ressources disponibles</h6>
-        <div class="ressources-list">
-          <div *ngFor="let ressource of evaluationSelectionnee.ressources" class="ressource-item">
-            <i class="bi bi-paperclip"></i>
-            {{ ressource }}
-          </div>
-        </div>
-      </div>
-      
-      <div class="detail-actions">
-        <button class="btn btn-primary w-100 mb-2" 
-                (click)="demarrerEvaluation(evaluationSelectionnee)"
-                [disabled]="evaluationSelectionnee.statut === 'a-venir'">
-          <i class="bi" [class.bi-play]="evaluationSelectionnee.statut !== 'corrigee'" 
-                     [class.bi-eye]="evaluationSelectionnee.statut === 'corrige'"></i>
-          {{ getTexteBoutonPrincipal(evaluationSelectionnee) }}
-        </button>
-        
-        <button *ngIf="evaluationSelectionnee.statut === 'en-cours'" 
-                class="btn btn-success w-100"
-                (click)="soumettreEvaluation(evaluationSelectionnee)">
-          <i class="bi bi-send"></i>
-          Soumettre maintenant
-        </button>
-      </div>
+      <!-- Affichage des points bruts -->
+      <p class="score-detail">
+        Vous avez obtenu <strong>{{ resultatFinal.scoreObtenu }}</strong> 
+        sur <strong>{{ resultatFinal.totalPointsPossible }}</strong> points.
+      </p>
     </div>
+
+    <!-- Message de feedback (Note : pas de champ 'message' dans votre DTO, on en met un par défaut) -->
+    <p class="result-msg">
+      Félicitations, vos résultats ont été enregistrés le 
+      {{ resultatFinal.dateSoumission | date:'dd/MM/yyyy à HH:mm' }}.
+    </p>
+    
+    <button class="btn-primary-submit" (click)="retour()">Retour au menu principal</button>
   </div>
+</div>
+
+
+
+
 </div>

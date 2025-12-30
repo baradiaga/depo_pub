@@ -1,0 +1,49 @@
+<div class="learning-wrapper" *ngIf="!loading; else loadingTpl">
+  
+  <!-- BARRE LATERALE : NAVIGATION -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <button class="btn-back" (click)="router.navigate(['/curriculum/sequences'])">⬅ Quitter</button>
+      <h4>{{ chapitre?.nom }}</h4>
+      <div class="chapter-badge">{{ chapitre?.sections?.length || 0 }} Séquences</div>
+    </div>
+
+    <div class="sections-nav">
+      <div class="nav-item" 
+           *ngFor="let sec of chapitre?.sections; let i = index"
+           [class.active]="sectionActive?.id === sec.id"
+           (click)="selectionnerSection(sec)">
+        <span class="num">{{ i + 1 }}</span>
+        <span class="title">{{ sec.titre }}</span>
+        <span class="check" *ngIf="sectionActive?.id === sec.id">📖</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ZONE DE LECTURE (PLAYER) -->
+  <main class="content-viewer">
+    <header class="content-header">
+      <div class="title-meta">
+        <span class="breadcrumb">Section active</span>
+        <h1>{{ sectionActive?.titre }}</h1>
+      </div>
+      <div class="header-actions">
+        <button class="btn-finish" (click)="allerASuivant()">Section Suivante ➔</button>
+      </div>
+    </header>
+
+    <div class="content-body fade-in">
+      <!-- CONTENEUR ANTI-DEBORDEMENT -->
+      <div class="content-scroll-container">
+        <article class="rich-text" [innerHTML]="sectionActive?.contenu"></article>
+      </div>
+    </div>
+  </main>
+</div>
+
+<ng-template #loadingTpl>
+  <div class="full-loader">
+    <div class="spinner"></div>
+    <p>Initialisation de votre leçon...</p>
+  </div>
+</ng-template>

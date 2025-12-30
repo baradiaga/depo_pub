@@ -1,0 +1,34 @@
+<div class="player-overlay" *ngIf="playerService.isVisible()" (click)="playerService.close()">
+  <div class="player-card" (click)="$event.stopPropagation()">
+    
+    <div class="player-header">
+      <div class="d-flex align-items-center">
+        <i class="bi bi-play-circle-fill me-2"></i>
+        <span>Lecteur de ressource</span>
+      </div>
+      <button (click)="playerService.close()" style="background:none; border:none; color:white; font-size:1.2rem;">✖</button>
+    </div>
+
+    <div class="player-body" style="background: #000; position: relative; padding-top: 56.25%;">
+      
+      <!-- CAS 1 : YOUTUBE (Si ID détecté) -->
+      <div *ngIf="playerService.youtubeId()" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
+        <youtube-player 
+          [videoId]="playerService.youtubeId()!"
+          [width]="undefined" 
+          [height]="undefined">
+        </youtube-player>
+      </div>
+
+      <!-- CAS 2 : AUTRES (Iframe) -->
+      <iframe 
+        *ngIf="!playerService.youtubeId() && playerService.safeUrl()" 
+        [src]="playerService.safeUrl()!" 
+        style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
+        frameborder="0" 
+        allowfullscreen>
+      </iframe>
+
+    </div>
+  </div>
+</div>

@@ -1,184 +1,140 @@
-/* Container principal */
-.gestion-questionnaire {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 20px;
-  font-family: Arial, sans-serif;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  box-shadow: 0 0 8px rgba(0,0,0,0.1);
+/* --- Base et Conteneur --- */
+:host {
+    display: block;
+    background-color: #f4f7f9;
+    min-height: 100vh;
+    padding-bottom: 50px;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
-/* Titres */
-h2 {
-  text-align: center;
-  margin-bottom: 20px;
-  color: #333;
+/* --- Cartes (Card) --- */
+.card {
+    border: none !important;
+    border-radius: 10px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+    background-color: #ffffff;
 }
 
-/* Formulaire */
-form {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+.card-header {
+    background-color: #ffffff !important;
+    border-bottom: 2px solid #1c5980 !important;
+    padding: 1.5rem !important;
+    border-radius: 10px 10px 0 0 !important;
 }
 
-/* Labels */
-label {
-  font-weight: 600;
-  margin-bottom: 5px;
-  display: block;
-  color: #444;
+.card-header h2 {
+    color: #1c5980;
+    font-weight: 700;
+    margin: 0;
+    font-size: 1.4rem;
 }
 
-/* Inputs, selects, textarea */
-input[type="text"],
-input[type="number"],
-select,
-textarea {
-  width: 100%;
-  padding: 8px 12px;
-  font-size: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  transition: border-color 0.3s ease;
-  box-sizing: border-box;
+/* --- Formulaires --- */
+.form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
 }
 
-input[type="text"]:focus,
-input[type="number"]:focus,
-select:focus,
-textarea:focus {
-  border-color: #007bff;
-  outline: none;
+.form-control, .form-select {
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    padding: 0.6rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-/* Section questions */
-.questions {
-  margin-top: 30px;
-  border-top: 1px solid #ddd;
-  padding-top: 20px;
+.form-control:focus, .form-select:focus {
+    border-color: #1c5980;
+    box-shadow: 0 0 0 0.2rem rgba(28, 89, 128, 0.15);
+    outline: none;
 }
 
-.question {
-  background-color: #fff;
-  padding: 15px;
-  margin-bottom: 20px;
-  border-radius: 6px;
-  border: 1px solid #ddd;
+/* --- Questions Spécifiques --- */
+.card.my-3 {
+    border-left: 5px solid #1c5980 !important;
+    margin-bottom: 1.5rem !important;
+    transition: transform 0.2s;
 }
 
-.question-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.card.my-3:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1) !important;
 }
 
-.question-type-select {
-  width: 150px;
+.card.my-3 h5 {
+    color: #1c5980;
+    font-weight: 700;
 }
 
-.question-buttons {
-  display: flex;
-  gap: 10px;
+/* --- Boutons --- */
+.btn-primary {
+    background-color: #1c5980 !important;
+    border-color: #1c5980 !important;
+    font-weight: 600;
+    padding: 0.6rem 1.5rem;
 }
 
-button {
-  cursor: pointer;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  padding: 7px 14px;
-  font-size: 0.9rem;
-  border-radius: 4px;
-  transition: background-color 0.2s ease;
+.btn-primary:hover {
+    background-color: #154563 !important;
+    border-color: #154563 !important;
 }
 
-button:hover {
-  background-color: #0056b3;
+.btn-outline-primary {
+    color: #1c5980 !important;
+    border-color: #1c5980 !important;
+    font-weight: 600;
 }
 
-button:disabled,
-button[disabled] {
-  background-color: #aaa;
-  cursor: not-allowed;
+.btn-outline-primary:hover {
+    background-color: #1c5980 !important;
+    color: #ffffff !important;
 }
 
-/* Réponses */
-.reponses {
-  margin-top: 10px;
+.btn-secondary {
+    background-color: #6c757d !important;
+    border: none;
+    font-weight: 600;
 }
 
-.reponse {
-  display: flex;
-  align-items: center;
-  margin-bottom: 8px;
+.btn-outline-danger {
+    border-width: 1px;
 }
 
-.reponse input[type="text"] {
-  flex-grow: 1;
-  margin-right: 10px;
+/* --- Éléments de réponse --- */
+.input-group-text {
+    background-color: #f8f9fa;
+    border-color: #ced4da;
 }
 
-.reponse input[type="checkbox"],
-.reponse input[type="radio"] {
-  margin-right: 8px;
+.form-check-input:checked {
+    background-color: #1c5980;
+    border-color: #1c5980;
 }
 
-.reponse button {
-  background-color: #dc3545;
+/* --- Quill Editor --- */
+::ng-deep .ql-toolbar {
+    background-color: #f8f9fa;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
 }
 
-.reponse button:hover {
-  background-color: #a71d2a;
+::ng-deep .ql-container {
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+    font-size: 1rem;
 }
 
-/* Boutons principaux */
-.actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 15px;
-  margin-top: 30px;
+/* --- Séparateur --- */
+hr {
+    border-top: 2px solid #e9ecef;
+    opacity: 1;
+    margin: 2rem 0;
 }
 
-/* Alertes / messages */
-.alert {
-  padding: 10px 15px;
-  border-radius: 4px;
-  margin-bottom: 15px;
-  font-weight: 600;
-}
-
-.alert-error {
-  background-color: #f8d7da;
-  color: #842029;
-  border: 1px solid #f5c2c7;
-}
-
-.alert-success {
-  background-color: #d1e7dd;
-  color: #0f5132;
-  border: 1px solid #badbcc;
-}
-
-/* Responsive */
-@media (max-width: 600px) {
-  .gestion-questionnaire {
-    padding: 10px;
-  }
-
-  .question-header {
-    flex-direction: column;
-    gap: 10px;
-    align-items: flex-start;
-  }
-
-  .question-type-select {
-    width: 100%;
-  }
-
-  .actions {
-    flex-direction: column;
-    gap: 10px;
-  }
+h4.mt-4 {
+    color: #1c5980;
+    text-transform: uppercase;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+    font-weight: 700;
 }

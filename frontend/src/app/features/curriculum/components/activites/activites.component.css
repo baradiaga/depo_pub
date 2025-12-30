@@ -1,375 +1,81 @@
-/* =========================
-   VARIABLES GLOBALES
-========================= */
-:root {
-  --primary: #4361ee;
-  --success: #28a745;
-  --warning: #ffc107;
-  --danger: #dc3545;
-  --gray: #6c757d;
-  --bg-light: #f8f9fa;
-  --card-bg: #ffffff;
-  --border: #e0e0e0;
-  --radius: 14px;
-  --shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+:host {
+  --primary: #1c5980;
+  --bg-soft: #f8fafc;
+  --glass: rgba(255, 255, 255, 0.98);
 }
 
-/* =========================
-   CONTAINER
-========================= */
-.activites-container {
-  padding: 24px;
-  background: var(--bg-light);
-  min-height: 100vh;
-  font-family: "Inter", "Segoe UI", sans-serif;
+.activites-wrapper { background-color: var(--bg-soft); min-height: 100vh; padding-bottom: 50px; font-family: 'Inter', sans-serif; }
+
+/* HEADER PREMIUM */
+.header-container { position: relative; padding: 40px 20px 80px 20px; margin-bottom: -60px; }
+.header-bg-gradient { 
+  position: absolute; top: 0; left: 0; right: 0; height: 280px;
+  background: linear-gradient(135deg, var(--primary) 0%, #0f344d 100%);
+  z-index: 0; border-bottom-left-radius: 40px; border-bottom-right-radius: 40px;
 }
-
-/* =========================
-   HEADER
-========================= */
-.activites-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-  gap: 16px;
+.activites-header-floating {
+  position: relative; z-index: 1; max-width: 1100px; margin: 0 auto;
+  background: var(--glass); backdrop-filter: blur(15px);
+  border-radius: 24px; padding: 30px; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
 }
-
-.page-title {
-  font-size: 26px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.header-main { display: flex; justify-content: space-between; align-items: center; }
+.profile-section { display: flex; align-items: center; gap: 20px; }
+.avatar-main { 
+  width: 65px; height: 65px; background: linear-gradient(135deg, #2a7cad, var(--primary));
+  color: white; border-radius: 18px; display: flex; align-items: center; justify-content: center;
+  font-size: 26px; font-weight: 700; box-shadow: 0 8px 15px rgba(28, 89, 128, 0.2);
 }
+.user-text h2 { margin: 2px 0; font-size: 22px; color: #1a1a1a; font-weight: 800; }
+.greeting { font-size: 10px; text-transform: uppercase; color: #888; font-weight: 600; letter-spacing: 1px; }
+.user-badges { display: flex; gap: 8px; margin-top: 5px; }
+.badge-item { font-size: 11px; padding: 3px 10px; background: #f0f4f8; border-radius: 8px; color: #555; }
+.badge-item.role { background: rgba(28, 89, 128, 0.1); color: var(--primary); font-weight: 700; }
+.header-stats { display: flex; align-items: center; gap: 20px; padding: 12px 20px; background: #f8fafc; border-radius: 15px; }
+.stat-num { font-size: 20px; font-weight: 800; color: var(--primary); display: block; }
+.stat-label { font-size: 10px; color: #999; text-transform: uppercase; }
 
-.page-subtitle {
-  color: var(--gray);
-  margin-top: 4px;
+/* CONTENT & TOOLBAR */
+.content-body { position: relative; z-index: 2; max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+.toolbar { display: flex; gap: 15px; margin-bottom: 25px; }
+.search-box { 
+  flex: 1; display: flex; align-items: center; background: white; 
+  padding: 12px 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.03);
 }
+.search-box input { border: none; outline: none; width: 100%; margin-left: 10px; font-size: 15px; }
+.btn-switch { padding: 0 20px; border-radius: 15px; border: 2px solid var(--primary); background: transparent; color: var(--primary); cursor: pointer; font-weight: 600; transition: 0.3s; }
+.btn-switch:hover { background: var(--primary); color: white; }
 
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+/* PORTAIL CARDS */
+.cards-stack { display: flex; flex-direction: column; gap: 15px; }
+.portail-card { 
+  display: flex; align-items: center; background: white; border-radius: 20px; 
+  overflow: hidden; height: 130px; cursor: pointer;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.04);
+  animation: slideIn 0.5s ease-out backwards; transition: 0.3s;
 }
+.portail-card:hover { transform: translateY(-4px) scale(1.005); box-shadow: 0 12px 30px rgba(0,0,0,0.08); }
 
-/* =========================
-   BADGE COMPLETION
-========================= */
-.stats-badge {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+@keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-.stats-progress {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  font-weight: 700;
-  background: #f0f0f0;
-}
+.card-accent { width: 8px; height: 100%; }
+.card-icon-area { padding: 0 30px; font-size: 40px; }
+.card-body { flex: 1; padding-right: 20px; }
+.card-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+.sous-titre { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #aaa; letter-spacing: 0.5px; }
+.stat-badge { font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 6px; }
+.card-body h4 { margin: 0; font-size: 19px; color: #222; }
+.card-body p { margin: 5px 0 0 0; font-size: 13px; color: #777; line-height: 1.4; }
 
-.stats-progress span {
-  font-size: 14px;
-}
+.card-progress-area { width: 230px; padding: 0 25px; border-left: 1px solid #f1f1f1; display: flex; flex-direction: column; gap: 8px; }
+.progress-text { font-size: 11px; font-weight: 700; display: flex; justify-content: space-between; }
+.progress-bar-container { height: 7px; background: #eee; border-radius: 10px; overflow: hidden; }
+.progress-bar-fill { height: 100%; transition: width 1s ease; }
+.btn-action { border: none; color: white; padding: 7px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; }
 
-.stats-text small {
-  color: var(--gray);
-}
-
-/* =========================
-   STAT CARDS
-========================= */
-.stats-section {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.stat-card {
-  background: var(--card-bg);
-  border-radius: var(--radius);
-  padding: 16px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  box-shadow: var(--shadow);
-}
-
-.stat-icon {
-  width: 46px;
-  height: 46px;
-  border-radius: 12px;
-  display: grid;
-  place-items: center;
-  font-size: 20px;
-}
-
-.stat-content h3 {
-  margin: 0;
-  font-weight: 700;
-}
-
-.stat-content p {
-  margin: 0;
-  font-size: 13px;
-  color: var(--gray);
-}
-
-/* =========================
-   FILTRES
-========================= */
-.filters-section {
-  background: var(--card-bg);
-  border-radius: var(--radius);
-  padding: 16px;
-  box-shadow: var(--shadow);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.filter-group h6 {
-  font-size: 14px;
-  font-weight: 600;
-  margin-bottom: 8px;
-}
-
-.filter-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.filter-btn {
-  border: 2px solid var(--border);
-  background: transparent;
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 13px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.2s;
-}
-
-.filter-btn.active,
-.filter-btn:hover {
-  background: var(--primary);
-  color: #fff;
-  border-color: var(--primary);
-}
-
-/* =========================
-   LISTE ACTIVITÉS
-========================= */
-.activites-liste {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.activite-card {
-  background: var(--card-bg);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  overflow: hidden;
-  border-left: 6px solid var(--primary);
-}
-
-.activite-card.locked {
-  opacity: 0.6;
-  pointer-events: none;
-}
-
-/* =========================
-   HEADER CARTE
-========================= */
-.activite-header {
-  display: flex;
-  justify-content: space-between;
-  padding: 12px 16px;
-  background: #f4f6ff;
-}
-
-.activite-type,
-.activite-statut {
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: #fff;
-}
-
-/* =========================
-   BODY CARTE
-========================= */
-.activite-body {
-  padding: 16px;
-  cursor: pointer;
-}
-
-.activite-titre {
-  margin: 0 0 6px;
-  font-size: 18px;
-  font-weight: 700;
-}
-
-.activite-matiere {
-  font-size: 13px;
-  color: var(--gray);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.activite-description {
-  margin: 12px 0;
-  color: #444;
-  font-size: 14px;
-}
-
-/* =========================
-   METADATA
-========================= */
-.activite-metadata {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 10px;
-  font-size: 13px;
-}
-
-.metadata-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: #555;
-}
-
-/* =========================
-   PROGRESSION
-========================= */
-.activite-progression {
-  margin-top: 14px;
-}
-
-.progress {
-  height: 8px;
-  background: #e9ecef;
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-.progress-bar {
-  height: 100%;
-  border-radius: 10px;
-}
-
-/* =========================
-   ACTIONS
-========================= */
-.activite-actions {
-  padding: 12px 16px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  background: #fafafa;
-  border-top: 1px solid var(--border);
-}
-
-.action-btn {
-  background: var(--primary);
-  color: #fff;
-  border-radius: 10px;
-  padding: 6px 14px;
-  font-size: 13px;
-}
-
-/* =========================
-   CALENDRIER
-========================= */
-.calendrier-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 16px;
-}
-
-.calendrier-item {
-  background: var(--card-bg);
-  border-radius: var(--radius);
-  padding: 14px;
-  box-shadow: var(--shadow);
-  border-left: 5px solid var(--primary);
-  cursor: pointer;
-}
-
-.calendrier-date {
-  font-size: 13px;
-  color: var(--gray);
-  display: flex;
-  gap: 6px;
-}
-
-/* =========================
-   DETAIL PANEL
-========================= */
-.detail-panel {
-  position: fixed;
-  right: 0;
-  top: 0;
-  width: 380px;
-  height: 100%;
-  background: #fff;
-  box-shadow: -6px 0 20px rgba(0, 0, 0, 0.15);
-  z-index: 999;
-  display: flex;
-  flex-direction: column;
-}
-
-.detail-header {
-  padding: 16px;
-  display: flex;
-  justify-content: space-between;
-  border-bottom: 1px solid var(--border);
-}
-
-.detail-body {
-  padding: 16px;
-  overflow-y: auto;
-}
-
-.detail-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  font-size: 13px;
-}
-
-.detail-item .label {
-  color: var(--gray);
-  font-size: 12px;
-}
-
-/* =========================
-   RESPONSIVE
-========================= */
-@media (max-width: 768px) {
-  .activites-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .detail-panel {
-    width: 100%;
-  }
+/* RESPONSIVE */
+@media (max-width: 850px) {
+  .portail-card { height: auto; flex-direction: column; padding: 20px; text-align: center; }
+  .card-progress-area { width: 100%; border-left: none; border-top: 1px solid #f1f1f1; padding-top: 15px; margin-top: 10px; }
+  .card-accent { width: 100%; height: 6px; position: absolute; top: 0; }
+  .header-main { flex-direction: column; gap: 20px; }
 }

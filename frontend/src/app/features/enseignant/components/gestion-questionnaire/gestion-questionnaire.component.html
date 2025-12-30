@@ -46,7 +46,18 @@
               <option *ngIf="isLoadingChapitres">Chargement des chapitres...</option>
               <option *ngFor="let chapitre of chapitresDisponibles" [value]="chapitre.id">{{ chapitre.nom }}</option>
             </select>
+          </div >
+          <div class="row">
+          <div class="col-md-6 mb-3">
+          <label for="typeQuestionnaire" class="form-label">Type</label>
+          <select id="typeQuestionnaire" class="form-select" [(ngModel)]="questionnaire.typeQuestionnaire">
+           <option [ngValue]="'TEST'">Test</option>
+           <option [ngValue]="'QUIZ'">Quiz</option>
+           <option [ngValue]="'EXERCICE'">Exercice</option>
+          </select>
           </div>
+          </div>
+
         </div>
         <div class="mb-3">
           <label class="form-label">Description</label>
@@ -270,7 +281,7 @@
                   [routerLink]="['/app/enseignant/questionnaires', q.id]">
                   Détails
                 </button>
-                <button class="btn btn-sm btn-warning me-2" title="Modifier le questionnaire">Modifier</button>
+                <button class="col-md-6 mb-3" title="Modifier le questionnaire" (click)="modifierQuestionnaire(q)">Modifier</button>
                 <button class="btn btn-sm btn-danger" title="Supprimer le questionnaire" (click)="supprimerQuestionnaire(q.id, q.titre)">Supprimer</button>
               </td>
             </tr>

@@ -17,6 +17,10 @@ public class Questionnaire {
     @Column(nullable = false)
     private String titre;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type", nullable = false)
+    private TypeQuestionnaire type;
+
     private String matiere;
     private int duree;
 
@@ -74,6 +78,14 @@ public class Questionnaire {
         this.tests.remove(test);
         test.setQuestionnaire(null);
     }
+    public boolean tentativesIllimitees() {
+    return this.type == TypeQuestionnaire.EXERCICE
+        || this.type == TypeQuestionnaire.QUIZ;
+}
+
+public int tentativesMaxParDefaut() {
+    return this.type == TypeQuestionnaire.TEST ? 1 : Integer.MAX_VALUE;
+}
 
     // --- Getters et Setters ---
     public Long getId() { return id; }
@@ -82,6 +94,13 @@ public class Questionnaire {
     public String getTitre() { return titre; }
     public void setTitre(String titre) { this.titre = titre; }
 
+    public TypeQuestionnaire getType() { 
+        return type; 
+    }
+
+    public void setType(TypeQuestionnaire type) { 
+        this.type = type; 
+    }
     public String getMatiere() { return matiere; }
     public void setMatiere(String matiere) { this.matiere = matiere; }
 
@@ -112,6 +131,7 @@ public class Questionnaire {
         return "Questionnaire{" +
                 "id=" + id +
                 ", titre='" + titre + '\'' +
+                ", type=" + type + 
                 ", matiere='" + matiere + '\'' +
                 ", duree=" + duree +
                 ", description='" + description + '\'' +

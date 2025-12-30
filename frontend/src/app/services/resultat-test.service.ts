@@ -1,40 +1,35 @@
-// Fichier : src/app/services/resultat-test.service.ts (Vérification)
+// Fichier : src/app/services/resultat-test.service.ts
 
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-// --- INTERFACES POUR LA SOUMISSION ET LA RÉCEPTION DES RÉSULTATS ---
-
-export interface ReponseUtilisateur {
-  questionId: number;
-  reponseIds: number[];
-  texteReponse: string | null;
-}
-
-export interface Resultat {
-  id: number;
-  score: number;
-  scoreTotal: number;
-  dateTest: string;
-}
-
-// ==========================================================
-// === ASSUREZ-VOUS QUE CETTE LIGNE EST BIEN PRÉSENTE       ===
-// ==========================================================
+/** 
+ * Ce service est dédié à la soumission des réponses et à la gestion des scores.
+ * En 2025, nous utilisons le point d'entrée unique défini dans le backend : /api/tests
+ */
 @Injectable({
   providedIn: 'root'
-} )
+})
 export class ResultatTestService {
 
-  private apiUrl = 'http://localhost:8080/api/resultats';
+  // CORRECTION : L'URL doit correspondre au @RequestMapping("/api/tests") de votre TestController.java
+  private apiUrl = 'http://localhost:8080/api/tests';
 
-  constructor(private http: HttpClient ) { }
+  constructor(private http: HttpClient) { }
 
   /**
-   * Soumet les réponses d'un étudiant pour un test donné.
+   * Soumet les réponses d'un étudiant pour un chapitre donné.
+   * Cette méthode corrige l'erreur 404 en utilisant la bonne structure d'URL.
    */
-  soumettreResultat(testId: number, reponses: ReponseUtilisateur[]): Observable<Resultat> {
-    return this.http.post<Resultat>(`${this.apiUrl}/test/${testId}`, reponses );
+  soumettreResultat(chapitreId: number, reponses: any): Observable<any> {
+    // CORRECTION : On remplace le ":" par "/" et on utilise le bon chemin backend
+    // Résultat final attendu : http://localhost:8080/api/tests/chapitre/9/soumettre
+    const url = `${this.apiUrl}/chapitre/${chapitreId}/soumettre`;
+    
+    console.log(`[ResultatService] Envoi vers : ${url}`);
+    
+    // On envoie l'objet des réponses au backend via POST
+    return this.http.post<any>(url, reponses);
   }
 }

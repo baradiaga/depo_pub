@@ -1,0 +1,61 @@
+.player-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9999;
+    backdrop-filter: blur(8px);
+}
+
+.player-card {
+    width: 90%;
+    max-width: 960px;
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 2px solid #1c5980;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.player-header {
+    background-color: #1c5980;
+    color: white;
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btn-close-custom {
+    background: none;
+    border: 1px solid rgba(255,255,255,0.4);
+    color: white;
+    border-radius: 4px;
+    padding: 2px 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-close-custom:hover {
+    background: rgba(255,255,255,0.2);
+}
+
+.player-body {
+    background: #000;
+    position: relative;
+    padding-top: 56.25%; /* Ratio 16:9 */
+}
+
+.player-body iframe, 
+.player-body .youtube-wrapper {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+}
+
+/* Pour rendre le youtube-player d'Angular responsive */
+::ng-deep youtube-player iframe {
+    width: 100% !important;
+    height: 100% !important;
+}

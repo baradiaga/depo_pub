@@ -63,4 +63,5 @@ export class TestService {
     console.log(`[TestService] Appel API pour récupérer l'historique des résultats.`);
     return this.http.get<HistoriqueResultat[]>(`${this.apiUrl}/mon-historique`);
   }
+  
 }
