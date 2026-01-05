@@ -2,7 +2,7 @@
 
 import { Component, OnInit } from '@angular/core';
 import { ProgressionService, MatiereInscrite } from '../../../../services/progression.service';
-import { AuthService } from '../../../../services/auth.service'; // Pour le nom de l'étudiant
+import { AuthService } from '../../../../services/auth.service';
 
 @Component({
   selector: 'app-matieres-reprendre',
@@ -15,39 +15,42 @@ export class MatieresReprendreComponent implements OnInit {
   matieresFiltrees: MatiereInscrite[] = [];
   
   isLoading = true;
+  isPendingValidation = false; // Flag pour l'affichage du message d'attente
   errorMessage: string | null = null;
-  
-  etudiantNom: string | null = null; // Pour le titre
+  etudiantNom: string | null = null;
 
   constructor(
     private progressionService: ProgressionService,
-    private authService: AuthService // Injecter AuthService
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
+    this.chargerDonnees();
+  }
+
+  chargerDonnees(): void {
     this.isLoading = true;
-    this.etudiantNom = this.authService.getUserFullName(); // Récupérer le nom complet
+    this.etudiantNom = this.authService.getUserFullName();
 
     this.progressionService.getMesMatieres().subscribe({
       next: (data) => {
         this.toutesLesMatieres = data;
-        this.matieresFiltrees = data; // Au début, on affiche tout
+        this.matieresFiltrees = data;
+        
+        // LOGIQUE PRO : Si la liste est vide, on considère l'inscription en attente
+        this.isPendingValidation = data.length === 0;
+        
         this.isLoading = false;
       },
       error: (err) => {
-        this.errorMessage = "Une erreur est survenue lors du chargement.";
+        this.errorMessage = "Impossible de charger vos inscriptions.";
         this.isLoading = false;
       }
     });
   }
 
-  // Fonction de recherche
   onSearch(event: Event): void {
     const searchTerm = (event.target as HTMLInputElement).value.toLowerCase();
-    if (!searchTerm) {
-      this.matieresFiltrees = this.toutesLesMatieres;
-      return;
-    }
     this.matieresFiltrees = this.toutesLesMatieres.filter(matiere =>
       matiere.nomEc.toLowerCase().includes(searchTerm) ||
       matiere.codeEc.toLowerCase().includes(searchTerm) ||

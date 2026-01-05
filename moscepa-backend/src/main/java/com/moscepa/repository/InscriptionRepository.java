@@ -1,13 +1,18 @@
-// Fichier : src/main/java/com/moscepa/repository/InscriptionRepository.java
-
 package com.moscepa.repository;
 
 import com.moscepa.entity.Inscription;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 import java.util.List;
+
+@Repository
 public interface InscriptionRepository extends JpaRepository<Inscription, Long> {
-    // On peut ajouter ici des méthodes de recherche si nécessaire, par exemple :
-    // boolean existsByEtudiantIdAndMatiereId(Long etudiantId, Long matiereId);
-    boolean existsByEtudiantIdAndMatiereId(Long etudiantId, Long matiereId);
+    // Filtrage pour l'admin
     List<Inscription> findByStatut(String statut);
+    
+    // Filtrage pour l'étudiant (La clé de ton problème)
+    List<Inscription> findByEtudiantIdAndStatut(Long etudiantId, String statut);
+
+    // Vérification d'existence
+    boolean existsByEtudiantIdAndMatiereId(Long etudiantId, Long matiereId);
 }

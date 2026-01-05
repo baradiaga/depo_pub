@@ -3,8 +3,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Question, ResultatTest, CreateTestRequest } from '../models/models';
-
+import { Question, ResultatTest, CreateTestRequest, Questionnaire } from '../models/models';
+import { environment } from '../../environments/environment';
 // ====================================================================
 // === NOUVELLE INTERFACE POUR L'HISTORIQUE DES RÉSULTATS           ===
 // ====================================================================
@@ -25,7 +25,8 @@ export interface HistoriqueResultat {
 })
 export class TestService {
 
-  private apiUrl = 'http://localhost:8080/api/tests';
+  // private apiUrl = 'http://localhost:8080/api/tests';
+   private apiUrl =  `${environment.apiUrl}/tests`;
 
   constructor(private http: HttpClient) { }
 
@@ -63,5 +64,16 @@ export class TestService {
     console.log(`[TestService] Appel API pour récupérer l'historique des résultats.`);
     return this.http.get<HistoriqueResultat[]>(`${this.apiUrl}/mon-historique`);
   }
-  
+// Récupérer les questionnaires disponibles pour un chapitre
+getQuestionnairesDisponibles(chapitreId: number): Observable<Questionnaire[]> {
+  // Correction ici : QuestionnaireManuel[] au lieu de Questionnaire[]
+  return this.http.get<Questionnaire[]>(`${this.apiUrl}/chapitre/${chapitreId}/choix-questionnaires`);
+}
+
+// Assigner un questionnaire au test
+assignerQuestionnaire(chapitreId: number, questionnaireId: number): Observable<any> {
+  return this.http.post(`${this.apiUrl}/chapitre/${chapitreId}/assigner/${questionnaireId}`, {});
+}
+
+ 
 }

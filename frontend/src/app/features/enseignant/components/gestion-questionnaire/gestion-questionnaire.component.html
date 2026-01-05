@@ -1,13 +1,10 @@
-<!-- Fichier : src/app/features/enseignant/components/gestion-questionnaire/gestion-questionnaire.component.html -->
-<!-- Version adaptée pour la génération depuis la banque -->
-
 <div class="container mt-4">
   <!-- ============================================= -->
-  <!-- CARTE 1 : CRÉATION D'UN QUESTIONNAIRE         -->
+  <!-- CARTE : CRÉATION D'UN QUESTIONNAIRE         -->
   <!-- ============================================= -->
   <div class="card shadow-sm">
     <div class="card-header d-flex justify-content-between align-items-center">
-      <h2>Création d'un Questionnaire</h2>
+      <h2>{{ questionnaireIdEnModification ? 'Modification' : 'Création' }} d'un Questionnaire</h2>
       <div class="col-md-4">
         <label for="modeCreation" class="form-label">Mode de création</label>
         <select id="modeCreation" class="form-select" [(ngModel)]="modeCreation" (change)="changerMode($event)">
@@ -16,21 +13,87 @@
         </select>
       </div>
     </div>
+
     <div class="card-body">
+      <!-- ==================== MODE AUTOMATIQUE ==================== -->
+<div *ngIf="modeCreation === 'automatique'" class="mt-4">
+
+  <h4>Génération automatique depuis la banque</h4>
+
+  <!-- Matière -->
+  <div class="mb-3 col-md-6">
+    <label class="form-label">Matière</label>
+    <select class="form-select"
+            [(ngModel)]="matiereAutoId"
+            (change)="onMatiereChange()">
+      <option [ngValue]="null" disabled>-- Choisissez une matière --</option>
+      <option *ngFor="let matiere of mesMatieres"
+              [value]="matiere.id">
+        {{ matiere.nom }}
+      </option>
+    </select>
+  </div>
+
+  <!-- Thèmes / Chapitres -->
+  <div *ngIf="chapitresDisponibles.length > 0" class="mb-3">
+    <label class="form-label">Thèmes</label>
+    <div class="form-check"
+         *ngFor="let chapitre of chapitresDisponibles">
+      <input class="form-check-input"
+             type="checkbox"
+             [checked]="isThemeSelected(chapitre.id)"
+             (change)="toggleTheme(chapitre.id)">
+      <label class="form-check-label">
+        {{ chapitre.nom }}
+      </label>
+    </div>
+  </div>
+
+  <!-- Niveau -->
+  <div class="mb-3 col-md-4">
+    <label class="form-label">Niveau</label>
+    <select class="form-select"
+            [(ngModel)]="generationRequest.niveau">
+      <option *ngFor="let n of niveauxDisponibles"
+              [value]="n.value">
+        {{ n.label }}
+      </option>
+    </select>
+  </div>
+
+  <!-- Nombre de questions -->
+  <div class="mb-3 col-md-4">
+    <label class="form-label">Nombre de questions</label>
+    <input type="number"
+           class="form-control"
+           [(ngModel)]="generationRequest.nombreQuestions"
+           min="1">
+  </div>
+
+  <!-- Bouton génération -->
+  <button class="btn btn-success"
+          (click)="genererQuestionnaireDepuisBanque()"
+          [disabled]="!generationRequestValide() || generationEnCours">
+    <span *ngIf="generationEnCours"
+          class="spinner-border spinner-border-sm me-2"></span>
+    Générer le questionnaire
+  </button>
+</div>
+
 
       <!-- ==================== MODE MANUEL ==================== -->
       <div *ngIf="modeCreation === 'manuel'">
-        <!-- Formulaire principal du questionnaire -->
         <div class="row">
           <div class="col-md-6 mb-3">
             <label for="titre" class="form-label">Titre du questionnaire</label>
             <input type="text" id="titre" class="form-control" [(ngModel)]="questionnaire.titre">
           </div>
           <div class="col-md-6 mb-3">
-            <label for="duree" class="form-label">Durée (en minutes)</label>
+            <label for="duree" class="form-label">Durée (minutes)</label>
             <input type="number" id="duree" class="form-control" [(ngModel)]="questionnaire.duree">
           </div>
         </div>
+
         <div class="row">
           <div class="col-md-6 mb-3">
             <label for="matiere" class="form-label">Matière</label>
@@ -39,6 +102,7 @@
               <option *ngFor="let matiere of mesMatieres" [value]="matiere.id">{{ matiere.nom }}</option>
             </select>
           </div>
+
           <div class="col-md-6 mb-3">
             <label for="chapitre" class="form-label">Chapitre</label>
             <select id="chapitre" class="form-select" [(ngModel)]="questionnaire.chapitreId" [disabled]="!questionnaire.matiereId || isLoadingChapitres">
@@ -46,43 +110,38 @@
               <option *ngIf="isLoadingChapitres">Chargement des chapitres...</option>
               <option *ngFor="let chapitre of chapitresDisponibles" [value]="chapitre.id">{{ chapitre.nom }}</option>
             </select>
-          </div >
-          <div class="row">
-          <div class="col-md-6 mb-3">
-          <label for="typeQuestionnaire" class="form-label">Type</label>
-          <select id="typeQuestionnaire" class="form-select" [(ngModel)]="questionnaire.typeQuestionnaire">
-           <option [ngValue]="'TEST'">Test</option>
-           <option [ngValue]="'QUIZ'">Quiz</option>
-           <option [ngValue]="'EXERCICE'">Exercice</option>
-          </select>
-          </div>
           </div>
 
+          <div class="col-md-6 mb-3">
+            <label for="typeQuestionnaire" class="form-label">Type</label>
+            <select id="typeQuestionnaire" class="form-select" [(ngModel)]="questionnaire.typeQuestionnaire">
+              <option [ngValue]="'TEST'">Test</option>
+              <option [ngValue]="'QUIZ'">Quiz</option>
+              <option [ngValue]="'EXERCICE'">Exercice</option>
+            </select>
+          </div>
         </div>
+
         <div class="mb-3">
           <label class="form-label">Description</label>
-          <quill-editor 
-            [(ngModel)]="questionnaire.description"
-            [styles]="{ height: '150px' }">
-          </quill-editor>
+          <quill-editor [(ngModel)]="questionnaire.description" [styles]="{ height: '150px' }"></quill-editor>
         </div>
 
         <hr>
-
-        <!-- Section des questions -->
-        <h4 class="mt-4">Questions</h4>
+        <h4>Questions</h4>
         <div *ngFor="let question of questionnaire.questions; let i = index" class="card my-3">
           <div class="card-body">
             <div class="d-flex justify-content-between align-items-center">
               <h5>Question {{ i + 1 }}</h5>
               <button class="btn btn-sm btn-outline-danger" (click)="supprimerQuestion(i)">Supprimer</button>
             </div>
-            
+
             <div class="row mt-2">
               <div class="col-md-6">
                 <label class="form-label">Énoncé</label>
                 <textarea class="form-control" rows="2" [(ngModel)]="question.enonce"></textarea>
               </div>
+
               <div class="col-md-2">
                 <label class="form-label">Type</label>
                 <select class="form-select" [(ngModel)]="question.type" (change)="changerTypeQuestion(i)">
@@ -92,6 +151,7 @@
                   <option value="texte_libre">Texte Libre</option>
                 </select>
               </div>
+
               <div class="col-md-2">
                 <label class="form-label">Difficulté</label>
                 <select class="form-select" [(ngModel)]="question.difficulte">
@@ -100,6 +160,7 @@
                   <option value="difficile">Difficile</option>
                 </select>
               </div>
+
               <div class="col-md-2">
                 <label class="form-label">Points</label>
                 <input type="number" class="form-control" [(ngModel)]="question.points">
@@ -108,185 +169,98 @@
 
             <div class="mt-3">
               <h6>Options de réponse</h6>
-              <div *ngIf="question.reponses">
-                <div *ngIf="question.type === 'qcu'">
-                  <div *ngFor="let reponse of question.reponses; let j = index" class="input-group mb-2">
-                    <div class="input-group-text">
-                      <input class="form-check-input mt-0" type="radio" [name]="'reponse-q' + i" [checked]="reponse.correcte" (change)="marquerReponseCorrecte(question, j)">
-                    </div>
-                    <input type="text" class="form-control" [(ngModel)]="reponse.texte">
-                    <button class="btn btn-outline-secondary" (click)="supprimerReponse(i, j)" [disabled]="question.reponses.length <= 2">X</button>
+
+              <!-- QCU / QCM -->
+              <div *ngIf="question.type === 'qcu' || question.type === 'qcm'">
+                <div *ngFor="let reponse of question.reponses; let j = index" class="input-group mb-2">
+                  <div class="input-group-text">
+                    <input class="form-check-input mt-0" type="{{ question.type === 'qcu' ? 'radio' : 'checkbox' }}"
+                           [name]="'reponse-q' + i" 
+                           [checked]="reponse.correcte" 
+                           (change)="marquerReponseCorrecte(question, j)">
                   </div>
+                  <input type="text" class="form-control" [(ngModel)]="reponse.texte">
+                  <button class="btn btn-outline-secondary" (click)="supprimerReponse(i, j)" [disabled]="!(question.reponses && question.reponses.length > 2)"
+>X</button>
                 </div>
-                <div *ngIf="question.type === 'qcm'">
-                  <div *ngFor="let reponse of question.reponses; let j = index" class="input-group mb-2">
-                    <div class="input-group-text">
-                      <input class="form-check-input mt-0" type="checkbox" [checked]="reponse.correcte" (change)="marquerReponseCorrecte(question, j)">
-                    </div>
-                    <input type="text" class="form-control" [(ngModel)]="reponse.texte">
-                    <button class="btn btn-outline-secondary" (click)="supprimerReponse(i, j)" [disabled]="question.reponses.length <= 2">X</button>
-                  </div>
-                </div>
+                <button class="btn btn-sm btn-outline-primary mt-2" (click)="ajouterReponse(i)">+ Ajouter une option</button>
               </div>
-              <div *ngIf="question.type === 'vrai_faux'">
+
+              <!-- Vrai / Faux -->
+              <div *ngIf="question.type === 'vrai_faux'" class="mt-2">
                 <div class="form-check form-check-inline">
-                  <input class="form-check-input" type="radio" [name]="'vf-q' + i" [value]="true" [(ngModel)]="question.reponseVraiFaux">
-                  <label class="form-check-label">Vrai</label>
+                  <input class="form-check-input" type="radio" [name]="'vf-q' + i" [checked]="question.reponses?.[0]?.correcte" (change)="setVraiFauxCorrect(question, true)">
+                  <label class="form-check-label text-success">Vrai</label>
                 </div>
                 <div class="form-check form-check-inline">
-                  <input class="form-check-input" type="radio" [name]="'vf-q' + i" [value]="false" [(ngModel)]="question.reponseVraiFaux">
-                  <label class="form-check-label">Faux</label>
+                  <input class="form-check-input" type="radio" [name]="'vf-q' + i" [checked]="question.reponses?.[1]?.correcte" (change)="setVraiFauxCorrect(question, false)">
+                  <label class="form-check-label text-danger">Faux</label>
                 </div>
               </div>
+
+              <!-- Texte Libre -->
               <div *ngIf="question.type === 'texte_libre' && question.reponses">
                 <input type="text" class="form-control" placeholder="Réponse exacte attendue" [(ngModel)]="question.reponses[0].texte">
               </div>
-              <button *ngIf="question.type === 'qcu' || question.type === 'qcm'" class="btn btn-sm btn-outline-primary mt-2" (click)="ajouterReponse(i)">+ Ajouter une option</button>
             </div>
           </div>
         </div>
+
         <div class="d-flex justify-content-between mt-4">
           <button class="btn btn-secondary" (click)="ajouterQuestion()">Ajouter une question</button>
           <button class="btn btn-primary" (click)="sauvegarderQuestionnaire()" [disabled]="!questionnaireValide() || sauvegardeEnCours">
-            <span *ngIf="sauvegardeEnCours" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-            {{ sauvegardeEnCours ? 'Sauvegarde...' : 'Sauvegarder' }}
+            <span *ngIf="sauvegardeEnCours" class="spinner-border spinner-border-sm me-2" role="status"></span>
+            {{ sauvegardeEnCours ? 'Sauvegarde...' : (questionnaireIdEnModification ? 'Modifier' : 'Sauvegarder') }}
           </button>
-        </div>
-      </div>
-
-      <!-- ==================== MODE AUTOMATIQUE (DEPUIS BANQUE) ==================== -->
-      <div *ngIf="modeCreation === 'automatique'">
-        <div class="row">
-          <div class="col-md-6 mb-3">
-            <label for="matiereAuto" class="form-label">Matière (pour filtrer les thèmes) <span class="text-danger">*</span></label>
-            <select id="matiereAuto" class="form-select" [(ngModel)]="matiereAutoId" (change)="onMatiereChange()">
-              <option [ngValue]="null" disabled>-- Choisissez une matière --</option>
-              <option *ngFor="let matiere of mesMatieres" [value]="matiere.id">{{ matiere.nom }}</option>
-            </select>
-          </div>
-          <div class="col-md-3 mb-3">
-            <label for="nombreQuestions" class="form-label">Nombre de questions <span class="text-danger">*</span></label>
-            <input type="number" id="nombreQuestions" class="form-control" [(ngModel)]="generationRequest.nombreQuestions" min="1" max="100">
-          </div>
-          <div class="col-md-3 mb-3">
-            <label for="niveau" class="form-label">Niveau de difficulté <span class="text-danger">*</span></label>
-            <select id="niveau" class="form-select" [(ngModel)]="generationRequest.niveau">
-              <option *ngFor="let niveau of niveauxDisponibles" [value]="niveau.value">{{ niveau.label }}</option>
-            </select>
-          </div>
-        </div>
-        
-        <div class="mb-3" [hidden]="!matiereAutoId">
-          <label class="form-label">Thèmes à inclure (sélectionnez les chapitres) <span class="text-danger">*</span></label>
-          <div class="border p-3 rounded">
-            <div *ngIf="isLoadingChapitres" class="text-muted">Chargement des chapitres...</div>
-            <div *ngFor="let chapitre of chapitresDisponibles" class="form-check mb-2">
-              <input 
-                class="form-check-input" 
-                type="checkbox" 
-                [id]="'theme-' + chapitre.id" 
-                [checked]="isThemeSelected(chapitre.id)"
-                (change)="toggleTheme(chapitre.id)">
-              <label class="form-check-label" [for]="'theme-' + chapitre.id">
-                {{ chapitre.nom }}
-                <small class="text-muted ms-2">(ID: {{ chapitre.id }})</small>
-              </label>
-            </div>
-            <div *ngIf="!isLoadingChapitres && chapitresDisponibles.length === 0" class="text-muted">
-              Aucun chapitre disponible pour cette matière.
-            </div>
-            <div *ngIf="generationRequest.themes.length > 0" class="mt-3">
-              <strong>Thèmes sélectionnés :</strong>
-              <div class="d-flex flex-wrap gap-2 mt-2">
-                <span *ngFor="let theme of generationRequest.themes" class="badge bg-primary">
-                  {{ theme }}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="alert alert-info">
-          <i class="bi bi-info-circle me-2"></i>
-          Le questionnaire sera généré automatiquement avec des questions de la banque selon les critères sélectionnés.
-          Le titre sera généré automatiquement à partir des thèmes choisis.
-        </div>
-        
-        <div class="d-flex justify-content-end mt-4">
-          <button class="btn btn-primary" (click)="genererQuestionnaireDepuisBanque()" [disabled]="!generationRequestValide() || generationEnCours">
-            <span *ngIf="generationEnCours" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-            {{ generationEnCours ? 'Génération en cours...' : 'Générer le Questionnaire' }}
-          </button>
-        </div>
-        
-        <div *ngIf="questionnaireGenere" class="alert alert-success mt-4">
-          <h5><i class="bi bi-check-circle me-2"></i>Questionnaire généré avec succès !</h5>
-          <p>
-            <strong>{{ questionnaireGenere.titre }}</strong><br>
-            <span *ngIf="questionnaireGenere.description">{{ questionnaireGenere.description }}</span>
-          </p>
-          <p class="mb-0">
-            <a [routerLink]="['/app/enseignant/questionnaires', questionnaireGenere.id]" class="btn btn-sm btn-success me-2">
-              <i class="bi bi-eye me-1"></i>Voir les détails
-            </a>
-            <button class="btn btn-sm btn-outline-secondary" (click)="chargerQuestionnaires()">
-              <i class="bi bi-arrow-clockwise me-1"></i>Actualiser la liste
-            </button>
-          </p>
         </div>
       </div>
     </div>
   </div>
 
   <!-- ============================================= -->
-  <!-- CARTE 2 : LISTE DES QUESTIONNAIRES EXISTANTS  -->
+  <!-- LISTE DES QUESTIONNAIRES EXISTANTS -->
   <!-- ============================================= -->
   <div class="card shadow-sm mt-5">
     <div class="card-header d-flex justify-content-between align-items-center">
       <h3>Liste des Questionnaires Existants</h3>
       <button class="btn btn-sm btn-outline-secondary" (click)="chargerQuestionnaires()" [disabled]="chargementListe">
-        <span *ngIf="chargementListe" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        <span *ngIf="chargementListe" class="spinner-border spinner-border-sm"></span>
         Rafraîchir
       </button>
     </div>
+
     <div class="card-body">
-      <div *ngIf="chargementListe" class="text-center my-3">
-        <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden">Chargement...</span>
-        </div>
-        <p class="mt-2">Chargement de la liste...</p>
-      </div>
       <div *ngIf="!chargementListe && listeQuestionnaires.length === 0" class="alert alert-info">
-        Aucun questionnaire n'a été trouvé. Utilisez le formulaire ci-dessus pour en créer un.
+        Aucun questionnaire n'a été trouvé.
       </div>
-      <div *ngIf="!chargementListe && listeQuestionnaires.length > 0" class="table-responsive">
+
+      <div *ngIf="listeQuestionnaires.length > 0" class="table-responsive">
         <table class="table table-striped table-hover align-middle">
           <thead>
             <tr>
-              <th scope="col">ID</th>
-              <th scope="col">Titre</th>
-              <th scope="col">Durée</th>
-              <th scope="col" class="text-center">Actions</th>
+              <th>ID</th>
+              <th>Titre</th>
+              <th>Durée</th>
+              <th class="text-center">Actions</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let q of listeQuestionnaires">
-              <th scope="row">{{ q.id }}</th>
+              <td>{{ q.id }}</td>
               <td>{{ q.titre }}</td>
               <td>{{ q.duree }} min</td>
               <td class="text-center">
-                <button 
-                  class="btn btn-sm btn-primary me-2" 
-                  title="Voir les détails" 
-                  [routerLink]="['/app/enseignant/questionnaires', q.id]">
-                  Détails
-                </button>
-                <button class="col-md-6 mb-3" title="Modifier le questionnaire" (click)="modifierQuestionnaire(q)">Modifier</button>
-                <button class="btn btn-sm btn-danger" title="Supprimer le questionnaire" (click)="supprimerQuestionnaire(q.id, q.titre)">Supprimer</button>
+                <button class="btn btn-sm btn-primary me-2" (click)="modifierQuestionnaire(q)">Modifier</button>
+                <button class="btn btn-sm btn-danger" (click)="supprimerQuestionnaire(q.id, q.titre)">Supprimer</button>
               </td>
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <div *ngIf="chargementListe" class="text-center my-3">
+        <div class="spinner-border text-primary"></div>
+        <p class="mt-2">Chargement de la liste...</p>
       </div>
     </div>
   </div>

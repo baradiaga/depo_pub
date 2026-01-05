@@ -1,54 +1,99 @@
-<!-- Fichier : src/app/pages/matieres-reprendre/matieres-reprendre.component.html -->
-
 <div class="container-fluid mt-4">
-  <div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-      <h4 class="mb-0">Matières à reprendre pour {{ etudiantNom || 'l\'apprenant' }}</h4>
-      <div class="w-50">
-        <input type="text" class="form-control" placeholder="Rechercher une matière par nom ou code..." (input)="onSearch($event)">
+  <div class="card shadow-sm">
+    <div class="card-header d-flex justify-content-between align-items-center bg-white py-3">
+      <h4 class="mb-0 text-primary">
+        <i class="fas fa-book-reader me-2"></i>
+        Matières de {{ etudiantNom || 'l\'apprenant' }}
+      </h4>
+      <!-- On n'affiche la recherche que s'il y a des matières validées -->
+      <div class="w-50" *ngIf="!isLoading && toutesLesMatieres.length > 0">
+        <input type="text" class="form-control" placeholder="Rechercher une matière..." (input)="onSearch($event)">
       </div>
     </div>
+
     <div class="card-body">
       
+      <!-- 1. CHARGEMENT -->
       <div *ngIf="isLoading" class="text-center py-5">
-        <div class="spinner-border"></div>
+        <div class="spinner-border text-primary" role="status"></div>
+        <p class="mt-2 text-muted">Vérification de vos inscriptions...</p>
       </div>
 
-      <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+      <!-- 2. ERREUR -->
+      <div *ngIf="errorMessage" class="alert alert-danger shadow-sm">
+        <i class="fas fa-exclamation-triangle me-2"></i> {{ errorMessage }}
+      </div>
 
-      <div *ngIf="!isLoading && !errorMessage" class="table-responsive">
-        <table class="table table-hover">
-          <thead>
+      <!-- 3. MESSAGE D'ATTENTE (L'ajout stratégique) -->
+      <div *ngIf="!isLoading && !errorMessage && toutesLesMatieres.length === 0" class="text-center py-5">
+        <div class="mb-4">
+          <i class="fas fa-user-clock fa-4x text-warning opacity-50"></i>
+        </div>
+        <h3 class="fw-bold">Inscription en attente de validation</h3>
+        <p class="text-muted mx-auto" style="max-width: 500px;">
+          Bonjour <strong>{{ etudiantNom }}</strong>, vos inscriptions aux matières ont bien été reçues. 
+          Un administrateur doit les valider avant que vous ne puissiez accéder aux syllabus et aux cours.
+        </p>
+        <button class="btn btn-outline-primary mt-3" (click)="ngOnInit()">
+          <i class="fas fa-sync-alt me-2"></i>Actualiser mon statut
+        </button>
+      </div>
+
+      <!-- 4. TABLEAU DES MATIÈRES VALIDÉES -->
+      <div *ngIf="!isLoading && !errorMessage && toutesLesMatieres.length > 0" class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead class="table-light">
             <tr>
-              <th>UE</th>
-              <th>EC</th>
-              <th>Coefficient</th>
-              <th>Syllabus</th>
-              <th>Status</th>
-              <th>Action</th>
+              <th>Unité d'Enseignement (UE)</th>
+              <th>Élément Constitutif (EC)</th>
+              <th class="text-center">Coefficient</th>
+              <th>Contenu</th>
+              <th>Statut</th>
+              <th class="text-end">Actions</th>
             </tr>
           </thead>
           <tbody>
+            <!-- Cas où la recherche ne donne rien -->
             <tr *ngIf="matieresFiltrees.length === 0">
-              <td colspan="6" class="text-center text-muted">Aucune matière trouvée.</td>
-            </tr>
-            <tr *ngFor="let matiere of matieresFiltrees">
-              <td>{{ matiere.nomUe }} ({{ matiere.codeUe }})</td>
-              <td>{{ matiere.nomEc }} ({{ matiere.codeEc }})</td>
-              <td>{{ matiere.coefficient }}</td>
-              <td>
-                 <a [routerLink]="['/app/curriculum/matieres', matiere.id]" class="text-primary fw-bold">Syllabus</a>
+              <td colspan="6" class="text-center py-4 text-muted">
+                Aucun résultat pour cette recherche.
               </td>
-              <td><span class="badge bg-secondary">{{ matiere.statut }}</span></td>
+            </tr>
+            
+            <!-- Liste des matières -->
+            <tr *ngFor="let matiere of matieresFiltrees">
               <td>
-                <!-- Icônes d'action (à implémenter plus tard) -->
-                <button class="btn btn-sm btn-icon"><i class="fas fa-edit"></i></button>
-                <button class="btn btn-sm btn-icon"><i class="fas fa-download"></i></button>
+                <span class="fw-bold">{{ matiere.nomUe }}</span><br>
+                <small class="text-muted">{{ matiere.codeUe }}</small>
+              </td>
+              <td>
+                {{ matiere.nomEc }}<br>
+                <small class="badge bg-light text-dark border">{{ matiere.codeEc }}</small>
+              </td>
+              <td class="text-center">{{ matiere.coefficient }}</td>
+              <td>
+                 <a [routerLink]="['/app/curriculum/matieres', matiere.id]" class="btn btn-link btn-sm p-0 fw-bold">
+                   <i class="fas fa-file-pdf me-1"></i>Syllabus
+                 </a>
+              </td>
+              <td>
+                <span class="badge bg-success-soft text-success border border-success">
+                  <i class="fas fa-check-circle me-1"></i> VALIDÉ
+                </span>
+              </td>
+              <td class="text-end">
+                <button class="btn btn-sm btn-outline-secondary me-1" title="Modifier">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-primary" title="Télécharger">
+                  <i class="fas fa-download"></i>
+                </button>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
+
     </div>
   </div>
 </div>

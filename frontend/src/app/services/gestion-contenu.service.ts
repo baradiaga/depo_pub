@@ -4,13 +4,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ChapitreContenu, Section, ChapitreCreateDto, SectionCreateDto, SectionUpdateDto } from '../models/gestion-contenu.models';
-
+import { environment } from '../../environments/environment';
 @Injectable({
   providedIn: 'root'
 } )
 export class GestionContenuService {
 
-  private apiUrl = 'http://localhost:8080/api';
+  private apiUrl =  `${environment.apiUrl}`;
 
   constructor(private http: HttpClient ) { }
 

@@ -230,103 +230,52 @@ if (dto.getType() == null) {
     // ====================================================================
     // --- Générer un questionnaire depuis la banque de questions ---
     // ====================================================================
-    @Transactional
-    public QuestionnaireDetailDto genererQuestionnaireDepuisBanque(GenerationRequestDto generationRequest) {
-        logger.info("=== 🚀 DÉBUT GÉNÉRATION QUESTIONNAIRE DEPUIS BANQUE ===");
-        logger.info("📋 Paramètres de génération:");
-        logger.info("  - Thèmes: {}", generationRequest.getThemes());
-        logger.info("  - Nombre de questions: {}", generationRequest.getNombreQuestions());
-        logger.info("  - Niveau: {}", generationRequest.getNiveau());
-        
-        // ======================
-        // 1. VALIDATIONS
-        // ======================
-        if (generationRequest.getThemes() == null || generationRequest.getThemes().isEmpty()) {
-            throw new IllegalArgumentException("Au moins un thème doit être spécifié");
-        }
-        
-        if (generationRequest.getNombreQuestions() <= 0) {
-            throw new IllegalArgumentException("Le nombre de questions doit être positif");
-        }
-        
-        // ======================
-        // 2. RÉCUPÉRER LES QUESTIONS DE LA BANQUE
-        // ======================
-        logger.info("🔍 Recherche des questions dans la banque...");
-        List<Question> questionsDisponibles = questionRepository
-                .findByThemesAndNiveau(generationRequest.getThemes(), generationRequest.getNiveau());
-        
-        logger.info("📊 Questions disponibles: {} question(s) trouvée(s)", questionsDisponibles.size());
-        
-        if (questionsDisponibles.isEmpty()) {
-            throw new IllegalStateException("Aucune question trouvée pour les critères spécifiés");
-        }
-        
-        // ======================
-        // 3. SÉLECTIONNER LES QUESTIONS
-        // ======================
-        int nombreQuestions = Math.min(generationRequest.getNombreQuestions(), questionsDisponibles.size());
-        List<Question> questionsSelectionnees = questionsDisponibles.stream()
-                .limit(nombreQuestions)
-                .collect(Collectors.toList());
-        
-        logger.info("✅ {} question(s) sélectionnée(s) pour le questionnaire", questionsSelectionnees.size());
-        
-        // ======================
-        // 4. CRÉER LE QUESTIONNAIRE
-        // ======================
-        Questionnaire questionnaire = new Questionnaire();
-        questionnaire.setTitre("Questionnaire généré - " + String.join(", ", generationRequest.getThemes()));
-        questionnaire.setDescription("Questionnaire généré automatiquement à partir de la banque de questions");
-        questionnaire.setDuree(60); // Durée par défaut
-        questionnaire.setAuteur("Système");
-        
-        // Trouver un chapitre par défaut (premier chapitre disponible)
-        Chapitre chapitreParDefaut = chapitreRepository.findAll().stream()
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException("Aucun chapitre disponible"));
-        questionnaire.setChapitre(chapitreParDefaut);
-        
-        // ======================
-        // 5. COPIER LES QUESTIONS SÉLECTIONNÉES
-        // ======================
-        logger.info("📝 Copie des questions sélectionnées...");
-        for (Question questionSource : questionsSelectionnees) {
-            Question nouvelleQuestion = new Question();
-            nouvelleQuestion.setEnonce(questionSource.getEnonce());
-            nouvelleQuestion.setTypeQuestion(questionSource.getTypeQuestion());
-            nouvelleQuestion.setPoints(questionSource.getPoints());
-            nouvelleQuestion.setQuestionnaire(questionnaire);
-            
-            // Copier les réponses
-            for (Reponse reponseSource : questionSource.getReponses()) {
-                Reponse nouvelleReponse = new Reponse();
-                nouvelleReponse.setTexte(reponseSource.getTexte());
-                nouvelleReponse.setCorrecte(reponseSource.isCorrecte());
-                nouvelleReponse.setQuestion(nouvelleQuestion);
-                nouvelleQuestion.getReponses().add(nouvelleReponse);
-            }
-            
-            questionnaire.getQuestions().add(nouvelleQuestion);
-        }
-        
-        // ======================
-        // 6. SAUVEGARDER
-        // ======================
-        logger.info("💾 Sauvegarde du questionnaire généré...");
-        Questionnaire saved = questionnaireRepository.save(questionnaire);
-        
-        // ======================
-        // 7. LOGS FINAUX
-        // ======================
-        logger.info("=== ✅ QUESTIONNAIRE GÉNÉRÉ AVEC SUCCÈS ===");
-        logger.info("📌 ID: {}", saved.getId());
-        logger.info("📌 Titre: {}", saved.getTitre());
-        logger.info("📌 Nombre de questions: {}", 
-            saved.getQuestions() != null ? saved.getQuestions().size() : 0);
-        
-        return new QuestionnaireDetailDto(saved);
+     @Transactional
+public QuestionnaireDetailDto genererQuestionnaireDepuisBanque(GenerationRequestDto generationRequest) {
+    // 1. Récupération de l'ID dynamique (Nouveauté 2026)
+    Long idChoisi = (generationRequest.getChapitreId() != null) ? generationRequest.getChapitreId() : 1L;
+ 
+    String niveau = generationRequest.getNiveau();
+
+    // 2. Recherche des questions
+    List<Question> questionsDisponibles = questionRepository
+            .findByChapitreIdAndDifficulteNative(idChoisi, niveau);
+
+    if (questionsDisponibles.isEmpty()) {
+        throw new IllegalStateException("Aucune question trouvée pour le Chapitre ID " + idChoisi);
     }
+
+    // 3. Création de l'objet (Vérifiez l'orthographe ici)
+    Questionnaire nouveauQuestionnaire = new Questionnaire();
+    nouveauQuestionnaire.setTitre("Génération Auto : " + niveau);
+    nouveauQuestionnaire.setType(TypeQuestionnaire.TEST); 
+    nouveauQuestionnaire.setAuteur("Système");
+
+    // 4. Gestion du Chapitre (Une seule déclaration !)
+    Chapitre chapitreChoisi = chapitreRepository.findById(idChoisi)
+            .orElseThrow(() -> new IllegalStateException("Chapitre non trouvé"));
+    nouveauQuestionnaire.setChapitre(chapitreChoisi);
+
+    // 5. Sélection et liaison des questions
+    java.util.Collections.shuffle(questionsDisponibles);
+    int nbToSelect = Math.min(generationRequest.getNombreQuestions(), questionsDisponibles.size());
+
+    for (int i = 0; i < nbToSelect; i++) {
+        Question source = questionsDisponibles.get(i);
+        Question nouvelleQ = new Question();
+        nouvelleQ.setEnonce(source.getEnonce());
+        nouvelleQ.setPoints(source.getPoints());
+        
+        // On lie la question au questionnaire
+        nouvelleQ.setQuestionnaire(nouveauQuestionnaire);
+        nouveauQuestionnaire.getQuestions().add(nouvelleQ);
+    }
+
+    // 6. Sauvegarde
+    Questionnaire saved = questionnaireRepository.save(nouveauQuestionnaire);
+    return new QuestionnaireDetailDto(saved);
+}
+
 
     // ====================================================================
     // --- Mettre à jour un questionnaire existant ---
@@ -440,4 +389,22 @@ if (dto.getType() == null) {
         }
         logger.info("=== FIN DEBUG ===");
     }
+    // ====================================================================
+// --- Récupérer les questionnaires par Chapitre ---
+// ====================================================================
+@Transactional(readOnly = true)
+public List<QuestionnaireDetailDto> getQuestionnairesParChapitre(Long chapitreId) {
+    logger.info("Service: Récupération des questionnaires pour le chapitre ID: {}", chapitreId);
+    
+    // On récupère les questionnaires filtrés par l'ID du chapitre
+    List<Questionnaire> questionnaires = questionnaireRepository.findByChapitreId(chapitreId);
+    
+    // On convertit la liste d'entités en liste de DTOs
+    return questionnaires.stream()
+            .map(this::convertToDtoWithQuestions)
+            .collect(Collectors.toList());
+}
+
+
+
 }

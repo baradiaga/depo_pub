@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Uefr } from '../models/uefr.model';
-
+import { environment } from '../../environments/environment';
 export interface UefrSearchParams {
   search?: string;
   etablissementId?: number;
@@ -24,8 +24,8 @@ export interface UefrSearchResult {
   providedIn: 'root'
 })
 export class UefrService {
-  private apiUrl = 'http://localhost:8080/uefrs';
-
+ // private apiUrl = 'http://localhost:8080/uefrs';
+  private apiUrl =  `${environment.apiUrl}/uefrs`;
   constructor(private http: HttpClient) {}
 
   getAll(): Observable<Uefr[]> {

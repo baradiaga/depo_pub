@@ -20,7 +20,7 @@ public class Question {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type_question", nullable = false)
-    private TypeQuestion typeQuestion;
+    private TypeQuestion typeQuestion = TypeQuestion.QCM;
 
     @Column(nullable = false)
     private double points = 1.0;

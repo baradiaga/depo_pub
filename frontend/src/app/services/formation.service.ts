@@ -2,13 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { FormationCreation, FormationDetail, RessourcePedagogique } from '../models/models';
-
+import { environment } from '../../environments/environment';
 @Injectable({
   providedIn: 'root'
 })
 export class FormationService {
-  private apiUrl = 'http://localhost:8080/api/formations';
-
+ // private apiUrl = 'http://localhost:8080/api/formations';
+  private apiUrl = `${environment.apiUrl}/formations`;
   constructor(private http: HttpClient) { }
 
   // Create
@@ -57,7 +57,7 @@ export class FormationService {
   // --- Intervenants (enseignants) management ---
   getIntervenants(): Observable<any[]> {
     // Endpoint hypothétique retournant la liste des utilisateurs/enseignants
-    return this.http.get<any[]>(`http://localhost:8080/api/utilisateurs/intervenants`);
+    return this.http.get<any[]>(`${environment.apiUrl}/utilisateurs/intervenants`);
   }
 
   // Attach an intervenant to a formation

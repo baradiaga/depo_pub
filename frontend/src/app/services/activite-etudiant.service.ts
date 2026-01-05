@@ -1,15 +1,14 @@
 // src/app/services/activite-etudiant.service.ts
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 
 export interface ActiviteEtudiant {
   id: number;
   titre: string;
   description: string;
-  route: string;  // Route backend (API)
-  navigationRoute: string; // Route frontend (Angular)
+  route: string;  // Route backend (ex: /api/elements-constitutifs/...)
+  navigationRoute: string; // Route frontend (ex: /app/curriculum/...)
   icon: string;
   categorie: 'Matières' | 'Parcours' | 'Progression' | 'Ressources' | 'Évaluation' | 'Diagnostic' | 'Tableau de bord';
   methode: 'GET' | 'POST';
@@ -17,9 +16,7 @@ export interface ActiviteEtudiant {
   couleur: string;
   badge?: string;
   estDisponible: boolean;
-  // NOUVEAU : Indique si l'activité nécessite une sélection préalable
   besoinSelection?: 'matiere' | 'ec' | 'chapitre' | 'fichier';
-  // NOUVEAU : Service associé pour récupérer les données
   serviceAssocie?: 'ElementConstitutif' | 'Chapitre' | 'Test' | 'Ressource' | 'Progression';
 }
 
@@ -27,6 +24,10 @@ export interface ActiviteEtudiant {
   providedIn: 'root'
 })
 export class ActiviteEtudiantService {
+  
+  // Utilisation de environment.apiUrl (ex: http://localhost:8080/api)
+  private readonly baseUrl = environment.apiUrl;
+
   private activites: ActiviteEtudiant[] = [
     // =================== 📚 MATIÈRES ===================
     {
@@ -60,7 +61,7 @@ export class ActiviteEtudiantService {
       titre: 'Chapitres d\'un EC',
       description: 'Accédez aux chapitres d\'un élément constitutif',
       route: '/api/elements-constitutifs/{ecId}/chapitres',
-      navigationRoute: '/chapitres/liste', // Nouvelle route pour choisir un EC
+      navigationRoute: '/chapitres/liste',
       icon: 'list',
       categorie: 'Matières',
       methode: 'GET',
@@ -228,160 +229,49 @@ export class ActiviteEtudiantService {
       couleur: '#7b2cbf',
       badge: 'À implémenter',
       besoinSelection: 'matiere',
-      estDisponible: false // Non analysé, donc marqué comme non disponible
-    },
-    {
-      id: 15,
-      titre: 'Corriger un diagnostic',
-      description: 'Soumettez et corrigez votre test diagnostic',
-      route: '/api/diagnostic/corriger-test',
-      navigationRoute: '/diagnostic/correction',
-      icon: 'grading',
-      categorie: 'Diagnostic',
-      methode: 'POST',
-      couleur: '#5a189a',
-      badge: 'À implémenter',
-      estDisponible: false // Non analysé, donc marqué comme non disponible
+      estDisponible: false
     },
 
     // =================== 📊 TABLEAU DE BORD ===================
     {
-      id: 16,
+      id: 15,
       titre: 'Mon tableau de bord',
       description: 'Vue d\'ensemble complète de votre apprentissage',
-      route: '/api/progression/mes-matieres', // Alternative : utiliser la progression
+      route: '/api/progression/mes-matieres',
       navigationRoute: '/dashboard',
       icon: 'dashboard',
       categorie: 'Tableau de bord',
       methode: 'GET',
-      couleur: '#023e8a',
-      estDisponible: true,
-      serviceAssocie: 'Progression'
-    },
-
-    // =================== 📖 NOUVELLES ACTIVITÉS ===================
-    {
-      id: 17,
-      titre: 'Contenu complet d\'un chapitre',
-      description: 'Consultez le contenu détaillé avec sections',
-      route: '/api/chapitres/{chapitreId}/details-complets',
-      navigationRoute: '/chapitres/contenu',
-      icon: 'article',
-      categorie: 'Matières',
-      methode: 'GET',
-      couleur: '#9d4edd',
-      badge: 'Sélection requise',
-      besoinSelection: 'chapitre',
-      estDisponible: true,
-      serviceAssocie: 'Chapitre'
+      couleur: '#00b4d8',
+      estDisponible: true
     }
   ];
 
-  constructor(private http: HttpClient) {}
+  constructor() { }
 
-  // =================== MÉTHODES EXISTANTES ===================
+  /**
+   * Retourne la liste de toutes les activités.
+   */
   getActivites(): Observable<ActiviteEtudiant[]> {
     return of(this.activites);
   }
 
-  getCategories(): Observable<string[]> {
-    const categories = [...new Set(this.activites.map(a => a.categorie))];
-    return of(categories);
-  }
-
-  getActivitesParCategorie(): Observable<Map<string, ActiviteEtudiant[]>> {
-    const map = new Map<string, ActiviteEtudiant[]>();
-    this.activites.forEach(activite => {
-      if (!map.has(activite.categorie)) {
-        map.set(activite.categorie, []);
-      }
-      map.get(activite.categorie)!.push(activite);
-    });
-    return of(map);
-  }
-
-  getActiviteById(id: number): Observable<ActiviteEtudiant | undefined> {
-    return of(this.activites.find(a => a.id === id));
-  }
-
-  getStatistiques(): Observable<any> {
-    const total = this.activites.length;
-    const disponibles = this.activites.filter(a => a.estDisponible).length;
-    const getCount = this.activites.filter(a => a.methode === 'GET').length;
-    const postCount = this.activites.filter(a => a.methode === 'POST').length;
-    const categoriesCount = new Set(this.activites.map(a => a.categorie)).size;
-
-    return of({
-      total,
-      disponibles,
-      getCount,
-      postCount,
-      categoriesCount,
-      pourcentageDisponible: Math.round((disponibles / total) * 100),
-      pourcentageGet: Math.round((getCount / total) * 100),
-      pourcentagePost: Math.round((postCount / total) * 100)
-    });
-  }
-
-  rechercherActivites(terme: string): Observable<ActiviteEtudiant[]> {
-    terme = terme.toLowerCase();
-    const resultats = this.activites.filter(activite =>
-      activite.titre.toLowerCase().includes(terme) ||
-      activite.description.toLowerCase().includes(terme) ||
-      activite.categorie.toLowerCase().includes(terme)
-    );
-    return of(resultats);
-  }
-
-  // =================== NOUVELLES MÉTHODES ===================
-  
   /**
-   * Filtre les activités par disponibilité
+   * Retourne l'URL API complète d'une activité.
+   * Remplace /api par l'URL de l'environnement pour la production 2026.
    */
-  getActivitesDisponibles(): Observable<ActiviteEtudiant[]> {
-    return of(this.activites.filter(a => a.estDisponible));
+  getFullApiUrl(activite: ActiviteEtudiant): string {
+    // Si la route commence par /api, on remplace par le baseUrl de l'environnement
+    const internalPath = activite.route.startsWith('/api') 
+                         ? activite.route.substring(4) 
+                         : activite.route;
+    return `${this.baseUrl}${internalPath}`;
   }
 
   /**
-   * Récupère les activités nécessitant une sélection
+   * Retourne les activités filtrées par catégorie.
    */
-  getActivitesAvecSelection(): Observable<ActiviteEtudiant[]> {
-    return of(this.activites.filter(a => a.besoinSelection));
-  }
-
-  /**
-   * Récupère les activités par service associé
-   */
-  getActivitesParService(service: string): Observable<ActiviteEtudiant[]> {
-    return of(this.activites.filter(a => a.serviceAssocie === service));
-  }
-
-  /**
-   * Exécute une activité (appel API)
-   */
-  executerActivite(activite: ActiviteEtudiant, params?: any): Observable<any> {
-    let url = activite.route;
-    
-    // Remplace les paramètres dans l'URL
-    if (params) {
-      Object.keys(params).forEach(key => {
-        url = url.replace(`{${key}}`, params[key]);
-      });
-    }
-
-    // Vérifie que tous les paramètres sont remplacés
-    const missingParams = url.match(/{([^}]+)}/g);
-    if (missingParams) {
-      throw new Error(`Paramètres manquants: ${missingParams.join(', ')}`);
-    }
-
-    // Exécute la requête
-    if (activite.methode === 'GET') {
-      return this.http.get(url);
-    } else if (activite.methode === 'POST') {
-      return this.http.post(url, params || {});
-    } else {
-      throw new Error(`Méthode non supportée: ${activite.methode}`);
-    }
+  getActivitesByCategorie(categorie: string): Observable<ActiviteEtudiant[]> {
+    return of(this.activites.filter(a => a.categorie === categorie));
   }
 }

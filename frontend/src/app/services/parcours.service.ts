@@ -5,7 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 // On importe le DTO qui représente la réponse de l'API
 import { ParcoursDto } from '../dto/parcours.dto'; // Assurez-vous que ce chemin est correct
-
+import { environment } from '../../environments/environment';
 // On peut garder cette interface si elle est utilisée ailleurs, sinon elle peut être supprimée.
 export interface Parcours {
   id: number;
@@ -23,8 +23,8 @@ export interface ParcoursRequestPayload {
   providedIn: 'root'
 } )
 export class ParcoursService {
-  private apiUrl = 'http://localhost:8080/api/parcours';
-
+ // private apiUrl = 'http://localhost:8080/api/parcours';
+   private apiUrl =  `${environment.apiUrl}/parcours`;
   constructor(private http: HttpClient ) { }
 
   enregistrerParcours(chapitreIds: number[]): Observable<any> {

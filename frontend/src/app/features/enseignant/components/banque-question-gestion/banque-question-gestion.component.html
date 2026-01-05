@@ -98,8 +98,10 @@
                   required
                 >
                   <option *ngFor="let niveau of niveauxGenerique" [value]="niveau">
-                    {{ niveau === 'INTERMEDIAIRE' ? 'INTERMÉDIAIRE' : niveau }}
+                   {{ niveau }}
                   </option>
+
+
                 </select>
                 <small class="text-muted">Sélectionnez le niveau pour la génération</small>
               </div>
@@ -327,13 +329,15 @@
                     </span>
                   </td>
                   <td>
-                    <span class="badge" [ngClass]="{
-                      'bg-success': q.niveau === 'FACILE',
-                      'bg-warning': q.niveau === 'INTERMEDIAIRE',
-                      'bg-danger': q.niveau === 'DIFFICILE'
+                 <span class="badge" [ngClass]="{
+                    'bg-success': q.niveau === 'FACILE',
+                    'bg-warning': q.niveau === 'MOYEN',
+                    'bg-danger': q.niveau === 'DIFFICILE'
                     }">
-                      {{ q.niveau === 'INTERMEDIAIRE' ? 'INTERMÉDIAIRE' : q.niveau }}
-                    </span>
+                  {{ q.niveau }}
+                </span>
+
+
                   </td>
                   <td class="fw-bold">{{ q.points }} pt{{ q.points > 1 ? 's' : '' }}</td>
                   <td>

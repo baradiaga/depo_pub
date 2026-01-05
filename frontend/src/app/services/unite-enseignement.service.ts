@@ -3,7 +3,7 @@
 import { Injectable } from '@angular/core'; // <-- L'import pour le décorateur
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-
+import { environment } from '../../environments/environment';
 // L'interface mise à jour pour inclure les volumes horaires et les éléments constitutifs
 // Dans unite-enseignement.service.ts
 export interface UniteEnseignement {
@@ -31,7 +31,8 @@ export interface UniteEnseignement {
 } )
 // ==========================================================
 export class UniteEnseignementService {
-  private apiUrl = 'http://localhost:8080/api/unites-enseignement';
+  //private apiUrl = 'http://localhost:8080/api/unites-enseignement';
+   private apiUrl =  `${environment.apiUrl}/unites-enseignement`;
 
   constructor(private http: HttpClient ) { }
 

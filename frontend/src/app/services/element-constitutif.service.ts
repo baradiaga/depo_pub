@@ -4,7 +4,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, Subject } from 'rxjs';
 import { tap } from 'rxjs/operators';
-
+import { environment } from '../../environments/environment';
 // On importe les interfaces depuis le fichier central
 import { ElementConstitutifRequest, ElementConstitutifResponse } from '../models/models';
 
@@ -13,7 +13,7 @@ import { ElementConstitutifRequest, ElementConstitutifResponse } from '../models
   providedIn: 'root'
 } )
 export class ElementConstitutifService {
-  private apiUrl = 'http://localhost:8080/api/elements-constitutifs';
+  private apiUrl = `${environment.apiUrl}/elements-constitutifs`;
 
   // ====================================================================
   // === SYSTÈME DE NOTIFICATION AJOUTÉ ICI                            ===
@@ -59,12 +59,17 @@ export class ElementConstitutifService {
    * Crée un nouvel EC et notifie les composants.
    */
   create(ueId: number, payload: ElementConstitutifRequest): Observable<ElementConstitutifResponse> {
-    return this.http.post<ElementConstitutifResponse>(`http://localhost:8080/api/unites-enseignement/${ueId}/elements-constitutifs`, payload ).pipe(
-      tap(() => {
-        this._refreshNeeded$.next();
-      })
-    );
-  }
+  // L'URL doit inclure 'unites-enseignement' pour correspondre au @PostMapping du Java
+  return this.http.post<ElementConstitutifResponse>(
+    `${environment.apiUrl}/unites-enseignement/${ueId}/elements-constitutifs`, 
+    payload 
+  ).pipe(
+    tap(() => {
+      this._refreshNeeded$.next();
+    })
+  );
+}
+
 
   /**
    * Met à jour un EC et notifie les composants.

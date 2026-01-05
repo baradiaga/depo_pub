@@ -3,7 +3,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-
+import { environment } from '../../environments/environment';
 // On renomme l'interface pour correspondre au DTO du backend.
 // C'est une bonne pratique pour la clarté.
 export interface UserResponseDto {
@@ -21,8 +21,8 @@ export interface UserResponseDto {
 export class UtilisateurService {
   
   // L'URL de base de l'API.
-  private apiUrl = 'http://localhost:8080/api';
-
+ // private apiUrl = 'http://localhost:8080/api';
+  private apiUrl =  `${environment.apiUrl}`;
   constructor(private http: HttpClient ) { }
 
   // =======================================================

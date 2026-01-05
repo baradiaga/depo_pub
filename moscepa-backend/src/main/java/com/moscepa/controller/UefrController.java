@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/uefrs")
+@RequestMapping("/api/uefrs")
 @Tag(name = "UEFRs", description = "API de gestion des Unités d'Enseignement et de Formation de Recherche")
 @CrossOrigin(origins = "http://localhost:4200")
 public class UefrController {

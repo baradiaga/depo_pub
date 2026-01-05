@@ -3,7 +3,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-
+import { environment } from '../../environments/environment';
 // On définit une interface pour la réponse de l'API /me
 export interface UserProfile {
   id: number;
@@ -19,8 +19,8 @@ export interface UserProfile {
 } )
 export class UserService {
   // L'URL de votre endpoint qui renvoie les infos de l'utilisateur connecté
-  private profileUrl = 'http://localhost:8080/api/auth/me';
-
+ // private profileUrl = 'http://localhost:8080/api/auth/me';
+  private apiUrl =  `${environment.apiUrl}/auth/me`;
   constructor(private http: HttpClient ) { }
 
   /**
@@ -28,6 +28,6 @@ export class UserService {
    * @returns Un Observable contenant les informations du profil.
    */
   getCurrentUserProfile(): Observable<UserProfile> {
-    return this.http.get<UserProfile>(this.profileUrl );
+    return this.http.get<UserProfile>(this.apiUrl );
   }
 }

@@ -7,7 +7,7 @@ import { map } from 'rxjs/operators';
 
 
 import { Question } from '../models/models';
-
+import { environment } from '../../environments/environment';
 
 export interface ChapitreTest {
   id: number;
@@ -59,14 +59,15 @@ export interface ReponseSoumise {
 })
 export class RecommandationTestService {
 
-  private baseUrl = 'http://localhost:8080/api';
+  // private baseUrl = 'http://localhost:8080/api';
+  private apiUrl =  `${environment.apiUrl}`;
 
   constructor(private http: HttpClient ) { }
 
   
 
   getListeMatieres(): Observable<MatiereSelection[]> {
-    return this.http.get<ElementConstitutif[]>(`${this.baseUrl}/elements-constitutifs/mes-matieres` ).pipe(
+    return this.http.get<ElementConstitutif[]>(`${this.apiUrl}/elements-constitutifs/mes-matieres` ).pipe(
       map(elements =>
         elements.map(ec => ({
           id: ec.id,
@@ -80,23 +81,23 @@ export class RecommandationTestService {
     if (!ecId) {
       return of(undefined);
     }
-    return this.http.get<ElementConstitutif>(`${this.baseUrl}/elements-constitutifs/${ecId}` );
+    return this.http.get<ElementConstitutif>(`${this.apiUrl}/elements-constitutifs/${ecId}` );
   }
 
   getQuestionsPourTestDeConnaissance(matiereId: number): Observable<Question[]> {
-    return this.http.get<Question[]>(`${this.baseUrl}/tests/connaissance/${matiereId}` );
+    return this.http.get<Question[]>(`${this.apiUrl}/tests/connaissance/${matiereId}` );
   }
 
   // --- MÉTHODES POUR LE TEST DE DIAGNOSTIC ---
 
   genererTestDiagnostic(matiereId: number): Observable<QuestionDiagnostic[]> {
-    return this.http.get<QuestionDiagnostic[]>(`${this.baseUrl}/diagnostic/generer-test/${matiereId}` );
+    return this.http.get<QuestionDiagnostic[]>(`${this.apiUrl}/diagnostic/generer-test/${matiereId}` );
   }
 
   
 soumettreTestDiagnostic(soumission: { reponses: ReponseSoumise[] }): Observable<any> {
     // On envoie DIRECTEMENT le paramètre 'soumission' au backend.
     // Il a déjà la bonne structure { reponses: [...] }.
-    return this.http.post<any>(`${this.baseUrl}/diagnostic/corriger-test`, soumission );
+    return this.http.post<any>(`${this.apiUrl}/diagnostic/corriger-test`, soumission );
   }
 }

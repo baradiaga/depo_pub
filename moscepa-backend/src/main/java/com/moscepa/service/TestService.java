@@ -9,11 +9,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import java.text.Normalizer;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import java.util.regex.Pattern;
 @Service
 @Transactional(readOnly = true)
 public class TestService {
@@ -84,11 +85,15 @@ public class TestService {
         return testRepository.save(test);
     }
 
-    public List<QuestionDto> getQuestionsPourChapitre(Long chapitreId) {
-        Test test = testRepository.findTopByChapitreId(chapitreId)
-                .orElseThrow(() -> new EntityNotFoundException("Aucun test trouvé pour le chapitre ID: " + chapitreId));
-        return test.getQuestions().stream().map(QuestionDto::new).collect(Collectors.toList());
-    }
+   public List<QuestionDto> getQuestionsPourChapitre(Long chapitreId) {
+    // On cherche le test le plus récent pour ce chapitre
+    return testRepository.findTopByChapitreId(chapitreId)
+            .map(test -> test.getQuestions().stream()
+                    .map(QuestionDto::new)
+                    .collect(Collectors.toList()))
+            .orElse(new ArrayList<>()); // Retourne une liste vide au lieu de planter
+}
+
 
     @Transactional
     public ResultatTestDto calculerEtSauvegarderResultat(Long chapitreId, Long utilisateurId, Map<String, Object> reponsesUtilisateur) {
@@ -103,13 +108,19 @@ public class TestService {
         int bonnesReponses = 0;
 
         for (Question question : test.getQuestions()) {
-            totalPoints += question.getPoints();
-            Object reponse = reponsesUtilisateur.get(String.valueOf(question.getId()));
-            if (verifierReponse(question, reponse)) {
-                scoreObtenu += question.getPoints();
-                bonnesReponses++;
-            }
-        }
+    totalPoints += question.getPoints();
+    Object reponse = reponsesUtilisateur.get(String.valueOf(question.getId()));
+    
+    boolean estCorrect = verifierReponse(question, reponse);
+    if (estCorrect) {
+        scoreObtenu += question.getPoints();
+        bonnesReponses++;
+    } else {
+        // AJOUTEZ CE LOG POUR DEBUGGER
+         
+    }
+}
+
 
         ResultatTest resultat = new ResultatTest();
         resultat.setEtudiant(etudiant);
@@ -135,107 +146,171 @@ public class TestService {
         List<ResultatTest> resultats = resultatTestRepository.findByEtudiantIdOrderByDateTestDesc(utilisateurId);
         return resultats.stream().map(HistoriqueResultatDto::new).collect(Collectors.toList());
     }
+    private String normaliser(String str) {
+    if (str == null) return "";
+    // Enlever les accents (ex: "É" -> "E")
+    String nfdNormalizedString = Normalizer.normalize(str, Normalizer.Form.NFD); 
+    Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
+    return pattern.matcher(nfdNormalizedString)
+                  .replaceAll("")
+                  .trim()
+                  .toLowerCase();
+}
 
-    private boolean verifierReponse(Question question, Object reponseDonnee) {
-        if (reponseDonnee == null) return false;
+  private boolean verifierReponse(Question question, Object reponseDonnee) {
+    if (reponseDonnee == null) return false;
 
-        switch (question.getTypeQuestion()) {
-            case QCU:
-                return question.getReponses().stream()
-                        .filter(Reponse::isCorrecte)
-                        .anyMatch(r -> r.getId().toString().equals(reponseDonnee.toString()));
-            case VRAI_FAUX:
-                return question.getReponseCorrecteTexte() != null &&
-                        question.getReponseCorrecteTexte().equalsIgnoreCase(reponseDonnee.toString());
-            case QCM:
-                if (!(reponseDonnee instanceof List)) return false;
-                Set<String> soumises = ((List<?>) reponseDonnee).stream().map(Object::toString).collect(Collectors.toSet());
-                Set<String> correctes = question.getReponses().stream()
-                        .filter(Reponse::isCorrecte)
-                        .map(r -> r.getId().toString())
-                        .collect(Collectors.toSet());
-                return soumises.equals(correctes);
-            case TEXTE_LIBRE:
-                return question.getReponseCorrecteTexte() != null &&
-                        question.getReponseCorrecteTexte().equalsIgnoreCase(reponseDonnee.toString());
-            default:
-                return false;
-        }
+    // 1. Pré-traitement de l'entrée utilisateur
+    String inputBrut = reponseDonnee.toString().trim();
+    
+    // Mapping spécial pour les booléens du Front-end
+    if (question.getTypeQuestion() == TypeQuestion.VRAI_FAUX) {
+        if (inputBrut.equalsIgnoreCase("true")) inputBrut = "Vrai";
+        if (inputBrut.equalsIgnoreCase("false")) inputBrut = "Faux";
     }
+
+    final String inputFinal = inputBrut;
+    final String inputNormalise = normaliser(inputBrut);
+
+    // 2. Logique de validation selon le type
+    return switch (question.getTypeQuestion()) {
+        
+        case QCU, VRAI_FAUX, TEXTE_LIBRE -> {
+            // A. Vérification par ID (Le plus sûr pour QCU/Vrai-Faux)
+            boolean matchId = question.getReponses().stream()
+                    .filter(Reponse::isCorrecte)
+                    .anyMatch(r -> r.getId().toString().equals(inputFinal));
+            
+            if (matchId) yield true;
+
+            // B. Vérification par Texte (Flexible pour TEXTE_LIBRE ou Vrai/Faux textuel)
+            // On compare les versions normalisées (sans accents, sans casse)
+            boolean matchTexte = question.getReponses().stream()
+                    .filter(Reponse::isCorrecte)
+                    .anyMatch(r -> normaliser(r.getTexte()).equals(inputNormalise));
+            
+            if (matchTexte) yield true;
+
+            // C. Vérification dans le champ direct de la Question (Fallback)
+            yield (question.getReponseCorrecteTexte() != null && 
+                   normaliser(question.getReponseCorrecteTexte()).equals(inputNormalise));
+        }
+
+        case QCM -> {
+            if (!(reponseDonnee instanceof List<?> liste)) yield false;
+
+            Set<String> soumises = liste.stream()
+                    .map(Object::toString)
+                    .map(String::trim)
+                    .collect(Collectors.toSet());
+
+            Set<String> correctes = question.getReponses().stream()
+                    .filter(Reponse::isCorrecte)
+                    .map(r -> r.getId().toString())
+                    .collect(Collectors.toSet());
+
+            yield !correctes.isEmpty() && soumises.equals(correctes);
+        }
+
+        default -> false;
+    };
+}
+
 
     // ===========================================
     // Tests diagnostics
     // ===========================================
-    public List<QuestionDiagnosticDto> genererTestDiagnosticPourMatiere(Long matiereId) {
-        List<Question> toutesLesQuestions = questionRepository.findQuestionsByMatiereId(matiereId);
-        final int NOMBRE_QUESTIONS_DIAGNOSTIC = 3;
-        List<Question> selectionnees = toutesLesQuestions.stream()
-                .limit(NOMBRE_QUESTIONS_DIAGNOSTIC)
-                .collect(Collectors.toList());
+   public List<QuestionDiagnosticDto> genererTestDiagnosticPourMatiere(Long matiereId) {
+    // Correction : Utiliser un repository qui ramène aussi les réponses pour peupler les options
+    List<Question> toutesLesQuestions = questionRepository.findQuestionsByMatiereId(matiereId);
+    
+    return toutesLesQuestions.stream()
+            .limit(20)
+            .map(q -> {
+                QuestionDiagnosticDto dto = new QuestionDiagnosticDto();
+                dto.setId(q.getId());
+                dto.setEnonce(q.getEnonce());
+                dto.setTypeQuestion(q.getTypeQuestion());
+                if (q.getChapitre() != null) dto.setChapitreId(q.getChapitre().getId());
+                
+                // Important : Mapper les options pour que le front puisse afficher les choix
+                List<ReponsePourQuestionDto> options = q.getReponses().stream()
+                        .map(ReponsePourQuestionDto::new)
+                        .collect(Collectors.toList());
+                dto.setOptions(options);
+                return dto;
+            })
+            .collect(Collectors.toList());
+}
 
-        return selectionnees.stream()
-                .map(q -> {
-                    QuestionDiagnosticDto dto = new QuestionDiagnosticDto();
-                    dto.setId(q.getId());
-                    dto.setEnonce(q.getEnonce());
-                    dto.setTypeQuestion(q.getTypeQuestion());
-                    if (q.getChapitre() != null) dto.setChapitreId(q.getChapitre().getId());
-                    List<ReponsePourQuestionDto> options = q.getReponses().stream().map(ReponsePourQuestionDto::new).collect(Collectors.toList());
-                    dto.setOptions(options);
-                    return dto;
-                })
-                .collect(Collectors.toList());
+@Transactional
+public ResultatDiagnosticDto corrigerTestDiagnostic(SoumissionTestDto soumission) {
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    if (auth == null || !(auth.getPrincipal() instanceof UserPrincipal)) {
+        throw new EntityNotFoundException("Utilisateur non authentifié.");
     }
 
-    @Transactional
-    public ResultatDiagnosticDto corrigerTestDiagnostic(SoumissionTestDto soumission) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !(auth.getPrincipal() instanceof UserPrincipal)) {
-            throw new EntityNotFoundException("Utilisateur non authentifié ou principal invalide.");
-        }
+    UserPrincipal principal = (UserPrincipal) auth.getPrincipal();
+    Utilisateur etudiant = utilisateurRepository.findById(principal.getId())
+            .orElseThrow(() -> new EntityNotFoundException("Utilisateur non trouvé."));
 
-        UserPrincipal principal = (UserPrincipal) auth.getPrincipal();
-        Utilisateur etudiant = utilisateurRepository.findById(principal.getId())
-                .orElseThrow(() -> new EntityNotFoundException("Utilisateur non trouvé pour la correction."));
+    // CORRECTION : Utilisation de findAllWithReponsesByIds pour charger les données nécessaires à verifierReponse
+    List<Long> ids = soumission.getReponses().stream()
+            .map(ReponseSoumiseDto::getQuestionId)
+            .collect(Collectors.toList());
 
-        Map<Long, Question> questionsMap = questionRepository.findAllById(
-                soumission.getReponses().stream().map(ReponseSoumiseDto::getQuestionId).collect(Collectors.toList())
-        ).stream().collect(Collectors.toMap(Question::getId, q -> q));
+    Map<Long, Question> questionsMap = questionRepository.findAllWithReponsesByIds(ids)
+            .stream().collect(Collectors.toMap(Question::getId, q -> q));
 
-        int totalBonnesReponses = 0;
-        Map<Chapitre, List<Boolean>> resultatsParChapitre = new HashMap<>();
+    int totalBonnesReponses = 0;
+    Map<Chapitre, List<Boolean>> resultatsParChapitre = new HashMap<>();
 
-        for (ReponseSoumiseDto rep : soumission.getReponses()) {
-            Question q = questionsMap.get(rep.getQuestionId());
-            if (q == null || q.getChapitre() == null) continue;
+    for (ReponseSoumiseDto rep : soumission.getReponses()) {
+        Question q = questionsMap.get(rep.getQuestionId());
+        // Sécurité : on vérifie que la question existe
+        if (q == null) continue;
 
-            boolean correct = verifierReponse(q, rep.getReponse());
-            if (correct) totalBonnesReponses++;
+        // Utilisation de votre méthode de référence verifierReponse
+        boolean correct = verifierReponse(q, rep.getReponse());
+        
+        if (correct) totalBonnesReponses++;
+        
+        // On ne remplit les stats par chapitre que si le chapitre est présent
+        if (q.getChapitre() != null) {
             resultatsParChapitre.computeIfAbsent(q.getChapitre(), k -> new ArrayList<>()).add(correct);
         }
-
-        ResultatDiagnosticDto dto = new ResultatDiagnosticDto();
-        dto.setTotalQuestions(questionsMap.size());
-        dto.setBonnesReponses(totalBonnesReponses);
-        dto.setScoreGlobal(totalBonnesReponses * 100.0 / questionsMap.size());
-
-        Map<String, Double> scoreParChapitre = new HashMap<>();
-        List<ChapitreRecommandationDto> chapitresAReviser = new ArrayList<>();
-        for (Map.Entry<Chapitre, List<Boolean>> entry : resultatsParChapitre.entrySet()) {
-            Chapitre chapitre = entry.getKey();
-            List<Boolean> resultats = entry.getValue();
-            long bonnes = resultats.stream().filter(b -> b).count();
-            double score = bonnes * 100.0 / resultats.size();
-            scoreParChapitre.put(chapitre.getNom(), score);
-            if (score < 50) chapitresAReviser.add(new ChapitreRecommandationDto(chapitre.getId(), chapitre.getNom(), score));
-        }
-
-        dto.setScoreParChapitre(scoreParChapitre);
-        dto.setChapitresAReviser(chapitresAReviser);
-        dto.setMessage("Analyse de votre niveau terminée !");
-
-        return dto;
     }
+
+    ResultatDiagnosticDto dto = new ResultatDiagnosticDto();
+    int nbQuestionsMap = questionsMap.size();
+    dto.setTotalQuestions(nbQuestionsMap);
+    dto.setBonnesReponses(totalBonnesReponses);
+    
+    // Calcul sécurisé du score global
+    dto.setScoreGlobal(nbQuestionsMap > 0 ? (totalBonnesReponses * 100.0 / nbQuestionsMap) : 0);
+
+    Map<String, Double> scoreParChapitre = new HashMap<>();
+    List<ChapitreRecommandationDto> chapitresAReviser = new ArrayList<>();
+
+    for (Map.Entry<Chapitre, List<Boolean>> entry : resultatsParChapitre.entrySet()) {
+        Chapitre chapitre = entry.getKey();
+        List<Boolean> resultats = entry.getValue();
+        long bonnes = resultats.stream().filter(b -> b).count();
+        double score = (bonnes * 100.0) / resultats.size();
+        
+        scoreParChapitre.put(chapitre.getNom(), score);
+        if (score < 50) {
+            chapitresAReviser.add(new ChapitreRecommandationDto(chapitre.getId(), chapitre.getNom(), score));
+        }
+    }
+
+    dto.setScoreParChapitre(scoreParChapitre);
+    dto.setChapitresAReviser(chapitresAReviser);
+    dto.setMessage("Analyse de votre niveau terminée !");
+
+    return dto;
+}
+
 
     // ===========================================
     // CRUD tests
@@ -259,5 +334,28 @@ public class TestService {
         }
         testRepository.deleteById(testId);
     }
+    @Transactional
+public Test assignerQuestionnaireAuTest(Long chapitreId, Long questionnaireId) {
+    // 1. Vérifier le chapitre
+    Chapitre chapitre = chapitreRepository.findById(chapitreId)
+            .orElseThrow(() -> new EntityNotFoundException("Chapitre non trouvé"));
+
+    // 2. Vérifier le questionnaire
+    Questionnaire questionnaire = questionnaireRepository.findById(questionnaireId)
+            .orElseThrow(() -> new EntityNotFoundException("Questionnaire non trouvé"));
+
+    // 3. Chercher s'il existe déjà un test pour ce chapitre ou en créer un nouveau
+    Test test = testRepository.findTopByChapitreId(chapitreId).orElse(new Test());
+    
+    test.setTitre("Test : " + questionnaire.getTitre());
+    test.setChapitre(chapitre);
+    test.setQuestionnaire(questionnaire);
+    
+    // 4. Copier les questions du questionnaire vers le test
+    test.setQuestions(new ArrayList<>(questionnaire.getQuestions()));
+
+    return testRepository.save(test);
+}
+
 
 }

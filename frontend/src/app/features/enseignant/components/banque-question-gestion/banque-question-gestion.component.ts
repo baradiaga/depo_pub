@@ -10,7 +10,7 @@ import {
   ElementConstitutifResponse,
   Chapitre
 } from '../../../../models/models';
-
+import { ToastrService } from 'ngx-toastr';
 @Component({
   selector: 'app-banque-question-gestion',
   templateUrl: './banque-question-gestion.component.html',
@@ -32,7 +32,7 @@ export class BanqueQuestionGestionComponent implements OnInit {
   mesMatieres: ElementConstitutifResponse[] = [];
   chapitresDisponibles: Chapitre[] = [];
   typesQuestion: TypeQuestion[] = ['QCM', 'QCU', 'VRAI_FAUX', 'TEXTE_LIBRE'];
-  niveauxGenerique: Niveau[] = ['FACILE', 'INTERMEDIAIRE', 'DIFFICILE'];
+  niveauxGenerique: Niveau[] = ['FACILE', 'MOYEN', 'DIFFICILE'];
   
   // AJOUT: Thèmes suggérés
   themesSuggestions = [
@@ -69,7 +69,7 @@ export class BanqueQuestionGestionComponent implements OnInit {
       points: 1,
       chapitreId: null!, // Utilisation de l'assertion non-null
       theme: '',
-      niveau: 'INTERMEDIAIRE',
+      niveau: 'MOYEN',
       reponses: [
         { texte: '', correcte: true },
         { texte: '', correcte: false }

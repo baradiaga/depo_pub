@@ -1,120 +1,85 @@
 package com.moscepa.repository;
 
 import com.moscepa.entity.Question;
+import com.moscepa.entity.Questionnaire;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
 import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface QuestionRepository extends JpaRepository<Question, Long> {
 
-    // --- MÉTHODES EXISTANTES ---
-    
+    /**
+     * MÉTHODE DE GÉNÉRATION (Version 2026 - Sécurisée)
+     * Cette requête utilise des alias (AS) pour faire correspondre le SQL à l'entité Java.
+     * Elle simule (NULL AS) les colonnes manquantes dans votre table physique.
+     */
+    @Query(value = "SELECT " +
+                   "id, " +
+                   "date_creation, " +
+                   "date_modification, " +
+                   "enonce AS question_text, " +      /* Mappe vers le champ Java 'enonce' */
+                   "difficulte AS niveau, " +         /* Mappe vers le champ Java 'niveau' */
+                   "type_question, " +
+                   "points, " +
+                   "statut, " +
+                   "nombre_utilisations, " +
+                   "note_qualite, " +
+                   "taux_reussite, " +
+                   "auteur_id, " +
+                   "chapitre_id, " +
+                   "NULL AS questionnaire_id, " +      /* Simule la colonne manquante */
+                   "NULL AS reponse_correcte_texte, " + /* Simule la colonne manquante */
+                   "NULL AS theme " +                   /* Simule la colonne manquante */
+                   "FROM moscepa_banque_questions " +
+                   "WHERE chapitre_id = :chapitreId AND difficulte = :difficulte", 
+           nativeQuery = true)
+    List<Question> findByChapitreIdAndDifficulteNative(
+        @Param("chapitreId") Long chapitreId, 
+        @Param("difficulte") String difficulte
+    );
+
+    // --- MÉTHODES POUR LES SERVICES EXISTANTS (QuestionService) ---
+
     @Query("SELECT q FROM Question q LEFT JOIN FETCH q.reponses WHERE q.questionnaire.chapitre.id = :chapitreId")
     List<Question> findByQuestionnaireChapitreId(@Param("chapitreId") Long chapitreId);
+
+    // Version corrigée pour suivre le lien : Question -> Questionnaire -> Chapitre -> Matière
+@Query("SELECT q FROM Question q " +
+       "JOIN q.questionnaire qn " +
+       "JOIN qn.chapitre c " +
+       "WHERE c.elementConstitutif.id = :matiereId")
+List<Question> findQuestionsByMatiereId(@Param("matiereId") Long matiereId);
+
 
     @Query("SELECT q FROM Question q LEFT JOIN FETCH q.reponses WHERE q.questionnaire IS NULL AND q.chapitre.id = :chapitreId")
     List<Question> findBanqueQuestionsByChapitreId(@Param("chapitreId") Long chapitreId);
 
-    @Query("SELECT q FROM Question q LEFT JOIN FETCH q.reponses WHERE q.questionnaire IS NULL AND q.chapitre.id IN :chapitresIds")
-    List<Question> findBanqueQuestionsByChapitresIds(@Param("chapitresIds") List<Long> chapitresIds);
-
-    List<Question> findByQuestionnaireChapitreElementConstitutifId(Long elementConstitutifId);
-
-    // --- MÉTHODE AJOUTÉE POUR LA GÉNÉRATION DE QUESTIONNAIRE ---
-    
-    /**
-     * Trouve les questions dans la banque par thèmes et niveau
-     */
-    @Query("SELECT q FROM Question q LEFT JOIN FETCH q.reponses WHERE q.questionnaire IS NULL AND q.theme IN :themes AND q.niveau = :niveau")
-    List<Question> findByThemesAndNiveau(@Param("themes") List<String> themes, @Param("niveau") String niveau);
-    
-    // --- MÉTHODES CORRIGÉES ET AJOUTÉES ---
-    
-    /**
-     * Trouve toutes les questions d'un questionnaire
-     */
-    List<Question> findByQuestionnaire_Id(Long questionnaireId);
-    
-    /**
-     * Trouve toutes les questions d'un chapitre (relation directe)
-     */
-    List<Question> findByChapitreId(Long chapitreId);
-    
-    /**
-     * Trouve toutes les questions d'une matière (ElementConstitutif)
-     */
-    @Query("SELECT q FROM Question q JOIN q.chapitre c WHERE c.elementConstitutif.id = :matiereId")
-    List<Question> findQuestionsByMatiereId(@Param("matiereId") Long matiereId);
-    
-    // --- MÉTHODES POUR LE SERVICE DE SUPPRESSION ---
-    
-    /**
-     * Trouve une question avec ses réponses
-     */
-    @Query("SELECT q FROM Question q LEFT JOIN FETCH q.reponses WHERE q.id = :id")
-    Optional<Question> findByIdWithReponses(@Param("id") Long id);
-    
-    /**
-     * Trouve une question avec toutes ses relations (tests, réponses, questionnaire)
-     */
-    @Query("SELECT q FROM Question q " +
-           "LEFT JOIN FETCH q.reponses " +
-           "LEFT JOIN FETCH q.tests " +
-           "LEFT JOIN FETCH q.questionnaire " +
-           "WHERE q.id = :id")
-    Optional<Question> findByIdWithRelations(@Param("id") Long id);
-    
-    /**
-     * Trouve une question avec ses tests (pour la suppression)
-     */
-    @Query("SELECT q FROM Question q LEFT JOIN FETCH q.tests WHERE q.id = :id")
-    Optional<Question> findByIdWithTests(@Param("id") Long id);
-    
-    /**
-     * Vérifie si une question appartient à un questionnaire
-     */
-    @Query("SELECT COUNT(q) > 0 FROM Question q WHERE q.id = :questionId AND q.questionnaire.id = :questionnaireId")
-    boolean belongsToQuestionnaire(@Param("questionId") Long questionId, @Param("questionnaireId") Long questionnaireId);
-    
-    // --- MÉTHODES POUR LA BANQUE DE QUESTIONS ---
-    
-    /**
-     * Trouve toutes les questions sans questionnaire (banque de questions)
-     */
     @Query("SELECT q FROM Question q WHERE q.questionnaire IS NULL")
     List<Question> findBanqueQuestions();
+
+    @Query("SELECT q FROM Question q LEFT JOIN FETCH q.reponses WHERE q.id = :id")
+    Optional<Question> findByIdWithReponses(@Param("id") Long id);
+
+    List<Question> findByQuestionnaire_Id(Long questionnaireId);
+
+    List<Question> findByChapitreId(Long chapitreId);
+   
+
+@Query("SELECT q FROM Questionnaire q " +
+           "LEFT JOIN FETCH q.questions qu " +
+           "LEFT JOIN FETCH qu.reponses " +
+           "WHERE q.id = :id")
+    Optional<Questionnaire> findByIdWithQuestions(@Param("id") Long id);
+
     
-    /**
-     * Trouve toutes les questions avec questionnaire
-     */
-    @Query("SELECT q FROM Question q WHERE q.questionnaire IS NOT NULL")
-    List<Question> findQuestionsWithQuestionnaire();
-    
-    // --- MÉTHODES DE FILTRAGE ---
-    
-    /**
-     * Trouve les questions par type
-     */
-    List<Question> findByTypeQuestion(String typeQuestion);
-    
-    /**
-     * Trouve les questions par chapitre et type
-     */
-    List<Question> findByChapitreIdAndTypeQuestion(Long chapitreId, String typeQuestion);
-    
-    /**
-     * Compte le nombre de questions dans un questionnaire
-     */
-    @Query("SELECT COUNT(q) FROM Question q WHERE q.questionnaire.id = :questionnaireId")
-    long countByQuestionnaireId(@Param("questionnaireId") Long questionnaireId);
-    
-    /**
-     * Compte le nombre de questions dans un chapitre
-     */
-    @Query("SELECT COUNT(q) FROM Question q WHERE q.chapitre.id = :chapitreId")
-    long countByChapitreId(@Param("chapitreId") Long chapitreId);
+     // AJOUTEZ CETTE MÉTHODE ICI :
+    @Query("SELECT DISTINCT q FROM Question q LEFT JOIN FETCH q.reponses WHERE q.id IN :ids")
+List<Question> findAllWithReponsesByIds(@Param("ids") List<Long> ids);
+
+
 }

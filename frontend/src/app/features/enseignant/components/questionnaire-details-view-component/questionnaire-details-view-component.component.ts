@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { QuestionnaireService, QuestionnaireDetail, Question } from '../../../../services/questionnaire.service';
-
+import { TestService } from '../../../../services/test.service'; 
 @Component({
   selector: 'app-questionnaire-details-view-component',
   templateUrl: './questionnaire-details-view-component.component.html',
@@ -22,7 +22,8 @@ export class QuestionnaireDetailsViewComponentComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private questionnaireService: QuestionnaireService
+    private questionnaireService: QuestionnaireService,
+    private testService: TestService
   ) {}
 
   ngOnInit(): void {
@@ -127,19 +128,39 @@ export class QuestionnaireDetailsViewComponentComponent implements OnInit {
   }
 
   // 🔥 Créer un test à partir du questionnaire
-  createTestFromQuestionnaire(): void {
-    if (!this.questionnaire) return;
-    
-    const testTitle = prompt('Titre du test :', `Test - ${this.questionnaire.titre}`);
-    
-    if (testTitle && testTitle.trim()) {
-      // Logique de création de test
-      console.log('Création de test:', testTitle);
-      alert(`Création du test: "${testTitle}"\n(Fonctionnalité à implémenter)`);
-      // this.questionnaireService.createTestFromQuestionnaire(this.questionnaireId, testTitle)
-      //   .subscribe(...);
-    }
+  // 🔥 Assigner ce questionnaire comme test officiel du chapitre
+createTestFromQuestionnaire(): void {
+  if (!this.questionnaire || !this.questionnaire.chapitreId) {
+    alert("Impossible d'assigner ce test : ID du chapitre manquant.");
+    return;
   }
+
+  const confirmation = confirm(
+    `Voulez-vous définir le questionnaire "${this.questionnaire.titre}" comme le test officiel pour ce chapitre ?\n\n` +
+    `Cela remplacera le test actuel si un autre était déjà assigné.`
+  );
+
+  if (confirmation) {
+    this.loadingQuestionnaire = true; // On réutilise le loader pour l'action
+
+    this.testService.assignerQuestionnaire(this.questionnaire.chapitreId, this.questionnaireId)
+      .subscribe({
+        next: (response) => {
+          console.log('✅ Test assigné avec succès:', response);
+          alert('Le questionnaire a été assigné avec succès ! Les étudiants peuvent maintenant passer ce test.');
+          this.loadingQuestionnaire = false;
+          // Optionnel : rediriger vers la vue du chapitre ou du test
+          // this.router.navigate(['/app/enseignant/chapitres', this.questionnaire.chapitreId]);
+        },
+        error: (err) => {
+          console.error('❌ Erreur lors de l\'assignation:', err);
+          alert('Erreur lors de l\'assignation du test. Vérifiez que le chapitre est valide.');
+          this.loadingQuestionnaire = false;
+        }
+      });
+  }
+}
+
 
   // -------------------
   // MÉTHODES UTILES POUR LE TEMPLATE

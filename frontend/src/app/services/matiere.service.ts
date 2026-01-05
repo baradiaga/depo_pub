@@ -3,7 +3,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-
+import { environment } from '../../environments/environment';
 // --- CONTRAT DE DONNÉES POUR LE SYLLABUS ---
 export interface ChapitreSyllabus {
   id: number;
@@ -26,8 +26,8 @@ export interface MatiereSyllabus {
 } )
 export class SyllabusService {
   // On utilise un nouvel endpoint dédié
-  private apiUrl = 'http://localhost:8080/api/syllabus';
-
+  //private apiUrl = 'http://localhost:8080/api/syllabus';
+  private apiUrl =  `${environment.apiUrl}/syllabus`;
   constructor(private http: HttpClient ) { }
 
   /**

@@ -39,4 +39,12 @@ public interface ResultatTestRepository extends JpaRepository<ResultatTest, Long
           "JOIN FETCH c.elementConstitutif ec " +
           "WHERE rt.etudiant.id = :etudiantId")
    List<ResultatTest> findByEtudiantIdWithDetails(@Param("etudiantId") Long etudiantId);
+   
+    @Query("SELECT r FROM ResultatTest r " +
+           "JOIN FETCH r.test t " +
+           "JOIN FETCH t.chapitre c " +
+           "JOIN FETCH c.elementConstitutif ec " +
+           "WHERE r.etudiant.id = :etudiantId " +
+           "ORDER BY r.dateTest DESC")
+    List<ResultatTest> findFullResultsByEtudiant(@Param("etudiantId") Long etudiantId);
 }

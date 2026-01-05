@@ -9,7 +9,7 @@ import { QuestionnaireService, QuestionnairePayload, QuestionnaireDetail, Genera
 import { ElementConstitutifService } from '../../../../services/element-constitutif.service';
 import { ChapitreService } from '../../../../services/chapitre.service';
 import { TestService } from '../../../../services/test.service';
-
+import { ToastrService } from 'ngx-toastr';
 // --- IMPORTS DE MODÈLES ---
 import { Chapitre, ElementConstitutifResponse, QuestionnaireManuel, QuestionPourCreation, CreateTestRequest } from '../../../../models/models';
 
@@ -46,7 +46,7 @@ export class GestionQuestionnaireComponent implements OnInit {
   generationRequest: GenerationRequestDto = {
     themes: [],
     nombreQuestions: 10,
-    niveau: 'INTERMEDIAIRE'
+    niveau: 'MOYEN'
   };
   
   matiereAutoId: number | null = null;
@@ -56,7 +56,7 @@ export class GestionQuestionnaireComponent implements OnInit {
   // NIVEAUX DISPONIBLES POUR LA GÉNÉRATION
   niveauxDisponibles = [
     { value: 'FACILE', label: 'Facile' },
-    { value: 'INTERMEDIAIRE', label: 'Intermédiaire' },
+    { value: 'MOYEN', label: 'Moyen' },
     { value: 'DIFFICILE', label: 'Difficile' }
   ];
 
@@ -252,24 +252,38 @@ export class GestionQuestionnaireComponent implements OnInit {
   }
 
   changerTypeQuestion(i: number): void {
-    const q = this.questionnaire.questions[i];
-    if (!q) return;
-    
-    console.log(`🔄 Changement type question ${i}: ${q.type} → ${q.type}`);
-    
-    q.reponseVraiFaux = undefined;
-    
-    if (q.type === 'qcm' || q.type === 'qcu') {
-      q.reponses = [{ texte: '', correcte: false }, { texte: '', correcte: false }];
-      console.log(`📝 Question ${i}: type ${q.type}, ${q.reponses.length} réponses`);
-    } else if (q.type === 'texte_libre') {
-      q.reponses = [{ texte: '', correcte: true }];
-      console.log(`📝 Question ${i}: texte libre, 1 réponse attendue`);
-    } else {
-      q.reponses = [];
-      console.log(`📝 Question ${i}: vrai/faux, pas de réponses prédéfinies`);
-    }
+  const q = this.questionnaire.questions[i];
+  if (!q) return;
+  
+  console.log(`🔄 Changement type question ${i}: ${q.type}`);
+  
+  // 1. On réinitialise toujours le tableau pour éviter les mélanges
+  q.reponses = [];
+
+  if (q.type === 'qcm' || q.type === 'qcu') {
+    q.reponses = [{ texte: '', correcte: false }, { texte: '', correcte: false }];
+  } 
+  else if (q.type === 'texte_libre') {
+    q.reponses = [{ texte: '', correcte: true }];
+  } 
+  else if (q.type === 'vrai_faux') {
+    // CORRECTION ICI : On crée les deux options que le Backend attend
+    q.reponses = [
+      { texte: 'Vrai', correcte: true },  // Par défaut Vrai est correct
+      { texte: 'Faux', correcte: false }
+    ];
+    console.log(`📝 Question ${i}: vrai/faux, 2 options générées`);
   }
+}
+// À ajouter dans le fichier .ts
+setVraiFauxCorrect(question: any, estVrai: boolean): void {
+  if (question.reponses && question.reponses.length >= 2) {
+    // Si estVrai est true, l'index 0 (Vrai) devient correct, l'index 1 (Faux) devient faux
+    question.reponses[0].correcte = estVrai;
+    question.reponses[1].correcte = !estVrai;
+  }
+}
+
 
   ajouterReponse(i: number): void {
     const question = this.questionnaire.questions[i];
@@ -366,6 +380,8 @@ export class GestionQuestionnaireComponent implements OnInit {
     
     this.questionnaireService.genererQuestionnaireDepuisBanque(this.generationRequest).subscribe({
       next: (questionnaire) => {
+        console.log("Request génération:", this.generationRequest);
+
         console.log('✅ Questionnaire généré:', questionnaire);
         this.questionnaireGenere = questionnaire;
         this.generationEnCours = false;
@@ -376,7 +392,7 @@ export class GestionQuestionnaireComponent implements OnInit {
         this.generationRequest = {
           themes: [],
           nombreQuestions: 10,
-          niveau: 'INTERMEDIAIRE'
+          niveau: 'MOYEN'
         };
       },
       error: (err) => {
@@ -391,74 +407,72 @@ export class GestionQuestionnaireComponent implements OnInit {
   // ====================================================================
   // === MÉTHODE DE SAUVEGARDE AVEC LOGS COMPLETS ===
   // ====================================================================
-  sauvegarderQuestionnaire(): void {
-  console.log('=== 🚀 DÉBUT SAUVEGARDE QUESTIONNAIRE ===');
+    sauvegarderQuestionnaire(): void {
+    console.log('=== 🚀 DÉBUT SAUVEGARDE QUESTIONNAIRE ===');
 
-  // 1️⃣ Validation formulaire
-  if (!this.questionnaireValide()) {
-    console.error('❌ Validation échouée');
-    alert("Veuillez remplir tous les champs obligatoires (titre, matière, chapitre) et ajouter au moins une question.");
-    return;
-  }
-  console.log('✅ Validation réussie');
-
-  // 2️⃣ Assurer que typeQuestionnaire est défini
-  if (!this.questionnaire.typeQuestionnaire) {
-    console.warn('⚠️ typeQuestionnaire manquant, affectation par défaut à EXERCICE');
-    this.questionnaire.typeQuestionnaire = 'EXERCICE';
-  }
-
-  // 3️⃣ Préparer le payload
-  const questionsPourBackend = this.questionnaire.questions.map((q, index) => {
-    console.log(`  Question ${index} brute:`, q);
-
-    const typeBackend = this.mapTypeQuestion(q.type);
-    console.log(`    Type: ${q.type} → ${typeBackend}`);
-
-    const reponsesTransformees = q.reponses?.map((r, rIndex) => ({
-      texte: r.texte,
-      correcte: r.correcte
-    })) || [];
-
-    return {
-      enonce: q.enonce,
-      type: typeBackend,
-      points: q.points || 1,
-      reponses: reponsesTransformees
-    };
-  });
-
-  const payload: QuestionnairePayload = {
-    
-    id: this.questionnaireIdEnModification || undefined, 
-    titre: this.questionnaire.titre,
-    chapitreId: this.questionnaire.chapitreId!,
-    duree: this.questionnaire.duree || 0,
-    description: this.questionnaire.description,
-    questions: questionsPourBackend,
-    type: this.questionnaire.typeQuestionnaire
-  };
-
-  console.log('📤 Payload final à envoyer:', JSON.stringify(payload, null, 2));
-
-  // 4️⃣ Envoi au backend
-  this.sauvegardeEnCours = true;
-  this.questionnaireService.sauvegarderQuestionnaire(payload).subscribe({
-    next: (res) => {
-      console.log('✅ Questionnaire créé avec succès:', res);
-      alert('Questionnaire créé avec succès !');
-      this.reinitialiserFormulaireManuel();
-      this.chargerQuestionnaires();
-      this.sauvegardeEnCours = false;
-    },
-    error: (err) => {
-      console.error('❌ Erreur lors de la sauvegarde:', err);
-      let messageErreur = err.error?.message || err.message || "Erreur inconnue.";
-      alert("Erreur: " + messageErreur);
-      this.sauvegardeEnCours = false;
+    // 1️⃣ Validation formulaire (utilise votre méthode existante)
+    if (!this.questionnaireValide()) {
+      console.error('❌ Validation échouée');
+      alert("Veuillez remplir tous les champs obligatoires (titre, matière, chapitre) et ajouter au moins une question.");
+      return;
     }
-  });
-}
+
+    // 2️⃣ Préparation du payload (Mapping vers QuestionnairePayload du service)
+    const questionsTransformees = this.questionnaire.questions.map(q => ({
+      enonce: q.enonce,
+      type: this.mapTypeQuestionBackend(q.type),
+      points: q.points || 1,
+      reponses: q.reponses?.map(r => ({
+        texte: r.texte,
+        correcte: r.correcte
+      })) || []
+    }));
+
+    const payload: QuestionnairePayload = {
+      id: this.questionnaireIdEnModification || undefined,
+      titre: this.questionnaire.titre,
+      description: this.questionnaire.description || '',
+      chapitreId: Number(this.questionnaire.chapitreId),
+      duree: this.questionnaire.duree || 0,
+      type: (this.questionnaire.typeQuestionnaire as any) || 'EXERCICE',
+      questions: questionsTransformees
+    };
+
+    this.sauvegardeEnCours = true;
+
+    // 3️⃣ Appel au service (utilise la méthode sauvegarderQuestionnaire du service)
+    this.questionnaireService.sauvegarderQuestionnaire(payload).subscribe({
+      next: (res: any) => {
+        console.log('✅ Opération réussie');
+        const message = this.questionnaireIdEnModification ? "Le questionnaire a été modifié." : "Le questionnaire a été créé.";
+        alert(message);
+        
+        // 4️⃣ Reset et rafraîchissement
+        this.sauvegardeEnCours = false;
+        this.questionnaireIdEnModification = null;
+        this.reinitialiserFormulaireManuel();
+        this.chargerQuestionnaires();
+      },
+      error: (err: any) => {
+        console.error('❌ Erreur lors de la sauvegarde:', err);
+        this.sauvegardeEnCours = false;
+        alert("Une erreur est survenue lors de l'enregistrement sur le serveur.");
+      }
+    });
+  }
+
+  /**
+   * Helper pour mapper les types de questions vers les constantes Backend
+   */
+  private mapTypeQuestionBackend(typeFront: string): 'QCM' | 'QCU' | 'VRAI_FAUX' | 'TEXTE_LIBRE' {
+    const mapping: { [key: string]: any } = {
+      'qcm': 'QCM',
+      'qcu': 'QCU',
+      'vrai_faux': 'VRAI_FAUX',
+      'texte_libre': 'TEXTE_LIBRE'
+    };
+    return mapping[typeFront] || 'QCM';
+  }
 
 
   // ====================================================================
@@ -480,7 +494,7 @@ export class GestionQuestionnaireComponent implements OnInit {
     console.log(`🔄 Mapping type: ${typeFront} → ${typeBackend}`);
     return typeBackend;
   }
-
+ 
   /**
    * Méthode de debug pour afficher l'état complet
    */

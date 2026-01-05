@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Etablissement } from '../models/etablissement.model';
-
+import { environment } from '../../environments/environment';
 export interface EtablissementSearchParams {
   search?: string;
   page?: number;
@@ -23,7 +23,8 @@ export interface EtablissementSearchResult {
   providedIn: 'root'
 })
 export class EtablissementService {
-  private apiUrl = 'http://localhost:8080/etablissements';
+ // private apiUrl = 'http://localhost:8080/etablissements';
+    private apiUrl = `${environment.apiUrl}/etablissements`
 
   constructor(private http: HttpClient) {}
 

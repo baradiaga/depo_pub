@@ -4,7 +4,8 @@
 // === TYPES GÉNÉRAUX (Fournis par l'utilisateur)
 // ====================================================================
 export type TypeQuestion = 'QCM' | 'QCU' | 'VRAI_FAUX' | 'TEXTE_LIBRE';
-export type Niveau = 'FACILE' | 'INTERMEDIAIRE' | 'DIFFICILE';
+export type Niveau = 'FACILE' | 'MOYEN' | 'DIFFICILE';
+
 
 export type StatutQuestion = 'BROUILLON' | 'VALIDEE' | 'ARCHIVEE';
 
@@ -333,4 +334,15 @@ export interface ReponseDetail {
 export interface ReponseCreation {
   texte: string;
   correcte: boolean;
+}
+
+  export interface Questionnaire {
+  id?: number; // Optionnel car absent lors de la création
+  titre: string; 
+  matiereId: number | null; 
+  chapitreId: number | null; 
+  duree: number; 
+  description: string; 
+  questions: any[];
+  typeQuestionnaire: string;
 }

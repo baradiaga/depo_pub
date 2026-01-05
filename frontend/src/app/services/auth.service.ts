@@ -7,6 +7,7 @@ import { tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { jwtDecode } from 'jwt-decode';
 import { UserRole } from '../models/user.model';
+import { environment } from '../../environments/environment';
 
 // --- INTERFACE MISE À JOUR POUR LE TOKEN DÉCODÉ ---
 // Le backend doit inclure 'nom' et 'prenom' dans le token JWT.
@@ -35,7 +36,7 @@ export interface LoginResponse {
   providedIn: 'root'
 } )
 export class AuthService {
-  private apiUrl = 'http://localhost:8080/api/auth';
+  private apiUrl = `${environment.apiUrl}/auth`;
   
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(this.hasToken( ));
   public isAuthenticated$ = this.isAuthenticatedSubject.asObservable();

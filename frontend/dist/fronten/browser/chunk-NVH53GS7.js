@@ -1,0 +1,1 @@
+import{a}from"./chunk-5TVFLNYV.js";import"./chunk-AFZ5T5OK.js";import"./chunk-GL6SUNR5.js";import"./chunk-GET45V76.js";import"./chunk-GGWOOKA5.js";import"./chunk-MON7YFGF.js";export{a as StudentModule};

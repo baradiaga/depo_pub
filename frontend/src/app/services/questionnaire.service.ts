@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-
+import { environment } from '../../environments/environment';
 // ============================================
 // INTERFACES CORRIGÉES (alignées avec le backend)
 // ============================================
@@ -77,8 +77,8 @@ export interface GenerationRequestDto {
   providedIn: 'root'
 })
 export class QuestionnaireService {
-  private apiUrl = 'http://localhost:8080/api/questionnaires';
-
+  //private apiUrl = 'http://localhost:8080/api/questionnaires';
+   private apiUrl =  `${environment.apiUrl}/questionnaires`;
   constructor(private http: HttpClient) {}
 
   // ============================================

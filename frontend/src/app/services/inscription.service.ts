@@ -4,7 +4,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Inscription, InscriptionValidationRequest } from '../models/inscription-validation.model'; // Assurez-vous que le chemin est correct
-
+import { environment } from '../../environments/environment';
 // Interface pour le payload de la requête
 export interface InscriptionRequest {
   etudiantId: number;
@@ -18,7 +18,8 @@ export interface InscriptionRequest {
   providedIn: 'root'
 } )
 export class InscriptionService {
-  private apiUrl = 'http://localhost:8080/api/inscriptions';
+ // private apiUrl = 'http://localhost:8080/api/inscriptions';
+  private apiUrl =  `${environment.apiUrl}/inscriptions`;
 
   constructor(private http: HttpClient ) { }
 

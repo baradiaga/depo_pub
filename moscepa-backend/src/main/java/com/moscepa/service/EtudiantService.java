@@ -1,17 +1,14 @@
-// Fichier : src/main/java/com/moscepa/service/EtudiantService.java (Version Corrigée)
-
 package com.moscepa.service;
 
 import com.moscepa.dto.EtudiantRegistrationDto;
-import com.moscepa.dto.InscriptionRequestDto;  // Nouveau DTO pour l'inscription
+import com.moscepa.dto.InscriptionRequestDto;
 import com.moscepa.dto.MatiereInscriteDto;
 import com.moscepa.entity.ElementConstitutif;
+import com.moscepa.entity.Inscription;
 import com.moscepa.entity.Role;
 import com.moscepa.entity.Utilisateur;
-import com.moscepa.repository.ElementConstitutifRepository;
+import com.moscepa.repository.InscriptionRepository;
 import com.moscepa.repository.UtilisateurRepository;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -30,14 +27,10 @@ public class EtudiantService {
     private PasswordEncoder passwordEncoder;
     
     @Autowired 
-    private ElementConstitutifRepository elementConstitutifRepository;
+    private InscriptionRepository inscriptionRepository; // CHANGEMENT : Injection du Repository d'inscription
 
-    // INJECTION du service d'inscription
     @Autowired 
     private InscriptionService inscriptionService;
-
-    @PersistenceContext
-    private EntityManager entityManager;
 
     @Transactional
     public Utilisateur inscrireEtudiant(EtudiantRegistrationDto dto) {
@@ -64,34 +57,45 @@ public class EtudiantService {
         Utilisateur etudiantSauvegarde = utilisateurRepository.save(nouvelEtudiant);
 
         if (dto.getMatiereIds() != null && !dto.getMatiereIds().isEmpty()) {
-            // REMPLACER la requête native par des appels au service d'inscription
             for (Long matiereId : dto.getMatiereIds()) {
                 InscriptionRequestDto inscriptionRequest = new InscriptionRequestDto();
                 inscriptionRequest.setEtudiantId(etudiantSauvegarde.getId());
                 inscriptionRequest.setEcId(matiereId);
-                // Appel du service qui va créer une inscription complète avec statut "EN_ATTENTE"
+                // Le service d'inscription crée l'entrée avec statut "EN_ATTENTE"
                 inscriptionService.inscrireEtudiant(inscriptionRequest);
             }
         }
-        
         return etudiantSauvegarde;
     }
 
-    // ... le reste de la classe (getMatieresInscrites et convertToMatiereInscriteDto) reste inchangé
+    /**
+     * CORRECTION MAJEURE : 
+     * On ne récupère plus les matières via une requête SQL native sur les EC,
+     * mais via les Inscriptions filtrées par statut "VALIDE".
+     */
     @Transactional(readOnly = true)
     public List<MatiereInscriteDto> getMatieresInscrites(Long utilisateurId) {
-        return elementConstitutifRepository.findMatieresByEtudiantIdSqlNatif(utilisateurId).stream()
+        // On récupère uniquement les inscriptions validées
+        List<Inscription> inscriptionsValides = inscriptionRepository.findByEtudiantIdAndStatut(utilisateurId, "VALIDE");
+
+        return inscriptionsValides.stream()
             .map(this::convertToMatiereInscriteDto)
             .collect(Collectors.toList());
     }
 
-    private MatiereInscriteDto convertToMatiereInscriteDto(ElementConstitutif ec) {
+    /**
+     * Mapper modifié pour extraire les données de l'entité Inscription
+     */
+    private MatiereInscriteDto convertToMatiereInscriteDto(Inscription inscription) {
+        ElementConstitutif ec = inscription.getMatiere();
         MatiereInscriteDto dto = new MatiereInscriteDto();
+        
         dto.setId(ec.getId());
         dto.setNomEc(ec.getNom());
         dto.setCodeEc(ec.getCode());
         dto.setCoefficient(ec.getCredit());
-        dto.setStatut("NV");
+        dto.setStatut("VALIDE"); // Si elle est là, c'est qu'elle est valide
+
         if (ec.getUniteEnseignement() != null) {
             dto.setNomUe(ec.getUniteEnseignement().getNom());
             dto.setCodeUe(ec.getUniteEnseignement().getCode());

@@ -4,14 +4,14 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { RessourcePedagogique } from '../models/models'; // Interface à créer
-
+import { environment } from '../../environments/environment';
 @Injectable({
   providedIn: 'root'
 } )
 export class RessourcePedagogiqueService {
 
- private apiUrl = 'http://localhost:8080/api/ressources';
-
+ // private apiUrl = 'http://localhost:8080/api/ressources';
+ private apiUrl =  `${environment.apiUrl}/ressources`;
   constructor(private http: HttpClient ) { }
 
   // Récupérer toutes les ressources

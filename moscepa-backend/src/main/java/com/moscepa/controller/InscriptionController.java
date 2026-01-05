@@ -1,14 +1,12 @@
-// Fichier : src/main/java/com/moscepa/controller/InscriptionController.java
-
 package com.moscepa.controller;
 
-import com.moscepa.dto.InscriptionRequestDto;
-import com.moscepa.dto.InscriptionResponseDto;
-import com.moscepa.dto.InscriptionValidationRequest;
+import com.moscepa.dto.*;
+import com.moscepa.entity.Utilisateur;
 import com.moscepa.service.InscriptionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -22,46 +20,34 @@ public class InscriptionController {
         this.inscriptionService = inscriptionService;
     }
 
-    // ---------------------------------------------------------
-    // 1. Inscrire un étudiant
-    // ---------------------------------------------------------
+    // --- ACCÈS ÉTUDIANT : Voir seulement ses matières VALIDÉES ---
+    @GetMapping("/mes-matieres")
+    @PreAuthorize("hasRole('ETUDIANT')")
+    public ResponseEntity<List<InscriptionResponseDto>> getMesMatieres(
+            @AuthenticationPrincipal Utilisateur utilisateurConnecte) {
+        // Sécurité : On utilise l'ID issu du Token/Session, pas un paramètre URL
+        List<InscriptionResponseDto> data = inscriptionService.getMesInscriptionsValidees(utilisateurConnecte.getId());
+        return ResponseEntity.ok(data);
+    }
+
+    // --- ACCÈS ADMIN : Inscrire un étudiant ---
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'RESPONSABLE_FORMATION')")
     public ResponseEntity<InscriptionResponseDto> inscrire(@RequestBody InscriptionRequestDto request) {
-        InscriptionResponseDto nouvelleInscription = inscriptionService.inscrireEtudiant(request);
-        return new ResponseEntity<>(nouvelleInscription, HttpStatus.CREATED);
+        return new ResponseEntity<>(inscriptionService.inscrireEtudiant(request), HttpStatus.CREATED);
     }
 
-    // ---------------------------------------------------------
-    // 2. Valider une inscription
-    // ---------------------------------------------------------
+    // --- ACCÈS ADMIN : Valider une inscription ---
     @PostMapping("/valider")
     @PreAuthorize("hasAnyRole('ADMIN', 'RESPONSABLE_FORMATION')")
-    public ResponseEntity<InscriptionResponseDto> validerInscription(@RequestBody InscriptionValidationRequest request) {
-        InscriptionResponseDto inscriptionValidee = inscriptionService.validerInscription(request);
-        return ResponseEntity.ok(inscriptionValidee);
+    public ResponseEntity<InscriptionResponseDto> valider(@RequestBody InscriptionValidationRequest req) {
+        return ResponseEntity.ok(inscriptionService.validerInscription(req));
     }
 
-    // ---------------------------------------------------------
-    // 3. Activer / Désactiver une inscription
-    // ---------------------------------------------------------
-    @PutMapping("/{id}/actif")
-    @PreAuthorize("hasAnyRole('ADMIN', 'RESPONSABLE_FORMATION')")
-    public ResponseEntity<InscriptionResponseDto> changerStatutActif(
-            @PathVariable Long id,
-            @RequestParam boolean actif) {
-
-        InscriptionResponseDto inscriptionMiseAJour = inscriptionService.changerStatutActif(id, actif);
-        return ResponseEntity.ok(inscriptionMiseAJour);
-    }
-
-    // ---------------------------------------------------------
-    // 4. Récupérer inscriptions en attente
-    // ---------------------------------------------------------
+    // --- ACCÈS ADMIN : Liste des attentes ---
     @GetMapping("/en-attente")
     @PreAuthorize("hasAnyRole('ADMIN', 'RESPONSABLE_FORMATION')")
-    public ResponseEntity<List<InscriptionResponseDto>> getInscriptionsEnAttente() {
-        List<InscriptionResponseDto> inscriptionsEnAttente = inscriptionService.getInscriptionsEnAttente();
-        return ResponseEntity.ok(inscriptionsEnAttente);
+    public ResponseEntity<List<InscriptionResponseDto>> getEnAttente() {
+        return ResponseEntity.ok(inscriptionService.getInscriptionsEnAttente());
     }
 }

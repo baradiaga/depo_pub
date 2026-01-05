@@ -15,7 +15,8 @@ public class GenerationRequestDto {
     
     @NotNull(message = "Le niveau de difficulté est obligatoire")
     private String niveau;
-    
+  
+    private Long chapitreId; 
     public GenerationRequestDto() {
     }
     
@@ -48,6 +49,8 @@ public class GenerationRequestDto {
     public void setNiveau(String niveau) {
         this.niveau = niveau;
     }
+    public Long getChapitreId() { return chapitreId; }
+    public void setChapitreId(Long chapitreId) { this.chapitreId = chapitreId; }
     
     @Override
     public String toString() {

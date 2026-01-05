@@ -3,7 +3,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-
+import { environment } from '../../environments/environment';
 // Définissez vos interfaces ici ou importez-les
 export interface EtudiantPayload {
   id?: number; // L'ID est optionnel (présent pour la mise à jour )
@@ -34,9 +34,10 @@ export interface EtudiantDto {
   providedIn: 'root'
 })
 export class EtudiantService {
-  private adminUsersApiUrl = 'http://localhost:8080/api/admin/users';
-  private etudiantsApiUrl = 'http://localhost:8080/api/etudiants';
-
+ // private adminUsersApiUrl = 'http://localhost:8080/api/admin/users';
+ // private etudiantsApiUrl = 'http://localhost:8080/api/etudiants';
+ private adminUsersApiUrl = `${environment.apiUrl}/admin/users`;
+  private etudiantsApiUrl = `${environment.apiUrl}/etudiants`;
   constructor(private http: HttpClient ) { }
 
   // --- READ (Lecture) ---

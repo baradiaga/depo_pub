@@ -3,7 +3,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-
+import { environment } from '../../environments/environment';
 // --- INTERFACES ---
 // On définit des interfaces pour garantir la cohérence des données.
 
@@ -26,8 +26,8 @@ export interface Section {
 } )
 export class SectionService {
 
-  private apiUrl = 'http://localhost:8080/api'; // On utilise l'URL de base
-
+  // private apiUrl = 'http://localhost:8080/api'; // On utilise l'URL de base
+  private apiUrl =  `${environment.apiUrl}`;
   constructor(private http: HttpClient ) { }
 
   /**
@@ -44,7 +44,7 @@ export class SectionService {
     };
 
     // 2. On construit l'URL complète et correcte.
-    const url = `${this.apiUrl}/sections/${section.id}/contenu`;
+    const url = `${this.apiUrl}/sections/${section.id}`; 
 
     // 3. On utilise la méthode PUT, comme défini dans notre SectionController.
     return this.http.put<Section>(url, payload );

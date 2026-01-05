@@ -4,13 +4,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { BanqueQuestionCreation, BanqueQuestionDetail, EvaluationQuestion } from '../models/models'; // Assurez-vous du bon chemin
-
+import { environment } from '../../environments/environment'; 
 @Injectable({
   providedIn: 'root'
 } )
 export class BanqueQuestionService {
 
-  private apiUrl = 'http://localhost:8080/api/banque-questions';
+   private apiUrl = `${environment.apiUrl}/banque-questions`;
 
 
   constructor(private http: HttpClient ) { }

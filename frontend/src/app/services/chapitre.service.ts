@@ -4,7 +4,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Chapitre, ChapitrePayload, ChapitreDetail } from '../models/models';
-
+import { environment } from '../../environments/environment';
 // --- NOUVELLES INTERFACES POUR LES DONNÉES COMPLÈTES ---
 // Ces interfaces doivent correspondre aux DTOs de votre backend.
 
@@ -27,8 +27,8 @@ export interface ChapitreAvecSections {
   providedIn: 'root'
 } )
 export class ChapitreService {
-  private apiUrl = 'http://localhost:8080/api/chapitres';
-
+  
+  private apiUrl = `${environment.apiUrl}/chapitres`;
   constructor(private http: HttpClient ) { }
 
   // --- VOS MÉTHODES EXISTANTES (INCHANGÉES) ---
@@ -55,7 +55,7 @@ export class ChapitreService {
   }
 
   getChapitresParMatiere(matiereId: number): Observable<Chapitre[]> {
-    return this.http.get<Chapitre[]>(`http://localhost:8080/api/elements-constitutifs/${matiereId}/chapitres` );
+    return this.http.get<Chapitre[]>(`${environment.apiUrl}/elements-constitutifs/${matiereId}/chapitres` );
   }
 
   // ====================================================================

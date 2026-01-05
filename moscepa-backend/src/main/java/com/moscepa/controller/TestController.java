@@ -1,7 +1,9 @@
 // Fichier : src/main/java/com/moscepa/controller/TestController.java (Version Intégrale et Finale)
 
 package com.moscepa.controller;
+import com.moscepa.service.QuestionnaireService;
 
+import com.moscepa.dto.QuestionnaireDetailDto; 
 import com.moscepa.dto.HistoriqueResultatDto;
 import com.moscepa.dto.QuestionDto;
 import com.moscepa.dto.ResultatTestDto;
@@ -13,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 import java.util.List;
 import java.util.Map;
@@ -23,9 +26,11 @@ import java.util.Map;
 public class TestController {
 
     private final TestService testService;
+    private final QuestionnaireService questionnaireService;
 
-    public TestController(TestService testService) {
+    public TestController(TestService testService, QuestionnaireService questionnaireService) {
         this.testService = testService;
+        this.questionnaireService = questionnaireService;
     }
 
     // ====================================================================
@@ -39,18 +44,21 @@ public class TestController {
         return ResponseEntity.ok(questions);
     }
 
-    @PostMapping("/chapitre/{chapitreId}/soumettre")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ResultatTestDto> soumettreTest(
-            @PathVariable Long chapitreId,
-            @RequestBody Map<String, Object> reponses,
-            Authentication authentication) {
+   @PostMapping("/chapitre/{chapitreId}/soumettre")
+@PreAuthorize("hasRole('ETUDIANT')")
+public ResponseEntity<ResultatTestDto> soumettreTest(
+        @PathVariable Long chapitreId,
+        @RequestBody Map<String, Object> reponses,
+        @AuthenticationPrincipal UserPrincipal userPrincipal) { // Injection directe
 
-        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-        Long utilisateurId = userPrincipal.getId();
-        ResultatTestDto resultat = testService.calculerEtSauvegarderResultat(chapitreId, utilisateurId, reponses);
-        return ResponseEntity.ok(resultat);
-    }
+    ResultatTestDto resultat = testService.calculerEtSauvegarderResultat(
+            chapitreId, 
+            userPrincipal.getId(), 
+            reponses
+    );
+    return ResponseEntity.ok(resultat);
+}
+
 
     @GetMapping("/mon-historique")
     @PreAuthorize("isAuthenticated()")
@@ -84,4 +92,20 @@ public class TestController {
         Test nouveauTest = testService.creerTestAvecQuestions(request.chapitreId, request.titre, request.questionIds);
         return new ResponseEntity<>(nouveauTest, HttpStatus.CREATED);
     }
+    // 1. Pour lister les questionnaires disponibles pour un chapitre
+@GetMapping("/chapitre/{chapitreId}/choix-questionnaires")
+@PreAuthorize("hasAnyRole('ENSEIGNANT', 'ADMIN')")
+public ResponseEntity<List<QuestionnaireDetailDto>> getChoixQuestionnaires(@PathVariable Long chapitreId) {
+    List<QuestionnaireDetailDto> choix = questionnaireService.getQuestionnairesParChapitre(chapitreId);
+    return ResponseEntity.ok(choix);
+}
+
+// 2. Pour assigner le questionnaire choisi au test du chapitre
+@PostMapping("/chapitre/{chapitreId}/assigner/{questionnaireId}")
+@PreAuthorize("hasAnyRole('ENSEIGNANT', 'ADMIN')")
+public ResponseEntity<Test> assignerTest(@PathVariable Long chapitreId, @PathVariable Long questionnaireId) {
+    Test test = testService.assignerQuestionnaireAuTest(chapitreId, questionnaireId);
+    return ResponseEntity.ok(test);
+}
+
 }

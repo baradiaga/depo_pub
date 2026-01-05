@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Departement } from '../models/departement.model';
-
+import { environment } from '../../environments/environment';
 export interface DepartementSearchParams {
   search?: string;
   uefrId?: number;
@@ -25,7 +25,7 @@ export interface DepartementSearchResult {
 })
 export class DepartementService {
   
-  private apiUrl = 'http://localhost:8080/api/departements';
+  private apiUrl = `${environment.apiUrl}/departements`;
 
   constructor(private http: HttpClient) {}
 

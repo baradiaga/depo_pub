@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import java.util.List;
 
 import java.util.Optional;
 
@@ -26,4 +27,7 @@ public interface QuestionnaireRepository extends JpaRepository<Questionnaire, Lo
            "LEFT JOIN FETCH quest.reponses " +  // Si vous avez besoin des réponses
            "WHERE q.id = :id")
     Optional<Questionnaire> findByIdWithQuestionsAndReponses(@Param("id") Long id);
+    // À ajouter dans QuestionnaireRepository
+List<Questionnaire> findByChapitreId(Long chapitreId);
+
 }

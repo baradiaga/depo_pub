@@ -3,7 +3,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-
+import { environment } from '../../environments/environment';
 // Nouvelle interface qui correspond au DTO du backend
 export interface MatiereInscrite {
   id: number;
@@ -17,7 +17,8 @@ export interface MatiereInscrite {
 
 @Injectable({ providedIn: 'root' } )
 export class ProgressionService {
-  private apiUrl = 'http://localhost:8080/api/users/mes-inscriptions';
+ // private apiUrl = 'http://localhost:8080/api/users/mes-inscriptions';
+  private apiUrl =  `${environment.apiUrl}/users/mes-inscriptions`;
 
   constructor(private http: HttpClient ) { }
 

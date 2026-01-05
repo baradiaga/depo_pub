@@ -19,7 +19,8 @@ public class Questionnaire {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false)
-    private TypeQuestionnaire type;
+    private TypeQuestionnaire type = TypeQuestionnaire.TEST;
+     
 
     private String matiere;
     private int duree;

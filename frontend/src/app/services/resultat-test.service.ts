@@ -3,7 +3,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-
+import { environment } from '../../environments/environment';
 /** 
  * Ce service est dédié à la soumission des réponses et à la gestion des scores.
  * En 2025, nous utilisons le point d'entrée unique défini dans le backend : /api/tests
@@ -14,7 +14,8 @@ import { Observable } from 'rxjs';
 export class ResultatTestService {
 
   // CORRECTION : L'URL doit correspondre au @RequestMapping("/api/tests") de votre TestController.java
-  private apiUrl = 'http://localhost:8080/api/tests';
+  // private apiUrl = 'http://localhost:8080/api/tests';
+  private apiUrl =  `${environment.apiUrl}/tests`;
 
   constructor(private http: HttpClient) { }
 
