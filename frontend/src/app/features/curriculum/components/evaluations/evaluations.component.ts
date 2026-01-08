@@ -10,28 +10,22 @@ import { ElementConstitutifResponse } from '../../../../models/models';
   styleUrls: ['./evaluations.component.css']
 })
 export class EvaluationsComponent implements OnInit, OnDestroy {
-  // --- Données et Listes ---
   matieres: ElementConstitutifResponse[] = [];
   matiereSelectionnee: ElementConstitutifResponse | null = null;
   exercices: any[] = [];
   quizs: any[] = [];
-  tests: any[] = [];
-
-  // --- États de l'interface ---
   loading = false;
   vue: 'MATIERES' | 'EVALUATIONS' | 'LECTEUR' | 'RESULTAT' = 'MATIERES';
   questionnaireEnCours: QuestionnaireDetail | null = null;
   reponsesUtilisateur: Map<number, any> = new Map();
   resultatFinal: any = null;
-
-  // --- Chronomètre ---
   tempsRestant: number = 0;
   timerInterval: any;
 
   constructor(
     private ecService: ElementConstitutifService,
     private questionnaireService: QuestionnaireService,
-    private resultatService: ResultatTestService // Injection du service corrigé
+    private resultatService: ResultatTestService 
   ) {}
 
   ngOnInit(): void {
@@ -41,10 +35,6 @@ export class EvaluationsComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     if (this.timerInterval) clearInterval(this.timerInterval);
   }
-
-  // ====================================================================
-  // === NAVIGATION ET CHARGEMENT                                     ===
-  // ====================================================================
 
   chargerMatieres(): void {
     this.loading = true;
@@ -61,16 +51,12 @@ export class EvaluationsComponent implements OnInit, OnDestroy {
     if (!matiere.id) return;
     this.matiereSelectionnee = matiere;
     this.loading = true;
-
     this.questionnaireService.getQuestionnaires().subscribe({
       next: (all) => {
         const idsChap = (matiere.chapitres || []).map(c => c.id).filter(id => id !== undefined);
         const duContexte = all.filter(q => q.matiereId === matiere.id || (q.chapitreId && idsChap.includes(q.chapitreId)));
-
         this.exercices = duContexte.filter(q => q.type.toUpperCase() === 'EXERCICE');
         this.quizs = duContexte.filter(q => q.type.toUpperCase() === 'QUIZ');
-        this.tests = duContexte.filter(q => q.type.toUpperCase() === 'TEST');
-
         this.vue = 'EVALUATIONS';
         this.loading = false;
       },
@@ -83,17 +69,12 @@ export class EvaluationsComponent implements OnInit, OnDestroy {
       this.questionnaireEnCours = data;
       this.reponsesUtilisateur.clear();
       this.vue = 'LECTEUR';
-      
       if (data.duree > 0) {
         this.tempsRestant = data.duree * 60;
         this.demarrerTimer();
       }
     });
   }
-
-  // ====================================================================
-  // === GESTION DES RÉPONSES                                         ===
-  // ====================================================================
 
   choisirReponse(questionId: number, reponseId: number): void {
     this.reponsesUtilisateur.set(questionId, reponseId);
@@ -106,7 +87,6 @@ export class EvaluationsComponent implements OnInit, OnDestroy {
   choisirReponseMultiple(questionId: number, reponseId: number, event: any): void {
     let current = this.reponsesUtilisateur.get(questionId) || [];
     if (!Array.isArray(current)) current = [];
-
     if (event.target.checked) {
       current.push(reponseId);
     } else {
@@ -119,51 +99,30 @@ export class EvaluationsComponent implements OnInit, OnDestroy {
     this.reponsesUtilisateur.set(questionId, event.target.value);
   }
 
-  // ====================================================================
-  // === VALIDATION ET SOUMISSION (CORRECTIF 404 APPLIQUÉ)            ===
-  // ====================================================================
-
   soumettre(): void {
     if (!this.questionnaireEnCours || this.loading) return;
     if (this.timerInterval) clearInterval(this.timerInterval);
 
     this.loading = true;
-
-    // Transformation des réponses pour le backend
     const reponsesFinales = Object.fromEntries(this.reponsesUtilisateur);
+    const qId = this.questionnaireEnCours.id;
 
-    // RÉCUPÉRATION DE L'ID DU CHAPITRE (Indispensable pour l'URL)
-    const chapitreId = this.questionnaireEnCours.chapitreId;
-
-    if (!chapitreId) {
-      console.error("Erreur : Impossible de soumettre, chapitreId manquant.");
-      this.loading = false;
-      return;
-    }
-
-    // Appel au service corrigé qui utilise /api/tests/chapitre/{id}/soumettre
-    this.resultatService.soumettreResultat(chapitreId, reponsesFinales).subscribe({
-      next: (res) => {
+    this.resultatService.verifierEntrainement(qId, reponsesFinales).subscribe({
+      next: (res: any) => {
         this.resultatFinal = res;
         this.vue = 'RESULTAT';
         this.loading = false;
       },
-      error: (err) => {
-        // C'est ici que l'erreur 404 disparaît
-        console.error("Erreur lors de la soumission", err);
-        alert("Une erreur est survenue lors de la validation du test.");
+      error: (err: any) => {
+        console.error("Erreur validation", err);
         this.loading = false;
       }
     });
   }
 
-  // ====================================================================
-  // === UTILITAIRES ET NAVIGATION                                    ===
-  // ====================================================================
-
   retour(): void {
     if (this.vue === 'LECTEUR') {
-      if (confirm("🚨 Quitter l'évaluation ? Votre progression sera perdue.")) {
+      if (confirm("🚨 Quitter l'exercice ?")) {
         if (this.timerInterval) clearInterval(this.timerInterval);
         this.vue = 'EVALUATIONS';
       }
@@ -182,7 +141,6 @@ export class EvaluationsComponent implements OnInit, OnDestroy {
         this.tempsRestant--;
       } else {
         clearInterval(this.timerInterval);
-        alert("Temps écoulé ! L'évaluation va être soumise.");
         this.soumettre();
       }
     }, 1000);

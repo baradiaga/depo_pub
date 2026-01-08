@@ -118,6 +118,11 @@ export class AuthService {
         return '/app/admin';
       case 'ENSEIGNANT':
         return '/app/enseignant/dashboard';
+      case 'TUTEUR': 
+        return '/app/tuteur/dashboard';
+        case 'TECHNOPEDAGOGUE': 
+        return '/app/TECHNOPEDAGOGUE/dashboard';
+        
       default:
         return '/auth/login'; // Sécurité pour les rôles inconnus
     }

@@ -1,6 +1,7 @@
 package com.moscepa.repository;
 
 import com.moscepa.entity.Questionnaire;
+import com.moscepa.entity.TypeQuestionnaire;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -29,5 +30,6 @@ public interface QuestionnaireRepository extends JpaRepository<Questionnaire, Lo
     Optional<Questionnaire> findByIdWithQuestionsAndReponses(@Param("id") Long id);
     // À ajouter dans QuestionnaireRepository
 List<Questionnaire> findByChapitreId(Long chapitreId);
-
+  // Ajoutez cette ligne pour permettre le filtrage par type (EXERCICE, TEST, etc.)
+    List<Questionnaire> findByType(TypeQuestionnaire type);
 }

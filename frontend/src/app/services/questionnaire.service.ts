@@ -189,4 +189,7 @@ sauvegarderQuestionnaire(questionnaire: QuestionnairePayload): Observable<void> 
       } : null
     });
   }
-}
+  getExercicesOnly(): Observable<QuestionnaireDetail[]> {
+  // L'URL doit correspondre à votre nouveau endpoint backend
+  return this.http.get<QuestionnaireDetail[]>(`${this.apiUrl}/exercices`);
+}}

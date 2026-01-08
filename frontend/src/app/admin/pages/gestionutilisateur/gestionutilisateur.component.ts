@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { UserService, Utilisateur } from '../../../core/services/user.service'; // adapte le chemin
+import { UserService, Utilisateur, UserRole } from '../../../core/services/user.service';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-gestionutilisateur',
@@ -7,67 +9,106 @@ import { UserService, Utilisateur } from '../../../core/services/user.service'; 
   styleUrls: ['./gestionutilisateur.component.css']
 })
 export class GestionutilisateurComponent implements OnInit {
+  // UI States
   afficherFormulaireUtilisateur = false;
-  afficherListeUtilisateurs = true;
-
-  rolesDisponibles = ['ADMIN', 'ETUDIANT', 'ENSEIGNANT', 'TUTEUR', 'TECHNOPEDAGOGUE', 'RESPONSABLE_FORMATION'];
-
-  nouvelUtilisateur: Utilisateur = {
-    nom: '',
-    prenom: '',
-    email: '',
-    motDePasse: '',
-    role: ''
-  };
-
+  isLoading = false;
+  searchQuery = new Subject<string>();
+  
+  // Data
   utilisateurs: Utilisateur[] = [];
+  stats: any = null;
+  rolesDisponibles = Object.values(UserRole);
+
+  nouvelUtilisateur: Utilisateur = this.resetUser();
 
   constructor(private userService: UserService) {}
 
   ngOnInit(): void {
     this.chargerUtilisateurs();
+    this.chargerStats();
+    this.initSearch();
   }
 
-  // Charger les utilisateurs depuis le backend
+  // --- LOGIQUE DE DONNÉES ---
+
   chargerUtilisateurs(): void {
+    this.isLoading = true;
     this.userService.getUsers().subscribe({
-      next: (data) => this.utilisateurs = data,
-      error: (err) => console.error('Erreur lors du chargement des utilisateurs', err)
+      next: (data) => {
+        this.utilisateurs = data;
+        this.isLoading = false;
+      },
+      error: (err) => this.handleError('Erreur chargement', err)
     });
   }
 
-  // Ajouter un utilisateur
+  chargerStats(): void {
+    this.userService.getStats().subscribe(s => this.stats = s);
+  }
+
+  private initSearch(): void {
+    this.searchQuery.pipe(
+      debounceTime(400), // Attendre 400ms après la frappe
+      distinctUntilChanged(),
+      switchMap(query => this.userService.searchUsers(query))
+    ).subscribe(results => this.utilisateurs = results);
+  }
+
+  // --- ACTIONS ---
+
   ajouterUtilisateur(): void {
     this.userService.addUser(this.nouvelUtilisateur).subscribe({
-      next: (user) => {
-        this.utilisateurs.push(user);
-        this.nouvelUtilisateur = { nom: '', prenom: '', email: '', motDePasse: '', role: '' };
+      next: (res) => {
+        // Le backend renvoie { message: "...", user: ... }
+        this.utilisateurs.unshift(res.user); 
+        this.nouvelUtilisateur = this.resetUser();
         this.afficherFormulaireUtilisateur = false;
+        this.chargerStats(); // Mettre à jour les compteurs
       },
-      error: (err) => console.error('Erreur lors de l’ajout', err)
+      error: (err) => this.handleError('Erreur création', err)
     });
   }
 
-  // Modifier un utilisateur
-  modifierUtilisateur(user: Utilisateur): void {
-    if (!user.id) return; // id requis pour update
-    this.userService.updateUser(user.id, user).subscribe({
-      next: () => console.log('Utilisateur modifié', user.email),
-      error: (err) => console.error('Erreur lors de la modification', err)
-    });
-  }
-
-  // Supprimer un utilisateur
-  supprimerUtilisateur(user: Utilisateur): void {
+  toggleStatus(user: Utilisateur): void {
     if (!user.id) return;
-    this.userService.deleteUser(user.id).subscribe({
-      next: () => this.utilisateurs = this.utilisateurs.filter(u => u.id !== user.id),
-      error: (err) => console.error('Erreur lors de la suppression', err)
+    const action = user.enabled ? 
+      this.userService.deactivateUser(user.id) : 
+      this.userService.activateUser(user.id);
+
+    action.subscribe({
+      next: () => {
+        user.enabled = !user.enabled;
+        this.chargerStats();
+      },
+      error: (err) => this.handleError('Erreur statut', err)
     });
   }
 
-  // Modifier uniquement le rôle
-  modifierRoleUtilisateur(user: Utilisateur): void {
-    this.modifierUtilisateur(user);
+  supprimerUtilisateur(id: number): void {
+    if (confirm('Supprimer définitivement cet utilisateur ?')) {
+      this.userService.deleteUser(id).subscribe({
+        next: () => {
+          this.utilisateurs = this.utilisateurs.filter(u => u.id !== id);
+          this.chargerStats();
+        }
+      });
+    }
+  }
+
+  // --- HELPERS ---
+
+  private resetUser(): Utilisateur {
+    return { nom: '', prenom: '', email: '', motDePasse: '', role: UserRole.ETUDIANT };
+  }
+
+  private handleError(message: string, err: any) {
+    this.isLoading = false;
+    console.error(message, err);
+    alert(err.error?.message || "Une erreur est survenue");
+  }
+
+  onSearch(event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    this.searchQuery.next(value);
   }
 }

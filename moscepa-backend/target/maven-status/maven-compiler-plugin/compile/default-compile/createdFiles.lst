@@ -6,6 +6,7 @@ com\moscepa\repository\RessourcePedagogiqueRepository.class
 com\moscepa\repository\ParcoursRepository.class
 com\moscepa\dto\EtudiantDto.class
 com\moscepa\repository\TestRepository.class
+com\moscepa\service\TuteurService.class
 com\moscepa\dto\StudentJourneyFrontDto.class
 com\moscepa\entity\Parcours.class
 com\moscepa\service\FonctionnaliteService.class
@@ -169,6 +170,7 @@ com\moscepa\dto\GenerationRequestDto.class
 com\moscepa\security\UserDetailsServiceImpl.class
 com\moscepa\controller\BanqueQuestionController.class
 com\moscepa\controller\QuestionnaireController.class
+com\moscepa\controller\TuteurController.class
 com\moscepa\MoscepaBackendApplication.class
 com\moscepa\entity\HistoriqueModification.class
 com\moscepa\dto\BanqueQuestionDetailDto.class

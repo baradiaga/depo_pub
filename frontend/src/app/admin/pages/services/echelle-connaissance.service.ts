@@ -3,7 +3,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-
+import { environment } from '../../../../environments/environment';
 // Définition de l'interface pour le frontend
 export interface EchelleConnaissance {
   id?: number; // Optionnel pour la création
@@ -16,7 +16,7 @@ export interface EchelleConnaissance {
   providedIn: 'root'
 } )
 export class EchelleConnaissanceService {
-  private apiUrl = 'http://localhost:8080/api/echelles-connaissance'; // Assurez-vous que le port 8080 est correct
+  private apiUrl = `${environment.apiUrl}/echelles-connaissance`; // Assurez-vous que le port 8080 est correct
 
   constructor(private http: HttpClient ) { }
 

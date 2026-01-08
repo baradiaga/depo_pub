@@ -107,5 +107,13 @@ public ResponseEntity<Test> assignerTest(@PathVariable Long chapitreId, @PathVar
     Test test = testService.assignerQuestionnaireAuTest(chapitreId, questionnaireId);
     return ResponseEntity.ok(test);
 }
+@PostMapping("/questionnaire/{questionnaireId}/entrainement")
+@PreAuthorize("isAuthenticated()")
+public ResponseEntity<ResultatTestDto> verifierEntrainement(
+        @PathVariable Long questionnaireId,
+        @RequestBody Map<String, Object> reponses) {
+    return ResponseEntity.ok(testService.calculerResultatEntrainement(questionnaireId, reponses));
+}
+
 
 }

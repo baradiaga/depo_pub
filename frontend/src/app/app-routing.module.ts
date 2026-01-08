@@ -27,21 +27,21 @@ const routes: Routes = [
         path: 'admin',
         loadChildren: () => import('./admin/admin.module').then(m => m.AdminModule),
         canActivate: [AuthGuard], // Double sécurité pour la section admin
-        data: { roles: ['ADMIN', 'RESPONSABLE_FORMATION','ENSEIGNANT'] }
+        data: { roles: ['ADMIN', 'RESPONSABLE_FORMATION','ENSEIGNANT','TECHNOPEDAGOGUE'] }
       },
       // Dans app-routing.module.ts, dans les children de la route '/app'
 {
   path: 'student',
   loadChildren: () => import('./features/student/student.module').then(m => m.StudentModule),
   canActivate: [AuthGuard],
-  data: { roles: ['ETUDIANT', 'ADMIN'] } // L'admin peut aussi voir les pages étudiant
+  data: { roles: ['ETUDIANT', 'ADMIN','TUTEUR'] } // L'admin peut aussi voir les pages étudiant
 },
 
       {
         path: 'enseignant',
         loadChildren: () => import('./features/enseignant/enseignant.module').then(m => m.EnseignantModule),
         canActivate: [AuthGuard],
-        data: { roles: ['ENSEIGNANT', 'ADMIN'] }
+        data: { roles: ['ENSEIGNANT', 'ADMIN','TUTEUR','TECHNOPEDAGOGUE'] }
       },
       {
         path: 'tuteur',
@@ -53,7 +53,7 @@ const routes: Routes = [
         path: 'technopedagogue',
         loadChildren: () => import('./features/technopedagogue/technopedagogue.module').then(m => m.TechnopedagogueModule),
         canActivate: [AuthGuard],
-        data: { roles: ['TECHNOPEDAGOGUE'] }
+        data: { roles: ['TECHNOPEDAGOGUE','TUTEUR'] }
       },
       {
         path: 'curriculum', // <-- LA ROUTE QUI NOUS INTÉRESSE

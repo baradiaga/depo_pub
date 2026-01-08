@@ -3,7 +3,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-
+import { environment } from '../../../../environments/environment';
 // DTOs pour le frontend
 export interface FonctionnaliteDTO {
   id: number;
@@ -32,9 +32,9 @@ export interface RolePermissionsMap {
   providedIn: 'root'
 })
 export class PermissionsService {
-  private apiUrl = 'http://localhost:8080/api/permissions';
-  private fonctionnalitesUrl = 'http://localhost:8080/api/fonctionnalites';
-  private rolesUrl = 'http://localhost:8080/api/admin/roles'; 
+  private apiUrl = `${environment.apiUrl}/permissions`;
+  private fonctionnalitesUrl = `${environment.apiUrl}/fonctionnalites`;
+  private rolesUrl = `${environment.apiUrl}/admin/roles`; 
 
   constructor(private http: HttpClient ) { }
 

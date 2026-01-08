@@ -1,0 +1,76 @@
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+    <h2 class="text-primary fw-bold">
+      <i class="bi bi-mortarboard-fill me-2"></i>Espace Tuteur : Exercices
+    </h2>
+    <span class="badge bg-primary rounded-pill p-2 px-3">
+      {{ questionnaires.length }} exercices en bibliothèque
+    </span>
+  </div>
+
+  <div class="row">
+    <!-- SECTION ACTION : PROMOTION EN TEST -->
+    <div class="col-lg-5 mb-4">
+      <div class="card shadow-sm border-0 bg-light">
+        <div class="card-body">
+          <h5 class="card-title text-success mb-3">Promouvoir un Exercice</h5>
+          <p class="small text-muted">Transformez un exercice existant en évaluation officielle pour vos étudiants.</p>
+          
+          <div class="mb-3">
+            <select class="form-select" [(ngModel)]="selectedQId">
+              <option [ngValue]="null">-- Choisir un exercice --</option>
+              <option *ngFor="let q of questionnaires" [value]="q.id">
+                {{ q.titre }} ({{ q.questions.length }} questions)
+              </option>
+            </select>
+          </div>
+
+          <button class="btn btn-success w-100 fw-bold" 
+                  [disabled]="!selectedQId || isProcessing"
+                  (click)="onTransformerEnTest()">
+            <span *ngIf="!isProcessing"><i class="bi bi-check-circle me-1"></i> Valider la Transformation</span>
+            <span *ngIf="isProcessing" class="spinner-border spinner-border-sm"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION LISTE : GESTION DE LA BIBLIOTHÈQUE -->
+    <div class="col-lg-7">
+      <div class="card shadow-sm border-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-dark">
+              <tr>
+                <th>Titre</th>
+                <th class="text-center">Questions</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let q of questionnaires">
+                <td>
+                  <div class="fw-bold">{{ q.titre }}</div>
+                  <small class="text-muted">{{ q.nomChapitre || 'Chapitre libre' }}</small>
+                </td>
+                <td class="text-center">
+                  <span class="badge bg-secondary">{{ q.questions.length }}</span>
+                </td>
+                <td class="text-end">
+                  <button class="btn btn-sm btn-outline-danger" (click)="onSupprimer(q.id)">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="questionnaires.length === 0 && !isProcessing">
+                <td colspan="3" class="text-center py-5 text-muted italic">
+                  Aucun exercice disponible pour le moment.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

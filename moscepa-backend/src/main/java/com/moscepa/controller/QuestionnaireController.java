@@ -1,6 +1,8 @@
 package com.moscepa.controller;
 
 import com.moscepa.dto.QuestionnaireDetailDto;
+import com.moscepa.entity.Questionnaire;
+import com.moscepa.entity.TypeQuestionnaire;
 import com.moscepa.dto.GenerationRequestDto;
 import com.moscepa.service.QuestionnaireService;
 import org.slf4j.Logger;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/questionnaires")
@@ -31,7 +34,12 @@ public class QuestionnaireController {
         logger.info("📤 Retourne {} questionnaires", questionnaires.size());
         return ResponseEntity.ok(questionnaires);
     }
-
+@GetMapping("/exercices")
+    public ResponseEntity<List<QuestionnaireDetailDto>> getExercices() {
+        logger.info("📥 GET /api/questionnaires/exercices");
+        List<QuestionnaireDetailDto> exercices = questionnaireService.getExercicesOnly();
+        return ResponseEntity.ok(exercices);
+    }
     // --- Récupérer un questionnaire par son ID avec ses questions ---
     @GetMapping("/{id}")
     public ResponseEntity<QuestionnaireDetailDto> getQuestionnaireById(@PathVariable Long id) {
@@ -100,4 +108,7 @@ public class QuestionnaireController {
             return ResponseEntity.notFound().build();
         }
     }
+
+
+   
 }

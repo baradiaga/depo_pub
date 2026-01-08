@@ -1,0 +1,83 @@
+<div class="container py-4" *ngIf="student">
+  <!-- Header : Actions de Gestion -->
+  <div class="card mb-4 border-0 bg-light shadow-sm">
+    <div class="card-body d-flex justify-content-between align-items-center">
+      <div>
+        <h1 class="h3 mb-1">{{ student.nomComplet }}</h1>
+        <p class="text-muted mb-0">ID Apprenant: #{{ student.studentId }}</p>
+      </div>
+      
+      <div class="text-end">
+        <label class="form-label small fw-bold">Modifier la stratégie pédagogique</label>
+        <select class="form-select" [value]="student.parcoursType" (change)="changerParcours($event)" [disabled]="isUpdating">
+          <option *ngFor="let type of types" [value]="type">{{ type }}</option>
+        </select>
+        <small *ngIf="isUpdating" class="text-primary">Mise à jour...</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Détails des notes par chapitre -->
+    <div class="col-lg-8">
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+          <h5 class="mb-0">Détails de la Maîtrise</h5>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Chapitre</th>
+                <th>Historique des notes</th>
+                <th>Statut</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let cours of student.progressionParCours">
+                <td>{{ cours.courseName }}</td>
+                <td>
+                  <div class="d-flex gap-1">
+                    <span *ngFor="let note of cours.notesDetaillees" 
+                          class="badge" 
+                          [ngClass]="note >= 50 ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'">
+                      {{ note }}%
+                    </span>
+                  </div>
+                </td>
+                <td>
+                  <span class="badge rounded-pill" [ngClass]="{
+                    'bg-danger': cours.statutRecommandation === 'Faible',
+                    'bg-warning text-dark': cours.statutRecommandation === 'Moyen',
+                    'bg-success': cours.statutRecommandation === 'Bonne maîtrise'
+                  }">{{ cours.statutRecommandation }}</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar : Audit des activités (Logs) -->
+    <div class="col-lg-4">
+      <div class="card shadow-sm">
+        <div class="card-header bg-white">
+          <h5 class="mb-0">Dernières Activités</h5>
+        </div>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item py-3" *ngFor="let test of testHistory">
+            <div class="d-flex justify-content-between mb-1">
+              <span class="fw-bold">Test Chapitre #{{ test.chapitreId }}</span>
+              <small class="text-muted">{{ test.dateSoumission | date:'short' }}</small>
+            </div>
+            <p class="small mb-0">Score final: <strong>{{ test.scoreObtenu }}/{{ test.totalPointsPossible }}</strong></p>
+          </li>
+          <li *ngIf="testHistory.length === 0" class="list-group-item text-center py-4 text-muted">
+            Aucun test passé récemment.
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

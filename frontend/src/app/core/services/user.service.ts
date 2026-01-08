@@ -1,47 +1,68 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
-type RoleType = 'ADMIN' | 'ETUDIANT' | 'ENSEIGNANT' | 'TUTEUR' | 'TECHNOPEDAGOGUE' | 'RESPONSABLE_FORMATION' | '';
- export interface Utilisateur {
-  id?: string;
+// Utilisation d'une Enum pour plus de sécurité sur les rôles
+export enum UserRole {
+  ADMIN = 'ADMIN',
+  ETUDIANT = 'ETUDIANT',
+  ENSEIGNANT = 'ENSEIGNANT',
+  TUTEUR = 'TUTEUR',
+  TECHNOPEDAGOGUE = 'TECHNOPEDAGOGUE',
+  RESPONSABLE_FORMATION = 'RESPONSABLE_FORMATION'
+}
+
+export interface Utilisateur {
+  id?: number; // Changé en number pour correspondre au Long Java
   nom: string;
   prenom: string;
   email: string;
-  motDePasse: string;
-  role: RoleType;
+  motDePasse?: string; // Optionnel car non renvoyé par UserResponseDto
+  role: UserRole;
+  enabled?: boolean; // Correspond à l'état actif/inactif
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
-  private apiUrl = 'http://localhost:8080/api/admin/users'; // adapte selon ton backend
+  private apiUrl = `${environment.apiUrl}/admin/users`;
 
   constructor(private http: HttpClient) {}
 
-  // Ajouter un utilisateur
-  addUser(user: Utilisateur): Observable<Utilisateur> {
-    return this.http.post<Utilisateur>(this.apiUrl, user);
-  }
-
-  // Modifier un utilisateur
-  updateUser(id: string, user: Partial<Utilisateur>): Observable<Utilisateur> {
-    return this.http.put<Utilisateur>(`${this.apiUrl}/${id}`, user);
-  }
-
-  // Supprimer un utilisateur
-  deleteUser(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
-  }
-
-  // Lister tous les utilisateurs
   getUsers(): Observable<Utilisateur[]> {
     return this.http.get<Utilisateur[]>(this.apiUrl);
   }
 
-  // Récupérer un utilisateur par ID
-  getUserById(id: string): Observable<Utilisateur> {
-    return this.http.get<Utilisateur>(`${this.apiUrl}/${id}`);
+  addUser(user: Utilisateur): Observable<any> {
+    return this.http.post<any>(this.apiUrl, user);
+  }
+
+  updateUser(id: number, user: Utilisateur): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/${id}`, user);
+  }
+
+  deleteUser(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  // --- Nouvelles méthodes basées sur votre Controller Java ---
+
+  activateUser(id: number): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/${id}/activate`, {});
+  }
+
+  deactivateUser(id: number): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/${id}/deactivate`, {});
+  }
+
+  searchUsers(query: string): Observable<Utilisateur[]> {
+    const params = new HttpParams().set('q', query);
+    return this.http.get<Utilisateur[]>(`${this.apiUrl}/search`, { params });
+  }
+
+  getStats(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/stats`);
   }
 }

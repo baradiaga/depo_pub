@@ -58,6 +58,33 @@ export class DashboardComponent implements OnInit {
         { title: 'Parcours', description: 'Organiser les parcours', icon: '🗺️', route: '/enseignant/parcours' },
         { title: 'Évaluations', description: 'Gérer les tests et notes', icon: '📊', route: '/enseignant/tests' },
       ],
+
+      // Extrait de getCardsByRole dans ton DashboardComponent
+TUTEUR: [
+  { 
+    title: 'Suivi des Étudiants', 
+    description: 'Visualiser les parcours et la progression des élèves', 
+    icon: '👨‍🎓', 
+    // Redirige vers StudentListComponent
+    route: '/app/tuteur/listeetudiant' 
+  },
+  { 
+    title: 'Gestion des Parcours', 
+    description: 'Définir le type de parcours (Choisi, Recommandé, Mixte)', 
+    icon: '🗺️', 
+    // Redirige vers la liste (le tuteur choisit l'élève puis change son parcours)
+    route: '/app/tuteur/student/:id' 
+  },
+  { 
+    title: 'Banque d\'Évaluations', 
+    description: 'Transformer vos questionnaires en tests interactifs', 
+    icon: '📝', 
+    // Redirige vers TestManagerComponent
+    route: '/app/tuteur/tests' 
+  }
+]
+,
+
       ETUDIANT: [] // pas de cartes
     };
 

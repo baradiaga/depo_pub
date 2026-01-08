@@ -1,11 +1,11 @@
 <div class="eval-container">
   
-  <!-- HEADER DE NAVIGATION (Visible uniquement hors test) -->
-  <div class="header-nav" *ngIf="vue !== 'LECTEUR'">
+  <!-- HEADER DE NAVIGATION -->
+  <div class="header-nav" *ngIf="vue !== 'LECTEUR' && vue !== 'RESULTAT'">
     <button *ngIf="vue !== 'MATIERES'" class="btn-back" (click)="retour()">
       <i class="pi pi-arrow-left"></i> Retour
     </button>
-    <h4 class="page-title">Centre d'Évaluation</h4>
+    <h4 class="page-title">Espace d'Entraînement</h4>
   </div>
 
   <!-- ÉTAT DE CHARGEMENT -->
@@ -16,7 +16,7 @@
 
   <!-- VUE 1 : SÉLECTION DE LA MATIÈRE -->
   <div class="view-step" *ngIf="vue === 'MATIERES' && !loading">
-    <p class="step-instruction">Choisissez un enseignement pour voir les tests disponibles :</p>
+    <p class="step-instruction">Choisissez une matière pour vous exercer :</p>
     <div class="matiere-grid">
       <div class="matiere-item" *ngFor="let m of matieres" (click)="choisirMatiere(m)">
         <div class="icon">📚</div>
@@ -29,11 +29,11 @@
     </div>
   </div>
 
-  <!-- VUE 2 : LISTE DES ÉVALUATIONS FILTRÉES -->
+  <!-- VUE 2 : LISTE DES ÉVALUATIONS (EXERCICES & QUIZ UNIQUEMENT) -->
   <div class="view-step" *ngIf="vue === 'EVALUATIONS' && !loading">
     <div class="matiere-header-info">
       <h5>{{ matiereSelectionnee?.nom }}</h5>
-      <p>Sélectionnez l'activité que vous souhaitez démarrer.</p>
+      <p>Sélectionnez une activité pour tester vos connaissances.</p>
     </div>
 
     <div class="groups-container">
@@ -51,37 +51,35 @@
         <p class="group-label quiz">🧠 Quiz de connaissances</p>
         <div class="eval-card-item quiz" *ngFor="let q of quizs" (click)="lancerEvaluation(q.id)">
           <span class="card-title">{{ q.titre }}</span>
-        </div>
-      </div>
-
-      <!-- Section TESTS -->
-      <div class="group-box" *ngIf="tests.length > 0">
-        <p class="group-label test">🏆 Tests de niveau</p>
-        <div class="eval-card-item test" *ngFor="let t of tests" (click)="lancerEvaluation(t.id)">
-          <span class="card-title">{{ t.titre }}</span>
+          <span class="card-meta">Chronométré</span>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- VUE 3 : LECTEUR DE TEST (CORRIGÉ) -->
+  <!-- VUE 3 : LECTEUR DE QUESTIONS -->
   <div class="player-view" *ngIf="vue === 'LECTEUR' && questionnaireEnCours">
     <div class="player-header">
-      <button class="btn-exit" (click)="retour()">✕ Quitter le test</button>
+      <button class="btn-exit" (click)="retour()">✕ Quitter</button>
       <div class="test-info">
         <h5>{{ questionnaireEnCours.titre }}</h5>
         <div class="timer" *ngIf="tempsRestant > 0">⏱️ {{ formatTemps() }}</div>
       </div>
     </div>
 
+    <!-- ZONE DE DEBUG : S'affiche si aucune question n'est rendue -->
+    <div *ngIf="!questionnaireEnCours.questions || questionnaireEnCours.questions.length === 0" class="alert-debug">
+        ⚠️ Aucune question trouvée dans ce questionnaire.
+    </div>
+
     <div class="questions-scroll-area">
       <div class="q-card-box" *ngFor="let q of questionnaireEnCours.questions; let i = index">
         <p class="q-enonce"><strong>Question {{ i + 1 }} :</strong> {{ q.enonce }}</p>
 
-        <!-- MOTEUR DE RENDU DYNAMIQUE -->
-        <div [ngSwitch]="q.type.toUpperCase()" class="options-wrapper">
+        <!-- RENDU SELON LE TYPE -->
+        <div [ngSwitch]="q.type" class="options-wrapper">
           
-          <!-- CAS : VRAI_FAUX (ALIGNÉ RÉFÉRENT) -->
+          <!-- CAS : VRAI_FAUX -->
           <div *ngSwitchCase="'VRAI_FAUX'" class="vf-layout">
             <label class="vf-btn-label">
               <input type="radio" [name]="'q'+q.id" (change)="choisirReponseVraiFaux(q.id, true)">
@@ -101,7 +99,7 @@
             </label>
           </div>
 
-          <!-- CAS : QCM -->
+          <!-- CAS : QCM (Celui détecté dans votre log) -->
           <div *ngSwitchCase="'QCM'" class="std-options">
             <label *ngFor="let r of q.reponses" class="option-row">
               <input type="checkbox" (change)="choisirReponseMultiple(q.id, r.id, $event)">
@@ -109,11 +107,16 @@
             </label>
           </div>
 
-          <!-- CAS : TEXTE LIBRE (ÉLARGIE) -->
+          <!-- CAS : TEXTE_LIBRE -->
           <div *ngSwitchCase="'TEXTE_LIBRE'" class="text-input-area">
             <textarea class="custom-textarea" 
                       placeholder="Rédigez votre réponse ici..." 
                       (input)="saisirReponseTexte(q.id, $event)"></textarea>
+          </div>
+
+          <!-- FALLBACK SI TYPE INCONNU -->
+          <div *ngSwitchDefault class="debug-type">
+            <p>Type de question non géré : {{ q.type }}</p>
           </div>
 
         </div>
@@ -121,41 +124,31 @@
     </div>
 
     <div class="player-footer">
-      <button class="btn-primary-submit" (click)="soumettre()">Valider et Envoyer mes réponses</button>
+      <button class="btn-primary-submit" (click)="soumettre()">Vérifier mes réponses</button>
     </div>
   </div>
 
-   <!-- VUE 4 : ÉCRAN DE RÉSULTATS (CORRIGÉ POUR 2025) -->
-<!-- VUE 4 : ÉCRAN DE RÉSULTATS (CORRIGÉ 2025) -->
-<div class="result-view-container" *ngIf="vue === 'RESULTAT' && resultatFinal">
-  <div class="result-card">
-    <div class="result-icon">🎯</div>
-    <h2>Test terminé !</h2>
-    
-    <div class="final-score">
-      <!-- Calcul du score en pourcentage -->
-      <div class="circle-progress" *ngIf="resultatFinal.totalPointsPossible > 0">
-        {{ ((resultatFinal.scoreObtenu / resultatFinal.totalPointsPossible) * 100).toFixed(0) }}%
-      </div>
+  <!-- VUE 4 : ÉCRAN DE RÉSULTATS -->
+  <div class="result-view-container" *ngIf="vue === 'RESULTAT' && resultatFinal">
+    <div class="result-card text-center">
+      <div class="result-icon">🎯</div>
+      <h2>Entraînement terminé !</h2>
       
-      <!-- Affichage des points bruts -->
-      <p class="score-detail">
-        Vous avez obtenu <strong>{{ resultatFinal.scoreObtenu }}</strong> 
-        sur <strong>{{ resultatFinal.totalPointsPossible }}</strong> points.
+      <div class="final-score my-4">
+        <div class="display-1 text-primary" *ngIf="resultatFinal.totalPointsPossible > 0">
+          {{ ((resultatFinal.scoreObtenu / resultatFinal.totalPointsPossible) * 100).toFixed(0) }}%
+        </div>
+        <p class="lead">
+          Score : <strong>{{ resultatFinal.scoreObtenu }}</strong> / <strong>{{ resultatFinal.totalPointsPossible }}</strong>
+        </p>
+      </div>
+
+      <p class="text-muted">
+        Vos résultats ont été calculés. Continuez à vous entraîner pour maîtriser ce chapitre !
       </p>
+      
+      <button class="btn btn-primary btn-lg mt-3" (click)="retour()">Retour aux entraînements</button>
     </div>
-
-    <!-- Message de feedback (Note : pas de champ 'message' dans votre DTO, on en met un par défaut) -->
-    <p class="result-msg">
-      Félicitations, vos résultats ont été enregistrés le 
-      {{ resultatFinal.dateSoumission | date:'dd/MM/yyyy à HH:mm' }}.
-    </p>
-    
-    <button class="btn-primary-submit" (click)="retour()">Retour au menu principal</button>
   </div>
-</div>
-
-
-
 
 </div>

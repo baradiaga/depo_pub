@@ -69,6 +69,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 // Définir les routes PUBLIQUES
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/permissions/**").permitAll() 
                 .requestMatchers("/swagger-ui/**", "/api-docs/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/etudiants/inscrire").permitAll()
                 .requestMatchers("/error").permitAll()

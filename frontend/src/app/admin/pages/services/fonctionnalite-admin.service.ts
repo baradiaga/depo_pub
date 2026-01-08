@@ -3,14 +3,14 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, forkJoin } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { Fonctionnalite, SousFonctionnalite, PermissionsMap } from '../../../models/fonctionnalite.model';
-
+import { environment } from '../../../../environments/environment';
 @Injectable({
   providedIn: 'root'
 } )
 export class FonctionnaliteAdminService {
 
-  private readonly featureApiUrl = 'http://localhost:8080/api/fonctionnalites';
-  private readonly permissionApiUrl = 'http://localhost:8080/api/permissions';
+  private readonly featureApiUrl =  `${environment.apiUrl}/fonctionnalites`;
+  private readonly permissionApiUrl = `${environment.apiUrl}/permissions`;
 
   // Sujet pour la liste complète des fonctionnalités (pour le CRUD et l'affichage )
   private fonctionnalitesSubject = new BehaviorSubject<Fonctionnalite[]>([]);

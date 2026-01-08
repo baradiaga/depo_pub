@@ -3,10 +3,10 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Permission } from '../../models/permission.model';
 import { UtilisateurPermission } from '../../models/utilisateur-permission.model';
-
+import { environment } from '../../../environments/environment';
 @Injectable({ providedIn: 'root' })
 export class PermissionService {
-  private apiUrl = 'http://localhost:8080/api/permissions';
+  private apiUrl = `${environment.apiUrl}/permissions`;
 
   constructor(private http: HttpClient) {}
 

@@ -4,7 +4,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
 import { map, shareReplay, tap } from 'rxjs/operators';
-
+import { environment } from '../../../environments/environment';
 import { Fonctionnalite, SousFonctionnalite } from '../../models/fonctionnalite.model';
 
 @Injectable({
@@ -12,8 +12,8 @@ import { Fonctionnalite, SousFonctionnalite } from '../../models/fonctionnalite.
 })
 export class SidebarService {
 
-  private readonly featuresApiUrl = 'http://localhost:8080/api/fonctionnalites';
-  private readonly myPermissionsApiUrl = 'http://localhost:8080/api/permissions/me';
+  private readonly featuresApiUrl = `${environment.apiUrl}/fonctionnalites`;
+  private readonly myPermissionsApiUrl = `${environment.apiUrl}/permissions/me`;
 
   private allFeatures$ = new BehaviorSubject<Fonctionnalite[]>([]);
   private userPermissions$ = new BehaviorSubject<Set<string>>(new Set());

@@ -33,4 +33,13 @@ export class ResultatTestService {
     // On envoie l'objet des réponses au backend via POST
     return this.http.post<any>(url, reponses);
   }
+// src/app/services/resultat-test.service.ts
+
+// resultat-test.service.ts
+verifierEntrainement(questionnaireId: number, reponses: any): Observable<any> {
+  // On change le segment d'URL de 'chapitre' vers 'questionnaire'
+  return this.http.post<any>(`${environment.apiUrl}/tests/questionnaire/${questionnaireId}/entrainement`, reponses);
+}
+
+
 }

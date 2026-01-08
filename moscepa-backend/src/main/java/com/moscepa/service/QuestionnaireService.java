@@ -405,6 +405,18 @@ public List<QuestionnaireDetailDto> getQuestionnairesParChapitre(Long chapitreId
             .collect(Collectors.toList());
 }
 
+// --- Récupérer uniquement les EXERCICES (Pour le Tuteur) ---
+    // ====================================================================
+    @Transactional(readOnly = true)
+    public List<QuestionnaireDetailDto> getExercicesOnly() {
+        logger.info("Service: Récupération de tous les questionnaires de type EXERCICE");
+        
+        // Utilisation du repository avec le filtre sur l'Enum TypeQuestionnaire
+        return questionnaireRepository.findByType(TypeQuestionnaire.EXERCICE).stream()
+                .map(this::convertToDtoWithQuestions)
+                .collect(Collectors.toList());
+    }
 
+   
 
 }

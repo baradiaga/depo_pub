@@ -13,6 +13,7 @@ C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\mo
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\controller\FileUploadController.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\service\UserManagementService.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\entity\Fonctionnalite.java
+C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\controller\TuteurController.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\dto\GenerateurPayload.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\controller\SectionController.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\dto\MatiereStatutDto.java
@@ -216,4 +217,5 @@ C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\mo
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\dto\FormationDetailDto.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\dto\SectionDetailDto.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\entity\BanqueQuestion.java
+C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\service\TuteurService.java
 C:\Users\baradiaga\Roaming\Desktop\depo_pub\moscepa-backend\src\main\java\com\moscepa\dto\ChapitreCreateDto.java

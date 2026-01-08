@@ -1,0 +1,83 @@
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="h4 mb-0">Supervision des Apprenants</h2>
+    <div *ngIf="loading" class="spinner-border spinner-border-sm text-primary"></div>
+  </div>
+
+  <!-- Tableaux de bord (Stats) -->
+  <div class="row g-3 mb-4" *ngIf="!loading">
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm bg-danger-subtle p-3">
+        <span class="text-danger fw-bold small text-uppercase">À Risque</span>
+        <h2 class="mb-0 text-danger">{{ stats.aRisque }}</h2>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm bg-warning-subtle p-3">
+        <span class="text-warning fw-bold small text-uppercase">En Progression</span>
+        <h2 class="mb-0 text-warning">{{ stats.enProgression }}</h2>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm bg-success-subtle p-3">
+        <span class="text-success fw-bold small text-uppercase">Excellent</span>
+        <h2 class="mb-0 text-success">{{ stats.excellent }}</h2>
+      </div>
+    </div>
+  </div>
+
+  <!-- Liste des Apprenants -->
+  <div class="card shadow-sm border-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Apprenant</th>
+            <th>Formation</th>
+            <th>Moyenne</th>
+            <th class="text-center">Dernière Maîtrise</th>
+            <th class="text-end">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let s of students">
+            <td>
+              <div class="fw-bold">{{ s.nomComplet }}</div>
+              <small class="text-muted">{{ s.email }}</small>
+            </td>
+            <td>
+              <span class="badge bg-info-subtle text-info">{{ s.formationActuelle }}</span>
+              <div class="small text-muted">{{ s.parcoursType }}</div>
+            </td>
+            <td>
+               <span class="fw-bold">{{ s.moyenneGeneraleTests || 0 }}%</span>
+               <div class="small text-muted">{{ s.testsPasses }} tests</div>
+            </td>
+            <td class="text-center">
+              <div *ngIf="s.progressionParCours && s.progressionParCours.length > 0; else noStatus">
+                <!-- On affiche le statut du premier chapitre de la liste -->
+                <span class="badge rounded-pill" [ngClass]="{
+                  'bg-danger': s.progressionParCours[0].statutRecommandation === 'Faible',
+                  'bg-warning text-dark': s.progressionParCours[0].statutRecommandation === 'Moyen',
+                  'bg-success': s.progressionParCours[0].statutRecommandation === 'Bonne maîtrise'
+                }">
+                  {{ s.progressionParCours[0].statutRecommandation }}
+                </span>
+              </div>
+              <ng-template #noStatus><span class="text-muted small">Aucune donnée</span></ng-template>
+            </td>
+            <td class="text-end">
+              <button class="btn btn-sm btn-primary px-3" (click)="voirProfil(s.studentId)">Analyser</button>
+            </td>
+          </tr>
+          <!-- Si la liste est vide -->
+          <tr *ngIf="students.length === 0 && !loading">
+            <td colspan="5" class="text-center py-5 text-muted">
+              Aucun apprenant trouvé pour votre session.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

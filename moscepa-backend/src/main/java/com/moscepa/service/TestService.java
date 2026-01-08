@@ -356,6 +356,36 @@ public Test assignerQuestionnaireAuTest(Long chapitreId, Long questionnaireId) {
 
     return testRepository.save(test);
 }
+/**
+ * CORRECTION POUR LE MODE ENTRAÎNEMENT (Exercices/Quiz)
+ * On compare les réponses directement par rapport au Questionnaire
+ */
+public ResultatTestDto calculerResultatEntrainement(Long questionnaireId, Map<String, Object> reponsesUtilisateur) {
+    // On cherche le questionnaire directement (et non le test du chapitre)
+    Questionnaire questionnaire = questionnaireRepository.findById(questionnaireId)
+            .orElseThrow(() -> new EntityNotFoundException("Questionnaire non trouvé ID: " + questionnaireId));
+
+    double scoreObtenu = 0;
+    double totalPoints = 0;
+    int bonnesReponses = 0;
+
+    for (Question question : questionnaire.getQuestions()) {
+        totalPoints += question.getPoints();
+        Object reponse = reponsesUtilisateur.get(String.valueOf(question.getId()));
+        
+        // On utilise votre moteur de vérification (ID vs ID)
+        if (verifierReponse(question, reponse)) {
+            scoreObtenu += question.getPoints();
+            bonnesReponses++;
+        }
+    }
+
+    ResultatTestDto dto = new ResultatTestDto();
+    dto.setScoreObtenu(scoreObtenu);
+    dto.setTotalPointsPossible(totalPoints);
+    dto.setDateSoumission(LocalDateTime.now());
+    return dto;
+}
 
 
 }

@@ -39,4 +39,14 @@ public class StudentJourneyFrontController {
             @RequestParam(required = false) String type) {
         return ResponseEntity.ok(studentJourneyService.getAllJourneysForFrontend(type));
     }
+    
+
+@GetMapping("/teacher-students")
+@PreAuthorize("hasAnyRole('ADMIN', 'TUTEUR', 'ENSEIGNANT')")
+public ResponseEntity<List<StudentJourneyFrontDto>> getMyStudents(
+        @AuthenticationPrincipal UserPrincipal userPrincipal) {
+    // On utilise l'ID du tuteur connecté via le token JWT
+    return ResponseEntity.ok(studentJourneyService.getStudentsForTeacherForFrontend(userPrincipal.getId()));
+}
+
 }
