@@ -42,6 +42,9 @@ public class ResultatTest {
 
     @Column(name = "total_questions", nullable = false)
     private int totalQuestions;
+    @ManyToOne(fetch = FetchType.EAGER) // EAGER pour l'avoir directement dans le syllabus
+@JoinColumn(name = "echelle_connaissance_id")
+private EchelleConnaissance echelleConnaissance;
 
     // ====================================================================
     // === CALCUL DU POURCENTAGE                                        ===
@@ -87,6 +90,9 @@ public class ResultatTest {
 
     public int getTotalQuestions() { return totalQuestions; }
     public void setTotalQuestions(int totalQuestions) { this.totalQuestions = totalQuestions; }
+
+    public EchelleConnaissance getEchelleConnaissance() { return echelleConnaissance; }
+public void setEchelleConnaissance(EchelleConnaissance echelleConnaissance) { this.echelleConnaissance = echelleConnaissance; }
 
     // ====================================================================
     // === Méthodes toString, equals, hashCode                          ===

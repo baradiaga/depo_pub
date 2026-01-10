@@ -25,19 +25,22 @@ public class TestService {
     private final UtilisateurRepository utilisateurRepository;
     private final ChapitreRepository chapitreRepository;
     private final QuestionnaireRepository questionnaireRepository;
+    private final EchelleConnaissanceRepository echelleRepository;
 
     public TestService(TestRepository testRepository,
                        QuestionRepository questionRepository,
                        ResultatTestRepository resultatTestRepository,
                        UtilisateurRepository utilisateurRepository,
                        ChapitreRepository chapitreRepository,
-                       QuestionnaireRepository questionnaireRepository) {
+                       QuestionnaireRepository questionnaireRepository,
+                    EchelleConnaissanceRepository echelleRepository) {
         this.testRepository = testRepository;
         this.questionRepository = questionRepository;
         this.resultatTestRepository = resultatTestRepository;
         this.utilisateurRepository = utilisateurRepository;
         this.chapitreRepository = chapitreRepository;
         this.questionnaireRepository = questionnaireRepository;
+        this.echelleRepository = echelleRepository;
     }
 
     // ===========================================
@@ -96,51 +99,65 @@ public class TestService {
 
 
     @Transactional
-    public ResultatTestDto calculerEtSauvegarderResultat(Long chapitreId, Long utilisateurId, Map<String, Object> reponsesUtilisateur) {
-        Utilisateur etudiant = utilisateurRepository.findById(utilisateurId)
-                .orElseThrow(() -> new EntityNotFoundException("Utilisateur non trouvé avec l'ID: " + utilisateurId));
+public ResultatTestDto calculerEtSauvegarderResultat(Long chapitreId, Long utilisateurId, Map<String, Object> reponsesUtilisateur) {
+    Utilisateur etudiant = utilisateurRepository.findById(utilisateurId)
+            .orElseThrow(() -> new EntityNotFoundException("Utilisateur non trouvé"));
 
-        Test test = testRepository.findTopByChapitreId(chapitreId)
-                .orElseThrow(() -> new EntityNotFoundException("Aucun test trouvé pour le chapitre ID: " + chapitreId));
+    Test test = testRepository.findTopByChapitreId(chapitreId)
+            .orElseThrow(() -> new EntityNotFoundException("Aucun test trouvé"));
 
-        double scoreObtenu = 0;
-        double totalPoints = 0;
-        int bonnesReponses = 0;
+    double scoreObtenu = 0;
+    double totalPoints = 0;
+    int bonnesReponses = 0;
 
-        for (Question question : test.getQuestions()) {
-    totalPoints += question.getPoints();
-    Object reponse = reponsesUtilisateur.get(String.valueOf(question.getId()));
-    
-    boolean estCorrect = verifierReponse(question, reponse);
-    if (estCorrect) {
-        scoreObtenu += question.getPoints();
-        bonnesReponses++;
-    } else {
-        // AJOUTEZ CE LOG POUR DEBUGGER
-         
+    for (Question question : test.getQuestions()) {
+        totalPoints += question.getPoints();
+        Object reponse = reponsesUtilisateur.get(String.valueOf(question.getId()));
+        if (verifierReponse(question, reponse)) {
+            scoreObtenu += question.getPoints();
+            bonnesReponses++;
+        }
     }
+
+    // CALCUL DU POURCENTAGE (2026)
+    double pourcentage = (totalPoints > 0) ? (scoreObtenu / totalPoints) * 100 : 0;
+
+    // RECHERCHE DE L'ÉCHELLE CORRESPONDANTE
+    List<EchelleConnaissance> echelles = echelleRepository.findAll();
+    EchelleConnaissance echelleTrouvee = echelles.stream()
+            .filter(e -> pourcentage >= e.getSeuilMin() && pourcentage <= e.getSeuilMax())
+            .findFirst()
+            .orElse(null);
+
+    // SAUVEGARDE DU RÉSULTAT
+    ResultatTest resultat = new ResultatTest();
+    resultat.setEtudiant(etudiant);
+    resultat.setTest(test);
+    resultat.setScore(scoreObtenu);
+    resultat.setScoreTotal(totalPoints);
+    resultat.setBonnesReponses(bonnesReponses);
+    resultat.setTotalQuestions(test.getQuestions().size());
+    resultat.setDateTest(LocalDateTime.now());
+    resultat.setEchelleConnaissance(echelleTrouvee); // Liaison cruciale
+
+    resultatTestRepository.save(resultat);
+
+    // PRÉPARATION DU DTO POUR LE FRONT
+    ResultatTestDto dto = new ResultatTestDto();
+    dto.setChapitreId(chapitreId);
+    dto.setScoreObtenu(scoreObtenu);
+    dto.setTotalPointsPossible(totalPoints);
+    dto.setDateSoumission(LocalDateTime.now());
+    
+    if (echelleTrouvee != null) {
+        dto.setEchelleNom(echelleTrouvee.getDescription()); // Utilise la description ou l'intervalle
+        dto.setEchelleCouleur(echelleTrouvee.getCouleur());
+        dto.setRecommandation(echelleTrouvee.getRecommandation());
+    }
+
+    return dto;
 }
 
-
-        ResultatTest resultat = new ResultatTest();
-        resultat.setEtudiant(etudiant);
-        resultat.setTest(test);
-        resultat.setScore(scoreObtenu);
-        resultat.setScoreTotal(totalPoints);
-        resultat.setBonnesReponses(bonnesReponses);
-        resultat.setTotalQuestions(test.getQuestions().size());
-        resultat.setDateTest(LocalDateTime.now());
-
-        resultatTestRepository.save(resultat);
-
-        ResultatTestDto dto = new ResultatTestDto();
-        dto.setChapitreId(chapitreId);
-        dto.setScoreObtenu(scoreObtenu);
-        dto.setTotalPointsPossible(totalPoints);
-        dto.setDateSoumission(LocalDateTime.now());
-
-        return dto;
-    }
 
     public List<HistoriqueResultatDto> getHistoriquePourEtudiant(Long utilisateurId) {
         List<ResultatTest> resultats = resultatTestRepository.findByEtudiantIdOrderByDateTestDesc(utilisateurId);

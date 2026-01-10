@@ -78,9 +78,26 @@
               <!-- ==================================================================== -->
               <!-- === MISE À JOUR N°3 : Placeholder pour "Catégorie"              === -->
               <!-- ==================================================================== -->
-              <td>
-                <span class="text-muted fst-italic">À implémenter</span>
-              </td>
+              
+                <!-- Remplacez le bloc "À implémenter" par celui-ci -->
+<!-- Colonne Catégorie (Échelle) -->
+<td>
+  <div *ngIf="chapitre.categorie; else pasDeTest">
+    <span class="badge rounded-pill shadow-sm" 
+          [style.backgroundColor]="chapitre.couleurCategorie || '#6c757d'"
+          style="color: white; padding: 6px 12px; font-weight: 500;">
+      <i class="fas fa-award me-1"></i>
+      {{ chapitre.categorie }}
+    </span>
+  </div>
+  <ng-template #pasDeTest>
+    <span class="text-muted small italic">Aucun test</span>
+  </ng-template>
+</td>
+
+
+
+              
               
               <!-- ==================================================================== -->
               <!-- === MISE À JOUR N°4 : Nouvelle action "Détails"                === -->

@@ -4,6 +4,7 @@ package com.moscepa.entity;
 
 import jakarta.persistence.*;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 @Entity
 @Table(name = "moscepa_echelles_connaissance")
 public class EchelleConnaissance {
@@ -21,6 +22,18 @@ public class EchelleConnaissance {
     @Column(nullable = false)
     private String recommandation; // Ex: Chapitre recommandé automatiquement
 
+     @Column(nullable = false)
+    @JsonProperty("seuilMin") // Force la lecture du champ JSON "seuilMin"
+    private Double seuilMin;
+
+    @Column(nullable = false)
+    @JsonProperty("seuilMax") // Force la lecture du champ JSON "seuilMax"
+    private Double seuilMax;
+
+    @Column(nullable = false, length = 7)
+    @JsonProperty("couleur") // Force la lecture du champ JSON "couleur"
+    private String couleur;
+
     // Constructeurs
     public EchelleConnaissance() {}
 
@@ -36,4 +49,12 @@ public class EchelleConnaissance {
 
     public String getRecommandation() { return recommandation; }
     public void setRecommandation(String recommandation) { this.recommandation = recommandation; }
+     public Double getSeuilMin() { return seuilMin; }
+    public void setSeuilMin(Double seuilMin) { this.seuilMin = seuilMin; }
+
+    public Double getSeuilMax() { return seuilMax; }
+    public void setSeuilMax(Double seuilMax) { this.seuilMax = seuilMax; }
+
+    public String getCouleur() { return couleur; }
+    public void setCouleur(String couleur) { this.couleur = couleur; }
 }

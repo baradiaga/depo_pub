@@ -11,6 +11,10 @@ public class ResultatTestDto {
     private double scoreObtenu;
     private double totalPointsPossible;
     private LocalDateTime dateSoumission;
+     private String echelleNom;       // ex: "Maîtrise totale"
+    private String echelleCouleur;   // ex: "#28a745"
+    private String recommandation;   // Pour afficher le conseil associé
+
 
     // Constructeurs
     public ResultatTestDto() {}
@@ -54,4 +58,12 @@ public class ResultatTestDto {
     public void setDateSoumission(LocalDateTime dateSoumission) {
         this.dateSoumission = dateSoumission;
     }
+     public String getEchelleNom() { return echelleNom; }
+    public void setEchelleNom(String echelleNom) { this.echelleNom = echelleNom; }
+
+    public String getEchelleCouleur() { return echelleCouleur; }
+    public void setEchelleCouleur(String echelleCouleur) { this.echelleCouleur = echelleCouleur; }
+
+    public String getRecommandation() { return recommandation; }
+    public void setRecommandation(String recommandation) { this.recommandation = recommandation; }
 }

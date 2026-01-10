@@ -11,7 +11,7 @@ public class ChapitreSyllabusDto {
     private String nomTest;
     private Double resultatScore;
     private String categorie;
-
+    private String couleurCategorie; 
     // --- Getters et Setters ---
 
     public Long getId() {
@@ -61,4 +61,6 @@ public class ChapitreSyllabusDto {
     public void setCategorie(String categorie) {
         this.categorie = categorie;
     }
+     public String getCouleurCategorie() { return couleurCategorie; }
+    public void setCouleurCategorie(String couleurCategorie) { this.couleurCategorie = couleurCategorie; }
 }

@@ -36,6 +36,9 @@ public class EchelleConnaissanceService {
         echelle.setIntervalle(dto.getIntervalle());
         echelle.setDescription(dto.getDescription());
         echelle.setRecommandation(dto.getRecommandation());
+        echelle.setSeuilMin(dto.getSeuilMin());
+        echelle.setSeuilMax(dto.getSeuilMax());
+        echelle.setCouleur(dto.getCouleur());
 
         EchelleConnaissance savedEchelle = repository.save(echelle);
         return new EchelleConnaissanceDto(savedEchelle);
@@ -50,6 +53,9 @@ public class EchelleConnaissanceService {
         echelle.setIntervalle(dto.getIntervalle());
         echelle.setDescription(dto.getDescription());
         echelle.setRecommandation(dto.getRecommandation());
+        echelle.setSeuilMin(dto.getSeuilMin());
+        echelle.setSeuilMax(dto.getSeuilMax());
+        echelle.setCouleur(dto.getCouleur());
 
         EchelleConnaissance updatedEchelle = repository.save(echelle);
         return new EchelleConnaissanceDto(updatedEchelle);

@@ -19,13 +19,23 @@ public class EchelleConnaissanceDto {
 
     @NotBlank
     private String recommandation;
+    
+private Double seuilMin;
 
+
+private Double seuilMax;
+
+@NotBlank(message = "La couleur est obligatoire") // @NotBlank reste correct ici car c'est un String
+private String couleur;
     // Constructeur pour convertir l'entité en DTO
     public EchelleConnaissanceDto(EchelleConnaissance echelle) {
         this.id = echelle.getId();
         this.intervalle = echelle.getIntervalle();
         this.description = echelle.getDescription();
         this.recommandation = echelle.getRecommandation();
+        this.seuilMin = echelle.getSeuilMin();
+        this.seuilMax = echelle.getSeuilMax();
+        this.couleur = echelle.getCouleur();
     }
 
     // Constructeur par défaut
@@ -43,4 +53,12 @@ public class EchelleConnaissanceDto {
 
     public String getRecommandation() { return recommandation; }
     public void setRecommandation(String recommandation) { this.recommandation = recommandation; }
+    public Double getSeuilMin() { return seuilMin; }
+    public void setSeuilMin(Double seuilMin) { this.seuilMin = seuilMin; }
+
+    public Double getSeuilMax() { return seuilMax; }
+    public void setSeuilMax(Double seuilMax) { this.seuilMax = seuilMax; }
+
+    public String getCouleur() { return couleur; }
+    public void setCouleur(String couleur) { this.couleur = couleur; }
 }

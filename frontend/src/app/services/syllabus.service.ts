@@ -5,7 +5,11 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 // --- INTERFACES (Le "Contrat" avec le Backend ) ---
-
+export interface EchelleConnaissance {
+  nom: string;       // Correspond à echelleNom du DTO
+  couleur: string;   // Correspond à echelleCouleur
+  recommandation?: string;
+}
 // Interface pour un chapitre dans le tableau du syllabus
 export interface ChapitreSyllabus {
   id: number;
@@ -13,7 +17,8 @@ export interface ChapitreSyllabus {
   ordre: number;
   nomTest: string;
   resultatScore: number | null;
-  categorie: string;
+  categorie?: string;         // Reçu depuis le DTO (ex: "Expert")
+  couleurCategorie?: string;
 }
 
 // Interface pour la page complète du syllabus

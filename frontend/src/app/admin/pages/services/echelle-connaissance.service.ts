@@ -6,12 +6,14 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 // Définition de l'interface pour le frontend
 export interface EchelleConnaissance {
-  id?: number; // Optionnel pour la création
-  intervalle: string;
+  id?: number;
   description: string;
+  intervalle: string;
   recommandation: string;
+  seuilMin: number;  // Doit être identique au nom dans le DTO/Entité Java
+  seuilMax: number;
+  couleur: string;
 }
-
 @Injectable({
   providedIn: 'root'
 } )

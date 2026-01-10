@@ -13,7 +13,14 @@ export class EchelleConnaissanceComponent implements OnInit {
   echelles: EchelleConnaissance[] = [];
   
   // Le type est maintenant l'interface importée
-  newEchelle: EchelleConnaissance = { intervalle: '', description: '', recommandation: '' };
+  newEchelle: EchelleConnaissance = { 
+  intervalle: '', 
+  seuilMin: 0, 
+  seuilMax: 0, 
+  couleur: '#6c757d', 
+  description: '', 
+  recommandation: '' 
+};
   editingId: number | null = null;
   loading: boolean = false;
   errorMessage: string | null = null;
@@ -42,38 +49,49 @@ export class EchelleConnaissanceComponent implements OnInit {
   }
 
   addOrUpdateEchelle() {
-    this.errorMessage = null;
-    this.loading = true;
-
-    if (this.editingId) {
-      // Mise à jour
-      const echelleToUpdate: EchelleConnaissance = { ...this.newEchelle, id: this.editingId };
-      this.echelleService.update(echelleToUpdate).subscribe({
-        next: () => {
-          this.loadEchelles(); // Recharger la liste après mise à jour
-          this.resetForm();
-        },
-        error: (err) => {
-          this.errorMessage = "Erreur lors de la mise à jour.";
-          this.loading = false;
-          console.error(err);
-        }
-      });
-    } else {
-      // Création
-      this.echelleService.create(this.newEchelle).subscribe({
-        next: () => {
-          this.loadEchelles(); // Recharger la liste après création
-          this.resetForm();
-        },
-        error: (err) => {
-          this.errorMessage = "Erreur lors de la création.";
-          this.loading = false;
-          console.error(err);
-        }
-      });
-    }
+     console.log("Données envoyées au serveur :", this.newEchelle); 
+  this.errorMessage = null;
+  this.loading = true;
+  // SÉCURITÉ : Empêcher le "null" pour la base de données
+  if (!this.newEchelle.couleur) {
+    this.newEchelle.couleur = '#6c757d'; // Gris par défaut
   }
+
+  // AUTO-GENERATION de l'intervalle pour satisfaire la contrainte NOT NULL de la BDD
+  if (!this.newEchelle.intervalle || this.newEchelle.intervalle === '') {
+    this.newEchelle.intervalle = `[${this.newEchelle.seuilMin}% - ${this.newEchelle.seuilMax}%]`;
+  }
+
+  if (this.editingId) {
+    const echelleToUpdate: EchelleConnaissance = { ...this.newEchelle, id: this.editingId };
+    this.echelleService.update(echelleToUpdate).subscribe({
+      next: () => {
+        this.loadEchelles();
+        this.resetForm();
+      },
+      error: (err) => {
+        this.errorMessage = "Erreur lors de la mise à jour. Vérifiez les logs serveurs.";
+        this.loading = false;
+        console.error(err);
+      }
+    });
+  } else {
+    // CRÉATION
+    this.echelleService.create(this.newEchelle).subscribe({
+      next: () => {
+        this.loadEchelles();
+        this.resetForm();
+      },
+      error: (err) => {
+        // Si l'erreur 500 persiste ici, c'est que seuilMin/Max arrivent NULL au serveur
+        this.errorMessage = "Erreur lors de la création. Vérifiez que tous les champs numériques sont remplis.";
+        this.loading = false;
+        console.error(err);
+      }
+    });
+  }
+}
+
 
   editEchelle(echelle: EchelleConnaissance) {
     this.editingId = echelle.id!; // L'ID est garanti d'exister ici
@@ -94,8 +112,15 @@ export class EchelleConnaissanceComponent implements OnInit {
   }
 
   resetForm() {
-    this.newEchelle = { intervalle: '', description: '', recommandation: '' };
-    this.editingId = null;
-    this.loading = false;
-  }
+  this.newEchelle = { 
+    intervalle: '', 
+    seuilMin: 0, 
+    seuilMax: 0, 
+    couleur: '#6c757d', 
+    description: '', 
+    recommandation: '' 
+  };
+  this.editingId = null;
+  this.loading = false;
+}
 }
