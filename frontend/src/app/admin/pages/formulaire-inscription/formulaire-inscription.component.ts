@@ -1,14 +1,15 @@
-// Fichier : src/app/admin/pages/formulaire-inscription/formulaire-inscription.component.ts (Version finale avec matières)
+// Fichier : src/app/admin/pages/formulaire-inscription/formulaire-inscription.component.ts
 
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, FormArray, Validators, AbstractControl } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { forkJoin } from 'rxjs';
 
 import { EtudiantService, EtudiantPayload } from '../../../services/etudiant.service';
 import { ElementConstitutifService } from '../../../services/element-constitutif.service';
-import { ElementConstitutifResponse } from '../../../models/models';
+import { FormationService } from '../../../services/formation.service'; // AJOUTÉ
+import { ElementConstitutifResponse, FormationDetail } from '../../../models/models'; // AJOUTÉ
 
 @Component({
   selector: 'app-formulaire-inscription',
@@ -19,6 +20,7 @@ export class FormulaireInscriptionComponent implements OnInit {
   
   inscriptionForm: FormGroup;
   matieresDisponibles: ElementConstitutifResponse[] = [];
+  formationsDisponibles: FormationDetail[] = []; // AJOUTÉ : Pour stocker les formations
   isLoading = true;
   isSaving = false;
   isEditMode = false;
@@ -29,6 +31,7 @@ export class FormulaireInscriptionComponent implements OnInit {
     private fb: FormBuilder,
     private etudiantService: EtudiantService,
     private ecService: ElementConstitutifService,
+    private formationService: FormationService, // AJOUTÉ
     private router: Router,
     private toastr: ToastrService,
     private route: ActivatedRoute
@@ -43,14 +46,13 @@ export class FormulaireInscriptionComponent implements OnInit {
       email: ['', [Validators.required, Validators.email]],
       telephone: ['', Validators.required],
       adresse: ['', Validators.required],
-      motDePasse: [''], // Mot de passe optionnel par défaut
-      anneeAcademique: ['2024-2025', Validators.required],
-      filiere: ['', Validators.required],
-      matiereIds: this.fb.array([], Validators.required) // Le FormArray pour les matières
+      motDePasse: [''],
+      anneeAcademique: ['2025-2026', Validators.required], // Mis à jour pour 2026
+      formationId: [null, Validators.required], // MODIFIÉ : filiere devient formationId
+      matiereIds: this.fb.array([], Validators.required)
     });
   }
 
-  // Getter pratique pour accéder facilement au FormArray depuis le template
   get matiereIds(): FormArray {
     return this.inscriptionForm.get('matiereIds') as FormArray;
   }
@@ -59,17 +61,13 @@ export class FormulaireInscriptionComponent implements OnInit {
     const idParam = this.route.snapshot.paramMap.get('id');
     
     if (idParam) {
-      // --- MODE ÉDITION ---
       this.isEditMode = true;
       this.etudiantId = +idParam;
       this.pageTitle = "Modifier les Informations de l'Étudiant";
-      // Le mot de passe n'est pas obligatoire en mode édition
       this.inscriptionForm.get('motDePasse')?.clearValidators();
       this.loadDataForEditMode();
     } else {
-      // --- MODE CRÉATION ---
       this.isEditMode = false;
-      // Le mot de passe est obligatoire en mode création
       this.inscriptionForm.get('motDePasse')?.setValidators([Validators.required, Validators.minLength(6)]);
       this.loadDataForCreateMode();
     }
@@ -77,12 +75,17 @@ export class FormulaireInscriptionComponent implements OnInit {
 
   loadDataForCreateMode(): void {
     this.isLoading = true;
-    this.ecService.findAll().subscribe({
-      next: (matieres) => {
-        this.matieresDisponibles = matieres;
+    // On charge en parallèle les matières ET les formations
+    forkJoin({
+      matieres: this.ecService.findAll(),
+      formations: this.formationService.getAllFormations() // AJOUTÉ
+    }).subscribe({
+      next: (res) => {
+        this.matieresDisponibles = res.matieres;
+        this.formationsDisponibles = res.formations; // Stockage des formations
         this.isLoading = false;
       },
-      error: (err) => this.handleError(err, 'Impossible de charger la liste des matières.')
+      error: (err) => this.handleError(err, 'Erreur lors du chargement des référentiels.')
     });
   }
 
@@ -90,17 +93,18 @@ export class FormulaireInscriptionComponent implements OnInit {
     if (!this.etudiantId) return;
     this.isLoading = true;
 
-    // On charge en parallèle les données de l'étudiant ET la liste de toutes les matières
     forkJoin({
       etudiant: this.etudiantService.getEtudiantById(this.etudiantId),
-      matieres: this.ecService.findAll()
+      matieres: this.ecService.findAll(),
+      formations: this.formationService.getAllFormations() // AJOUTÉ
     }).subscribe({
-      next: ({ etudiant, matieres }) => {
+      next: ({ etudiant, matieres, formations }) => {
         this.matieresDisponibles = matieres;
+        this.formationsDisponibles = formations; // Stockage des formations
         this.inscriptionForm.patchValue(etudiant);
 
-        // On pré-coche les matières auxquelles l'étudiant est déjà inscrit
         if (etudiant.matiereIds) {
+          this.matiereIds.clear(); // Sécurité
           etudiant.matiereIds.forEach(id => {
             this.matiereIds.push(this.fb.control(id));
           });
@@ -114,12 +118,9 @@ export class FormulaireInscriptionComponent implements OnInit {
   onMatiereChange(event: Event): void {
     const target = event.target as HTMLInputElement;
     const matiereId = Number(target.value);
-
     if (target.checked) {
-      // Si la case est cochée, on ajoute l'ID au FormArray
       this.matiereIds.push(this.fb.control(matiereId));
     } else {
-      // Si la case est décochée, on trouve son index et on le retire
       const index = this.matiereIds.controls.findIndex(x => x.value === matiereId);
       if (index !== -1) {
         this.matiereIds.removeAt(index);
@@ -144,7 +145,7 @@ export class FormulaireInscriptionComponent implements OnInit {
     action.subscribe({
       next: () => {
         this.toastr.success(`Étudiant ${this.isEditMode ? 'mis à jour' : 'inscrit'} avec succès !`);
-        this.router.navigate(['/admin/inscriptions']);
+        this.router.navigate(['app/admin/validation-inscriptions']);
       },
       error: (err) => {
         this.isSaving = false;
@@ -154,7 +155,7 @@ export class FormulaireInscriptionComponent implements OnInit {
   }
 
   annuler(): void {
-    this.router.navigate(['/admin/inscriptions']);
+    this.router.navigate(['app/admin/inscriptions']);
   }
 
   private handleError(error: any, message: string): void {

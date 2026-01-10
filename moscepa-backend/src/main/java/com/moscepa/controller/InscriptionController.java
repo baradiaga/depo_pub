@@ -2,19 +2,27 @@ package com.moscepa.controller;
 
 import com.moscepa.dto.*;
 import com.moscepa.entity.Utilisateur;
+import com.moscepa.service.EtudiantService;
 import com.moscepa.service.InscriptionService;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/inscriptions")
 public class InscriptionController {
 
     private final InscriptionService inscriptionService;
+    @Autowired 
+    private EtudiantService etudiantService;
 
     public InscriptionController(InscriptionService inscriptionService) {
         this.inscriptionService = inscriptionService;
@@ -31,11 +39,17 @@ public class InscriptionController {
     }
 
     // --- ACCÈS ADMIN : Inscrire un étudiant ---
-    @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'RESPONSABLE_FORMATION')")
-    public ResponseEntity<InscriptionResponseDto> inscrire(@RequestBody InscriptionRequestDto request) {
-        return new ResponseEntity<>(inscriptionService.inscrireEtudiant(request), HttpStatus.CREATED);
-    }
+    @PostMapping("/inscrire")
+@PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_RESPONSABLE_FORMATION')")
+public ResponseEntity<Map<String, String>> inscrireNouvelEtudiant(@Valid @RequestBody EtudiantRegistrationDto etudiantDto) {
+    etudiantService.inscrireEtudiant(etudiantDto);
+    
+    Map<String, String> response = new HashMap<>();
+    response.put("message", "Étudiant inscrit avec succès.");
+    
+    return new ResponseEntity<>(response, HttpStatus.CREATED);
+}
+
 
     // --- ACCÈS ADMIN : Valider une inscription ---
     @PostMapping("/valider")

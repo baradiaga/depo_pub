@@ -1,24 +1,20 @@
-<!-- Fichier : src/app/admin/pages/formulaire-inscription/formulaire-inscription.component.html (Version 100% Complète et Finale) -->
+<!-- Fichier : src/app/admin/pages/formulaire-inscription/formulaire-inscription.component.html -->
 
 <div class="container my-4">
-  <!-- Indicateur de chargement affiché uniquement en mode édition pendant la récupération des données -->
-  <div *ngIf="isLoading && isEditMode" class="text-center my-5">
+  <!-- Indicateur de chargement -->
+  <div *ngIf="isLoading" class="text-center my-5">
     <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;"></div>
-    <h4 class="mt-3 text-muted">Chargement des données de l'étudiant...</h4>
+    <h4 class="mt-3 text-muted">Chargement des référentiels...</h4>
   </div>
 
-  <!-- Le formulaire est masqué pendant le chargement pour éviter d'afficher des champs vides -->
   <form [formGroup]="inscriptionForm" (ngSubmit)="enregistrer()" *ngIf="!isLoading">
     <div class="card shadow-sm">
       <div class="card-header">
-        <!-- Le titre de la page est dynamique (Création vs Modification) -->
         <h2>{{ pageTitle }}</h2>
       </div>
 
       <div class="card-body">
-        <!-- ======================================= -->
-        <!-- SECTION 1 : INFORMATIONS PERSONNELLES   -->
-        <!-- ======================================= -->
+        <!-- SECTION 1 : INFORMATIONS PERSONNELLES -->
         <h4 class="mb-3 border-bottom pb-2">Informations Personnelles</h4>
         <div class="row">
           <div class="col-md-6 mb-3">
@@ -55,9 +51,7 @@
           </div>
         </div>
 
-        <!-- ======================================= -->
-        <!-- SECTION 2 : COORDONNÉES ET CONNEXION    -->
-        <!-- ======================================= -->
+        <!-- SECTION 2 : COORDONNÉES ET CONNEXION -->
         <h4 class="mt-4 mb-3 border-bottom pb-2">Coordonnées et Connexion</h4>
         <div class="row">
           <div class="col-md-6 mb-3">
@@ -79,27 +73,33 @@
           <div *ngIf="isEditMode" class="form-text">Laissez ce champ vide si vous ne souhaitez pas modifier le mot de passe.</div>
         </div>
 
-        <!-- ======================================= -->
-        <!-- SECTION 3 : CURSUS ACADÉMIQUE           -->
-        <!-- ======================================= -->
+        <!-- SECTION 3 : CURSUS ACADÉMIQUE -->
         <h4 class="mt-4 mb-3 border-bottom pb-2">Cursus Académique</h4>
         <div class="row">
+          <!-- MODIFICATION ICI : Remplacement de l'input par un select dynamique -->
           <div class="col-md-6 mb-3">
-            <label for="filiere" class="form-label">Filière <span class="text-danger">*</span></label>
-            <input type="text" id="filiere" class="form-control" formControlName="filiere">
+            <label for="formationId" class="form-label">Formation / Filière <span class="text-danger">*</span></label>
+            <select id="formationId" class="form-select" formControlName="formationId">
+              <option [value]="null" disabled>-- Sélectionnez la formation --</option>
+              <option *ngFor="let formation of formationsDisponibles" [value]="formation.id">
+                {{ formation.nom }} ({{ formation.code }})
+              </option>
+            </select>
+            <div *ngIf="inscriptionForm.get('formationId')?.touched && inscriptionForm.get('formationId')?.invalid" class="text-danger small mt-1">
+              Veuillez sélectionner une formation.
+            </div>
           </div>
+
           <div class="col-md-6 mb-3">
             <label for="anneeAcademique" class="form-label">Année Académique <span class="text-danger">*</span></label>
             <select id="anneeAcademique" class="form-select" formControlName="anneeAcademique">
-              <option value="2024-2025">2024-2025</option>
               <option value="2025-2026">2025-2026</option>
+              <option value="2026-2027">2026-2027</option>
             </select>
           </div>
         </div>
 
-        <!-- ======================================= -->
-        <!-- SECTION 4 : INSCRIPTION AUX MATIÈRES    -->
-        <!-- ======================================= -->
+        <!-- SECTION 4 : INSCRIPTION AUX MATIÈRES -->
         <h4 class="mt-4 mb-3 border-bottom pb-2">Inscriptions pédagogiques</h4>
         <div class="border p-3 rounded" style="max-height: 300px; overflow-y: auto;">
           <div *ngIf="matieresDisponibles.length === 0" class="text-muted">
@@ -123,7 +123,6 @@
         </div>
       </div>
 
-      <!-- Pied de page avec les boutons d'action -->
       <div class="card-footer text-end">
         <button type="button" class="btn btn-secondary me-2" (click)="annuler()">Annuler</button>
         <button type="submit" class="btn btn-primary" [disabled]="isSaving || inscriptionForm.invalid">

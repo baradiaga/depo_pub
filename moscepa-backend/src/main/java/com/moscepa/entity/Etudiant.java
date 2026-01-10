@@ -7,16 +7,23 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-
+@Entity // AJOUTÉ : Indispensable pour créer la table
+@Table(name = "moscepa_etudiants")
 public class Etudiant {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Liaison avec le compte utilisateur (nom, email, mot de passe)
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "utilisateur_id", nullable = false)
     private Utilisateur utilisateur;
+
+    // REMPLACÉ : On n'utilise plus String filiere, mais l'objet Formation
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "formation_id", nullable = false)
+    private Formation formation;
 
     @Column(name = "numero_matricule", unique = true, length = 20)
     private String numeroMatricule;
@@ -42,9 +49,6 @@ public class Etudiant {
     @Column(name = "annee_academique", length = 10)
     private String anneeAcademique;
 
-    @Column(name = "filiere", length = 100)
-    private String filiere;
-
     @OneToMany(mappedBy = "etudiant", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Inscription> inscriptions = new ArrayList<>();
 
@@ -52,18 +56,16 @@ public class Etudiant {
     @Column(name = "date_inscription", nullable = false, updatable = false)
     private LocalDateTime dateInscription;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "enseignant_id")
-    private Utilisateur enseignant;
-
     // Constructeurs
     public Etudiant() {}
 
-    // Getters et Setters (générés pour tous les champs)
+    // Getters et Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public Utilisateur getUtilisateur() { return utilisateur; }
     public void setUtilisateur(Utilisateur utilisateur) { this.utilisateur = utilisateur; }
+    public Formation getFormation() { return formation; }
+    public void setFormation(Formation formation) { this.formation = formation; }
     public String getNumeroMatricule() { return numeroMatricule; }
     public void setNumeroMatricule(String numeroMatricule) { this.numeroMatricule = numeroMatricule; }
     public LocalDate getDateDeNaissance() { return dateDeNaissance; }
@@ -80,17 +82,6 @@ public class Etudiant {
     public void setTelephone(String telephone) { this.telephone = telephone; }
     public String getAnneeAcademique() { return anneeAcademique; }
     public void setAnneeAcademique(String anneeAcademique) { this.anneeAcademique = anneeAcademique; }
-    public String getFiliere() { return filiere; }
-    public void setFiliere(String filiere) { this.filiere = filiere; }
     public List<Inscription> getInscriptions() { return inscriptions; }
     public void setInscriptions(List<Inscription> inscriptions) { this.inscriptions = inscriptions; }
-    public LocalDateTime getDateInscription() { return dateInscription; }
-    public void setDateInscription(LocalDateTime dateInscription) { this.dateInscription = dateInscription; }
-    public Utilisateur getEnseignant() { return enseignant; }
-    public void setEnseignant(Utilisateur enseignant) { this.enseignant = enseignant; }
-    
-    // Méthodes utilitaires pour un accès facile aux infos de l'utilisateur
-    public String getNom() { return utilisateur != null ? utilisateur.getNom() : null; }
-    public String getPrenom() { return utilisateur != null ? utilisateur.getPrenom() : null; }
-    public String getEmail() { return utilisateur != null ? utilisateur.getEmail() : null; }
 }

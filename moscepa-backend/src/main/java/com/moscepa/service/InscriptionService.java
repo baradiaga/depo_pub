@@ -13,14 +13,14 @@ import java.util.List;
 public class InscriptionService {
 
     private final InscriptionRepository inscriptionRepository;
-    private final UtilisateurRepository utilisateurRepository;
+    private final EtudiantRepository etudiantRepository; // MODIFIÉ : Utilise EtudiantRepository
     private final ElementConstitutifRepository ecRepository;
 
     public InscriptionService(InscriptionRepository inscriptionRepository, 
-                              UtilisateurRepository utilisateurRepository, 
+                              EtudiantRepository etudiantRepository, 
                               ElementConstitutifRepository ecRepository) {
         this.inscriptionRepository = inscriptionRepository;
-        this.utilisateurRepository = utilisateurRepository;
+        this.etudiantRepository = etudiantRepository;
         this.ecRepository = ecRepository;
     }
 
@@ -34,8 +34,9 @@ public class InscriptionService {
 
     @Transactional
     public InscriptionResponseDto inscrireEtudiant(InscriptionRequestDto request) {
-        Utilisateur etudiant = utilisateurRepository.findById(request.getEtudiantId())
-                .orElseThrow(() -> new EntityNotFoundException("Étudiant non trouvé"));
+        // MODIFIÉ : On récupère l'entité Etudiant (le dossier académique)
+        Etudiant etudiant = etudiantRepository.findById(request.getEtudiantId())
+                .orElseThrow(() -> new EntityNotFoundException("Dossier étudiant non trouvé"));
 
         ElementConstitutif matiere = ecRepository.findById(request.getEcId())
                 .orElseThrow(() -> new EntityNotFoundException("Matière non trouvée"));
@@ -45,9 +46,8 @@ public class InscriptionService {
         }
 
         Inscription inscription = new Inscription();
-        inscription.setEtudiant(etudiant);
+        inscription.setEtudiant(etudiant); // Accepte maintenant l'objet Etudiant corrigé
         inscription.setMatiere(matiere);
-        // Le statut "EN_ATTENTE" est géré par @PrePersist dans l'entité
         
         return mapToDto(inscriptionRepository.save(inscription));
     }
@@ -61,7 +61,7 @@ public class InscriptionService {
             throw new IllegalStateException("Inscription déjà traitée.");
         }
 
-        ins.setStatut(request.getStatut()); // "VALIDE" ou "REJETE"
+        ins.setStatut(request.getStatut());
         ins.setDateValidation(LocalDateTime.now());
         return mapToDto(inscriptionRepository.save(ins));
     }
@@ -76,8 +76,17 @@ public class InscriptionService {
         dto.setId(ins.getId());
         dto.setStatut(ins.getStatut());
         dto.setActif(ins.isActif());
-        dto.setEtudiantId(ins.getEtudiant().getId());
-        dto.setEtudiantNomComplet(ins.getEtudiant().getPrenom() + " " + ins.getEtudiant().getNom());
+        
+        // Accès aux données via la relation Inscription -> Etudiant -> Utilisateur
+        Etudiant etudiant = ins.getEtudiant();
+        dto.setEtudiantId(etudiant.getId());
+        
+        if (etudiant.getUtilisateur() != null) {
+            dto.setEtudiantNomComplet(etudiant.getUtilisateur().getPrenom() + " " + etudiant.getUtilisateur().getNom());
+        } else {
+            dto.setEtudiantNomComplet("Nom inconnu");
+        }
+
         dto.setEcId(ins.getMatiere().getId());
         dto.setEcNom(ins.getMatiere().getNom());
         dto.setDateInscription(ins.getDateInscription().toString());

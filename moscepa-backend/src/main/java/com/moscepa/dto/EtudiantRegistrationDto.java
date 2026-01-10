@@ -18,7 +18,8 @@ public class EtudiantRegistrationDto {
     @NotBlank private String adresse;
     @NotBlank private String telephone;
     @NotBlank private String anneeAcademique;
-    @NotBlank private String filiere;
+   @NotNull(message = "La formation est obligatoire")
+private Long formationId;
     
     
     @NotNull @Size(min = 1, message = "L'étudiant doit être inscrit à au moins une matière.")
@@ -47,9 +48,8 @@ public class EtudiantRegistrationDto {
     public void setTelephone(String telephone) { this.telephone = telephone; }
     public String getAnneeAcademique() { return anneeAcademique; }
     public void setAnneeAcademique(String anneeAcademique) { this.anneeAcademique = anneeAcademique; }
-    public String getFiliere() { return filiere; }
-    
-    public void setFiliere(String filiere) { this.filiere = filiere; }
+    public Long getFormationId() { return formationId; }
+public void setFormationId(Long formationId) { this.formationId = formationId; }
     public List<Long> getMatiereIds() { return matiereIds; }
     public void setMatiereIds(List<Long> matiereIds) { this.matiereIds = matiereIds; }
 }

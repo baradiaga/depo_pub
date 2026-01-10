@@ -84,7 +84,18 @@ TUTEUR: [
   }
 ]
 ,
-
+RESPONSABLE_FORMATION: [
+        { title: 'Cours', description: 'Gérer vos cours', icon: '📘', route: '/enseignant/dashboard' },
+        { title: 'Parcours', description: 'Organiser les parcours', icon: '🗺️', route: '/enseignant/parcours' },
+        { title: 'Évaluations', description: 'Gérer les tests et notes', icon: '📊', route: '/enseignant/tests' },
+        { title: 'Évaluations', description: 'Gérer les tests et notes', icon: '📊', route: '/enseignant/tests' },
+      ],
+      TECHNOPEDAGOGUE: [
+        { title: 'Cours', description: 'Gérer vos cours', icon: '📘', route: '/enseignant/dashboard' },
+        { title: 'Parcours', description: 'Organiser les parcours', icon: '🗺️', route: '/enseignant/parcours' },
+        { title: 'Évaluations', description: 'Gérer les tests et notes', icon: '📊', route: '/enseignant/tests' },
+        { title: 'Évaluations', description: 'Gérer les tests et notes', icon: '📊', route: '/enseignant/tests' },
+      ],
       ETUDIANT: [] // pas de cartes
     };
 

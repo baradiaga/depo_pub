@@ -3,10 +3,9 @@ package com.moscepa.service;
 import com.moscepa.dto.EtudiantRegistrationDto;
 import com.moscepa.dto.InscriptionRequestDto;
 import com.moscepa.dto.MatiereInscriteDto;
-import com.moscepa.entity.ElementConstitutif;
-import com.moscepa.entity.Inscription;
-import com.moscepa.entity.Role;
-import com.moscepa.entity.Utilisateur;
+import com.moscepa.entity.*;
+import com.moscepa.repository.EtudiantRepository;
+import com.moscepa.repository.FormationRepository;
 import com.moscepa.repository.InscriptionRepository;
 import com.moscepa.repository.UtilisateurRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,58 +24,70 @@ public class EtudiantService {
     private UtilisateurRepository utilisateurRepository;
     
     @Autowired 
-    private PasswordEncoder passwordEncoder;
+    private EtudiantRepository etudiantRepository;
     
     @Autowired 
-    private InscriptionRepository inscriptionRepository; // CHANGEMENT : Injection du Repository d'inscription
+    private FormationRepository formationRepository;
+    
+    @Autowired 
+    private InscriptionRepository inscriptionRepository;
 
     @Autowired 
     private InscriptionService inscriptionService;
+    
+    @Autowired 
+    private PasswordEncoder passwordEncoder;
 
     @Transactional
-    public Utilisateur inscrireEtudiant(EtudiantRegistrationDto dto) {
+    public void inscrireEtudiant(EtudiantRegistrationDto dto) {
+        // 1. Validation de l'email unique
         if (utilisateurRepository.existsByEmail(dto.getEmail())) {
-            throw new IllegalStateException("Un utilisateur avec l'email " + dto.getEmail() + " existe déjà.");
+            throw new IllegalStateException("Un compte avec l'email " + dto.getEmail() + " existe déjà.");
         }
 
-        Utilisateur nouvelEtudiant = new Utilisateur();
-        nouvelEtudiant.setNom(dto.getNom());
-        nouvelEtudiant.setPrenom(dto.getPrenom());
-        nouvelEtudiant.setEmail(dto.getEmail());
-        nouvelEtudiant.setMotDePasse(passwordEncoder.encode(dto.getMotDePasse()));
-        nouvelEtudiant.setRole(Role.ETUDIANT);
-        nouvelEtudiant.setActif(true);
-        nouvelEtudiant.setDateDeNaissance(dto.getDateDeNaissance());
-        nouvelEtudiant.setLieuDeNaissance(dto.getLieuDeNaissance());
-        nouvelEtudiant.setNationalite(dto.getNationalite());
-        nouvelEtudiant.setSexe(dto.getSexe());
-        nouvelEtudiant.setAdresse(dto.getAdresse());
-        nouvelEtudiant.setTelephone(dto.getTelephone());
-        nouvelEtudiant.setAnneeAcademique(dto.getAnneeAcademique());
-        nouvelEtudiant.setFiliere(dto.getFiliere());
-        
-        Utilisateur etudiantSauvegarde = utilisateurRepository.save(nouvelEtudiant);
+        // 2. Récupération de la formation choisie (Lien dynamique)
+        Formation formation = formationRepository.findById(dto.getFormationId())
+            .orElseThrow(() -> new RuntimeException("La formation sélectionnée (ID: " + dto.getFormationId() + ") est introuvable."));
 
+        // 3. Création du compte Utilisateur (Authentification)
+        Utilisateur compte = new Utilisateur();
+        compte.setNom(dto.getNom());
+        compte.setPrenom(dto.getPrenom());
+        compte.setEmail(dto.getEmail());
+        compte.setMotDePasse(passwordEncoder.encode(dto.getMotDePasse()));
+        compte.setRole(Role.ETUDIANT);
+        compte.setActif(true);
+        Utilisateur compteSauvegarde = utilisateurRepository.save(compte);
+
+        // 4. Création du dossier Etudiant (Données Académiques)
+        Etudiant etudiant = new Etudiant();
+        etudiant.setUtilisateur(compteSauvegarde);
+        etudiant.setFormation(formation); // Liaison réelle avec l'objet Formation
+        
+        // Mapping des champs personnels
+        etudiant.setDateDeNaissance(LocalDate.parse(dto.getDateDeNaissance()));
+        etudiant.setLieuDeNaissance(dto.getLieuDeNaissance());
+        etudiant.setNationalite(dto.getNationalite());
+        etudiant.setSexe(dto.getSexe());
+        etudiant.setAdresse(dto.getAdresse());
+        etudiant.setTelephone(dto.getTelephone());
+        etudiant.setAnneeAcademique(dto.getAnneeAcademique());
+        
+        Etudiant etudiantSauvegarde = etudiantRepository.save(etudiant);
+
+        // 5. Inscriptions aux matières (Optionnel selon le DTO)
         if (dto.getMatiereIds() != null && !dto.getMatiereIds().isEmpty()) {
             for (Long matiereId : dto.getMatiereIds()) {
                 InscriptionRequestDto inscriptionRequest = new InscriptionRequestDto();
                 inscriptionRequest.setEtudiantId(etudiantSauvegarde.getId());
                 inscriptionRequest.setEcId(matiereId);
-                // Le service d'inscription crée l'entrée avec statut "EN_ATTENTE"
                 inscriptionService.inscrireEtudiant(inscriptionRequest);
             }
         }
-        return etudiantSauvegarde;
     }
 
-    /**
-     * CORRECTION MAJEURE : 
-     * On ne récupère plus les matières via une requête SQL native sur les EC,
-     * mais via les Inscriptions filtrées par statut "VALIDE".
-     */
     @Transactional(readOnly = true)
     public List<MatiereInscriteDto> getMatieresInscrites(Long utilisateurId) {
-        // On récupère uniquement les inscriptions validées
         List<Inscription> inscriptionsValides = inscriptionRepository.findByEtudiantIdAndStatut(utilisateurId, "VALIDE");
 
         return inscriptionsValides.stream()
@@ -83,25 +95,18 @@ public class EtudiantService {
             .collect(Collectors.toList());
     }
 
-    /**
-     * Mapper modifié pour extraire les données de l'entité Inscription
-     */
     private MatiereInscriteDto convertToMatiereInscriteDto(Inscription inscription) {
         ElementConstitutif ec = inscription.getMatiere();
         MatiereInscriteDto dto = new MatiereInscriteDto();
-        
         dto.setId(ec.getId());
         dto.setNomEc(ec.getNom());
         dto.setCodeEc(ec.getCode());
         dto.setCoefficient(ec.getCredit());
-        dto.setStatut("VALIDE"); // Si elle est là, c'est qu'elle est valide
+        dto.setStatut("VALIDE");
 
         if (ec.getUniteEnseignement() != null) {
             dto.setNomUe(ec.getUniteEnseignement().getNom());
             dto.setCodeUe(ec.getUniteEnseignement().getCode());
-        } else {
-            dto.setNomUe("Non applicable");
-            dto.setCodeUe("N/A");
         }
         return dto;
     }

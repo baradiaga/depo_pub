@@ -1,5 +1,3 @@
-// Fichier : src/main/java/com/moscepa/controller/EtudiantController.java (Nouveau fichier)
-
 package com.moscepa.controller;
 
 import com.moscepa.dto.EtudiantRegistrationDto;
@@ -11,8 +9,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
-@RequestMapping("/api/etudiants" )
+@RequestMapping("/api/etudiants")
+@CrossOrigin(origins = "http://localhost:4200") // Assurez-vous que le port correspond
 public class EtudiantController {
 
     @Autowired
@@ -20,10 +22,16 @@ public class EtudiantController {
 
     @PostMapping("/inscrire")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_RESPONSABLE_FORMATION')")
-    public ResponseEntity<String> inscrireNouvelEtudiant(@Valid @RequestBody EtudiantRegistrationDto etudiantDto) {
+    public ResponseEntity<Map<String, String>> inscrireNouvelEtudiant(@Valid @RequestBody EtudiantRegistrationDto etudiantDto) {
+        // Traitement de l'inscription
         etudiantService.inscrireEtudiant(etudiantDto);
-        java.util.Map<String, String> response = new java.util.HashMap<>();
-    response.put("message", "Étudiant inscrit avec succès.");
-        return new ResponseEntity<>("Étudiant inscrit avec succès.", HttpStatus.CREATED);
+        
+        // CRUCIAL : On renvoie un objet JSON { "message": "..." }
+        // car Angular attend du JSON par défaut
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Étudiant inscrit avec succès.");
+        response.put("status", "success");
+        
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 }

@@ -200,6 +200,7 @@ com\moscepa\dto\ResponseDto.class
 com\moscepa\entity\Categorie.class
 com\moscepa\entity\Chapitre.class
 com\moscepa\dto\ElementConstitutifRequestDto.class
+com\moscepa\repository\EtudiantRepository.class
 com\moscepa\repository\MatiereRepository.class
 com\moscepa\controller\ChapitreGestionController.class
 com\moscepa\dto\ResponsableDto.class
