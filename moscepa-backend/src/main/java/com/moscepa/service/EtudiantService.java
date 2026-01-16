@@ -8,6 +8,7 @@ import com.moscepa.repository.EtudiantRepository;
 import com.moscepa.repository.FormationRepository;
 import com.moscepa.repository.InscriptionRepository;
 import com.moscepa.repository.UtilisateurRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -87,27 +88,39 @@ public class EtudiantService {
     }
 
     @Transactional(readOnly = true)
-    public List<MatiereInscriteDto> getMatieresInscrites(Long utilisateurId) {
-        List<Inscription> inscriptionsValides = inscriptionRepository.findByEtudiantIdAndStatut(utilisateurId, "VALIDE");
+public List<MatiereInscriteDto> getMatieresInscrites(Long utilisateurId) {
+    // 1. On récupère le dossier étudiant
+    Etudiant etudiant = etudiantRepository.findByUtilisateurId(utilisateurId)
+        .orElseThrow(() -> new EntityNotFoundException("Dossier étudiant non trouvé"));
 
-        return inscriptionsValides.stream()
+    // 2. On récupère les inscriptions validées
+    List<Inscription> inscriptions = inscriptionRepository.findByEtudiantIdAndStatut(etudiant.getId(), "VALIDE");
+
+    // 3. Transformation en DTO (Correction de la syntaxe Stream)
+    // 3. LOGS POUR VÉRIFIER
+    System.out.println("ID Utilisateur: " + utilisateurId + " -> ID Dossier Étudiant trouvé: " + etudiant.getId());
+
+    return inscriptions.stream()
             .map(this::convertToMatiereInscriteDto)
-            .collect(Collectors.toList());
-    }
+            .toList();
+}
 
-    private MatiereInscriteDto convertToMatiereInscriteDto(Inscription inscription) {
-        ElementConstitutif ec = inscription.getMatiere();
-        MatiereInscriteDto dto = new MatiereInscriteDto();
-        dto.setId(ec.getId());
-        dto.setNomEc(ec.getNom());
-        dto.setCodeEc(ec.getCode());
-        dto.setCoefficient(ec.getCredit());
-        dto.setStatut("VALIDE");
+// Vérifiez que cette méthode est exactement comme ceci :
+private MatiereInscriteDto convertToMatiereInscriteDto(Inscription inscription) {
+    ElementConstitutif ec = inscription.getMatiere();
+    MatiereInscriteDto dto = new MatiereInscriteDto();
+    
+    dto.setId(ec.getId());
+    dto.setNomEc(ec.getNom());
+    dto.setCodeEc(ec.getCode());
+    dto.setCoefficient(ec.getCredit());
+    dto.setStatut(inscription.getStatut()); // Utilise le statut de l'inscription
 
-        if (ec.getUniteEnseignement() != null) {
-            dto.setNomUe(ec.getUniteEnseignement().getNom());
-            dto.setCodeUe(ec.getUniteEnseignement().getCode());
-        }
-        return dto;
+    if (ec.getUniteEnseignement() != null) {
+        dto.setNomUe(ec.getUniteEnseignement().getNom());
+        dto.setCodeUe(ec.getUniteEnseignement().getCode());
     }
+    return dto;
+}
+
 }

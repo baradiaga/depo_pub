@@ -24,13 +24,19 @@ public class InscriptionService {
         this.ecRepository = ecRepository;
     }
 
-    // --- Récupérer uniquement les inscriptions VALIDÉES pour l'étudiant ---
-    public List<InscriptionResponseDto> getMesInscriptionsValidees(Long etudiantId) {
-        return inscriptionRepository.findByEtudiantIdAndStatut(etudiantId, "VALIDE")
-                .stream()
-                .map(this::mapToDto)
-                .toList();
-    }
+    public List<InscriptionResponseDto> getMesInscriptionsValidees(Long utilisateurId) {
+    // 1. On trouve d'abord le dossier étudiant lié au compte
+    Etudiant etudiant = etudiantRepository.findByUtilisateurId(utilisateurId)
+            .orElseThrow(() -> new EntityNotFoundException("Dossier étudiant non trouvé pour cet utilisateur"));
+
+    // 2. On utilise l'ID du dossier (etudiant.getId()) et non l'ID utilisateur
+    return inscriptionRepository.findByEtudiantIdAndStatut(etudiant.getId(), "VALIDE")
+            .stream()
+            .map(this::mapToDto)
+            .toList();
+}
+
+
 
     @Transactional
     public InscriptionResponseDto inscrireEtudiant(InscriptionRequestDto request) {

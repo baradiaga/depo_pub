@@ -34,33 +34,33 @@ const routes: Routes = [
   path: 'student',
   loadChildren: () => import('./features/student/student.module').then(m => m.StudentModule),
   canActivate: [AuthGuard],
-  data: { roles: ['ETUDIANT', 'ADMIN','TUTEUR'] } // L'admin peut aussi voir les pages étudiant
+  data: { roles: ['ETUDIANT', 'ADMIN','TUTEUR', 'RESPONSABLE_FORMATION'] } // L'admin peut aussi voir les pages étudiant
 },
 
       {
         path: 'enseignant',
         loadChildren: () => import('./features/enseignant/enseignant.module').then(m => m.EnseignantModule),
         canActivate: [AuthGuard],
-        data: { roles: ['ENSEIGNANT', 'ADMIN','TUTEUR','TECHNOPEDAGOGUE'] }
+        data: { roles: ['ENSEIGNANT', 'ADMIN','TUTEUR','TECHNOPEDAGOGUE', 'RESPONSABLE_FORMATION'] }
       },
       {
         path: 'tuteur',
         loadChildren: () => import('./features/tuteur/tuteur.module').then(m => m.TuteurModule),
         canActivate: [AuthGuard],
-        data: { roles: ['TUTEUR'] }
+        data: { roles: ['TUTEUR', 'RESPONSABLE_FORMATION'] }
       },
       {
-        path: 'technopedagogue',
-        loadChildren: () => import('./features/technopedagogue/technopedagogue.module').then(m => m.TechnopedagogueModule),
-        canActivate: [AuthGuard],
-        data: { roles: ['TECHNOPEDAGOGUE','TUTEUR'] }
-      },
+  path: 'technopedagogue',
+  loadChildren: () => import('./features/technopedagogue/technopedagogue.module').then(m => m.TechnopedagogueModule),
+  canActivate: [AuthGuard],
+  data: { roles: ['TECHNOPEDAGOGUE', 'TUTEUR', 'RESPONSABLE_FORMATION'] }
+},
       {
         path: 'curriculum', // <-- LA ROUTE QUI NOUS INTÉRESSE
         loadChildren: () => import('./features/curriculum/curriculum.module').then(m => m.CurriculumModule),
         canActivate: [AuthGuard],
         // Ce module est accessible par plusieurs rôles
-        data: { roles: ['ETUDIANT', 'ENSEIGNANT', 'TUTEUR', 'TECHNOPEDAGOGUE', 'ADMIN'] }
+        data: { roles: ['ETUDIANT', 'ENSEIGNANT', 'TUTEUR', 'TECHNOPEDAGOGUE', 'ADMIN', 'RESPONSABLE_FORMATION'] }
       },
       {
         path: 'profil',

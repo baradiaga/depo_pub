@@ -5,6 +5,7 @@ import com.moscepa.entity.*;
 import com.moscepa.repository.*;
 import com.moscepa.security.UserPrincipal;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,8 @@ public class TestService {
     private final ChapitreRepository chapitreRepository;
     private final QuestionnaireRepository questionnaireRepository;
     private final EchelleConnaissanceRepository echelleRepository;
+    @Autowired
+private ParcoursService parcoursService;
 
     public TestService(TestRepository testRepository,
                        QuestionRepository questionRepository,
@@ -98,7 +101,7 @@ public class TestService {
 }
 
 
-    @Transactional
+   @Transactional
 public ResultatTestDto calculerEtSauvegarderResultat(Long chapitreId, Long utilisateurId, Map<String, Object> reponsesUtilisateur) {
     Utilisateur etudiant = utilisateurRepository.findById(utilisateurId)
             .orElseThrow(() -> new EntityNotFoundException("Utilisateur non trouvé"));
@@ -119,17 +122,42 @@ public ResultatTestDto calculerEtSauvegarderResultat(Long chapitreId, Long utili
         }
     }
 
-    // CALCUL DU POURCENTAGE (2026)
+    // 1. CALCUL DU POURCENTAGE
     double pourcentage = (totalPoints > 0) ? (scoreObtenu / totalPoints) * 100 : 0;
 
-    // RECHERCHE DE L'ÉCHELLE CORRESPONDANTE
+    // 2. INITIALISATION UNIQUE DU DTO
+    ResultatTestDto dto = new ResultatTestDto();
+    dto.setChapitreId(chapitreId);
+    dto.setScoreObtenu(scoreObtenu);
+    dto.setTotalPointsPossible(totalPoints);
+    dto.setDateSoumission(LocalDateTime.now());
+
+    // 3. APPLICATION DE VOTRE RÈGLE MÉTIER (33% / 66%)
+    if (pourcentage <= 33.0) {
+        parcoursService.enregistrerParcoursRecommande(utilisateurId, List.of(chapitreId));
+        dto.setRecommandation("Score critique (" + String.format("%.2f", pourcentage) + "%). Chapitre ajouté à vos recommandations.");
+    } 
+    else if (pourcentage <= 66.0) {
+        dto.setRecommandation("Score moyen (" + String.format("%.2f", pourcentage) + "%). Vous pouvez choisir de l'ajouter à votre parcours.");
+    } 
+    else {
+        dto.setRecommandation("Excellent score ! Chapitre maîtrisé.");
+    }
+
+    // 4. RECHERCHE DE L'ÉCHELLE (Pour la couleur et le nom)
     List<EchelleConnaissance> echelles = echelleRepository.findAll();
     EchelleConnaissance echelleTrouvee = echelles.stream()
             .filter(e -> pourcentage >= e.getSeuilMin() && pourcentage <= e.getSeuilMax())
             .findFirst()
             .orElse(null);
 
-    // SAUVEGARDE DU RÉSULTAT
+    if (echelleTrouvee != null) {
+        dto.setEchelleNom(echelleTrouvee.getDescription());
+        dto.setEchelleCouleur(echelleTrouvee.getCouleur());
+        // On ne ré-écrase PAS dto.setRecommandation ici pour garder votre règle 33/66
+    }
+
+    // 5. SAUVEGARDE DU RÉSULTAT EN BASE
     ResultatTest resultat = new ResultatTest();
     resultat.setEtudiant(etudiant);
     resultat.setTest(test);
@@ -138,25 +166,13 @@ public ResultatTestDto calculerEtSauvegarderResultat(Long chapitreId, Long utili
     resultat.setBonnesReponses(bonnesReponses);
     resultat.setTotalQuestions(test.getQuestions().size());
     resultat.setDateTest(LocalDateTime.now());
-    resultat.setEchelleConnaissance(echelleTrouvee); // Liaison cruciale
+    resultat.setEchelleConnaissance(echelleTrouvee);
 
     resultatTestRepository.save(resultat);
 
-    // PRÉPARATION DU DTO POUR LE FRONT
-    ResultatTestDto dto = new ResultatTestDto();
-    dto.setChapitreId(chapitreId);
-    dto.setScoreObtenu(scoreObtenu);
-    dto.setTotalPointsPossible(totalPoints);
-    dto.setDateSoumission(LocalDateTime.now());
-    
-    if (echelleTrouvee != null) {
-        dto.setEchelleNom(echelleTrouvee.getDescription()); // Utilise la description ou l'intervalle
-        dto.setEchelleCouleur(echelleTrouvee.getCouleur());
-        dto.setRecommandation(echelleTrouvee.getRecommandation());
-    }
-
     return dto;
 }
+
 
 
     public List<HistoriqueResultatDto> getHistoriquePourEtudiant(Long utilisateurId) {

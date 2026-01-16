@@ -1,4 +1,5 @@
 package com.moscepa.controller;
+import com.moscepa.dto.ProfileUpdateRequest;
 
 import com.moscepa.dto.LoginRequest;
 import com.moscepa.dto.LoginResponse;
@@ -114,5 +115,23 @@ public class AuthController {
         response.put("exists", authService.existsByEmail(email));
         return ResponseEntity.ok(response);
     }
+    @PutMapping("/profile")
+public ResponseEntity<?> updateProfile(@Valid @RequestBody ProfileUpdateRequest profileRequest) {
+
+    try {
+        Utilisateur updatedUser = authService.updateProfile(profileRequest);
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Profil mis à jour avec succès");
+        response.put("nom", updatedUser.getNom());
+        response.put("prenom", updatedUser.getPrenom());
+        response.put("email", updatedUser.getEmail());
+        return ResponseEntity.ok(response);
+    } catch (Exception e) {
+        Map<String, String> error = new HashMap<>();
+        error.put("message", e.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+}
+
 }
 

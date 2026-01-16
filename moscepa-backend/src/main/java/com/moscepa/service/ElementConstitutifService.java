@@ -9,9 +9,11 @@ import com.moscepa.dto.ElementConstitutifResponseDto;
 import com.moscepa.dto.EnseignantDto;
 import com.moscepa.dto.SectionDto;
 import com.moscepa.entity.ElementConstitutif;
+import com.moscepa.entity.Etudiant;
 import com.moscepa.entity.UniteEnseignement;
 import com.moscepa.entity.Utilisateur;
 import com.moscepa.repository.ElementConstitutifRepository;
+import com.moscepa.repository.EtudiantRepository;
 import com.moscepa.repository.UniteEnseignementRepository;
 import com.moscepa.repository.UtilisateurRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -34,32 +36,43 @@ public class ElementConstitutifService {
 
     @Autowired
     private UtilisateurRepository utilisateurRepository;
-
+    @Autowired // AJOUTEZ CECI
+    private EtudiantRepository etudiantRepository;
     // ====================================================================
     // === MÉTHODE AVEC LOGS DE DÉBOGAGE                                ===
     // ====================================================================
-    @Transactional(readOnly = true)
-    public List<ElementConstitutifResponseDto> findMatieresByEtudiantId(Long etudiantId) {
-        System.out.println("\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-        System.out.println("!!! [SERVICE] ÉTAPE 1: Entrée dans findMatieresByEtudiantId pour l'étudiant ID: " + etudiantId);
-        
-        List<ElementConstitutif> matieres = elementRepository.findMatieresByEtudiantIdSqlNatif(etudiantId);
-        
-        System.out.println("!!! [SERVICE] ÉTAPE 2: La requête SQL native a retourné " + matieres.size() + " matière(s).");
-        
-        if (!matieres.isEmpty()) {
-            System.out.println("!!! [SERVICE] Matières trouvées: " + matieres.stream().map(ElementConstitutif::getNom).collect(Collectors.joining(", ")));
-        }
+   @Transactional(readOnly = true)
+public List<ElementConstitutifResponseDto> findMatieresByEtudiantId(Long utilisateurId) {
+    System.out.println("\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    System.out.println("!!! [SERVICE] ÉTAPE 1: ID Utilisateur reçu (Session): " + utilisateurId);
+    
+    // --- LE PONT : Conversion ID Utilisateur -> ID Étudiant ---
+    Etudiant etudiant = etudiantRepository.findByUtilisateurId(utilisateurId)
+        .orElseThrow(() -> new EntityNotFoundException("Dossier étudiant introuvable pour l'utilisateur ID: " + utilisateurId));
+    
+    Long realEtudiantId = etudiant.getId();
+    System.out.println("!!! [SERVICE] ÉTAPE 1 bis: ID Dossier Étudiant réel trouvé: " + realEtudiantId);
+    // ----------------------------------------------------------
 
-        List<ElementConstitutifResponseDto> dtos = matieres.stream()
-                       .map(this::convertToResponseDto)
-                       .collect(Collectors.toList());
-
-        System.out.println("!!! [SERVICE] ÉTAPE 3: Conversion en DTO terminée. Renvoi de " + dtos.size() + " DTO(s).");
-        System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n");
-
-        return dtos;
+    // On utilise maintenant realEtudiantId pour la requête SQL
+    List<ElementConstitutif> matieres = elementRepository.findMatieresByEtudiantIdSqlNatif(realEtudiantId);
+    
+    System.out.println("!!! [SERVICE] ÉTAPE 2: La requête SQL native a retourné " + matieres.size() + " matière(s).");
+    
+    if (!matieres.isEmpty()) {
+        System.out.println("!!! [SERVICE] Matières trouvées: " + matieres.stream().map(ElementConstitutif::getNom).collect(Collectors.joining(", ")));
     }
+
+    List<ElementConstitutifResponseDto> dtos = matieres.stream()
+                   .map(this::convertToResponseDto)
+                   .collect(Collectors.toList());
+
+    System.out.println("!!! [SERVICE] ÉTAPE 3: Conversion en DTO terminée. Renvoi de " + dtos.size() + " DTO(s).");
+    System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n");
+
+    return dtos;
+}
+
 
     // --- TOUTES VOS AUTRES MÉTHODES RESTENT INCHANGÉES ---
     // (create, findByUeId, findAll, findByEnseignantId, etc.)

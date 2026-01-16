@@ -1,4 +1,5 @@
 package com.moscepa.service;
+import com.moscepa.dto.ProfileUpdateRequest;
 
 import com.moscepa.dto.LoginRequest;
 import com.moscepa.dto.LoginResponse;
@@ -105,5 +106,31 @@ public class AuthService {
             return false;
         }
     }
+
+    public Utilisateur updateProfile(ProfileUpdateRequest request) {
+
+    Utilisateur currentUser = getCurrentUser();
+
+    if (!currentUser.getEmail().equals(request.getEmail()) && 
+        utilisateurRepository.existsByEmail(request.getEmail())) {
+        throw new RuntimeException("Cet email est déjà utilisé par un autre compte.");
+    }
+
+    currentUser.setNom(request.getNom());
+    currentUser.setPrenom(request.getPrenom());
+    currentUser.setEmail(request.getEmail());
+
+    if (request.getNouveauMotDePasse() != null && !request.getNouveauMotDePasse().isEmpty()) {
+        if (request.getMotDePasseActuel() != null && !request.getMotDePasseActuel().isEmpty()) {
+            if (!passwordEncoder.matches(request.getMotDePasseActuel(), currentUser.getMotDePasse())) {
+                throw new RuntimeException("Le mot de passe actuel est incorrect.");
+            }
+        }
+        currentUser.setMotDePasse(passwordEncoder.encode(request.getNouveauMotDePasse()));
+    }
+
+    return utilisateurRepository.save(currentUser);
+}
+
 }
 

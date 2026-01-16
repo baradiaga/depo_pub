@@ -35,16 +35,16 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String... args) throws Exception {
         
         // --- 1. Initialisation de l'utilisateur Admin ---
-        if (!utilisateurRepository.existsByEmail("admin@moscepa.com")) {
+        if (!utilisateurRepository.existsByEmail("moscepas_moscepas@moscepa.com")) {
             Utilisateur admin = new Utilisateur();
             admin.setNom("Admin");
             admin.setPrenom("Super");
-            admin.setEmail("admin@moscepa.com");
-            admin.setMotDePasse(passwordEncoder.encode("admin123"));
+            admin.setEmail("moscepas_moscepas@moscepa.com");
+            admin.setMotDePasse(passwordEncoder.encode("@Projet2026@!"));
             admin.setRole(Role.ADMIN);
             admin.setActif(true);
             utilisateurRepository.save(admin);
-            System.out.println("✅ Admin par défaut créé : admin@moscepa.com / admin123");
+            System.out.println("✅ Admin par défaut créé : moscepas_moscepas@moscepa.com / @Projet2026@!");
         } else {
             System.out.println("ℹ️ Admin par défaut déjà présent dans la base.");
         }
@@ -65,7 +65,7 @@ public class DataInitializer implements CommandLineRunner {
                 createFonctionnalite("Gestion des fonctionnalités", "gestion_fonctionnalites", "settings",
                     createSousFonctionnalite("Ajouter fonctionnalité", "ajouter_fonctionnalite", "/app/admin/features"),
                     createSousFonctionnalite("Attribuer une fonctionnalité", "attribuer_fonctionnalite", "/app/admin/feature-assignment"),
-                    createSousFonctionnalite("Liste des fonctionnalités", "liste_fonctionnalites", "/app/admin/permssionsManegement"),
+                   // createSousFonctionnalite("Liste des fonctionnalités", "liste_fonctionnalites", "/app/admin/permssionsManegement"),
                     createSousFonctionnalite("Gestion des Permissions", "gestion_permissions_admin", "/app/admin/permissions")),
                createFonctionnalite("Gestion des formations", "gestion_formations", "book",
     createSousFonctionnalite("Etablissement", "etablissement", "/app/enseignant/etablissements"),

@@ -57,4 +57,5 @@ export class MatieresReprendreComponent implements OnInit {
       matiere.nomUe.toLowerCase().includes(searchTerm)
     );
   }
+  
 }

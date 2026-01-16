@@ -26,9 +26,11 @@ com\moscepa\dto\FonctionnaliteDTO.class
 com\moscepa\dto\SectionDetailDto.class
 com\moscepa\entity\StatutFormation.class
 com\moscepa\controller\AuthController.class
+com\moscepa\service\SyllabusService.class
 com\moscepa\service\AuthService.class
 com\moscepa\controller\UtilisateurController.class
 com\moscepa\dto\UserResponseDto.class
+com\moscepa\dto\ProfileUpdateRequest.class
 com\moscepa\controller\QuestionController.class
 com\moscepa\controller\MatiereDetailDto.class
 com\moscepa\repository\FormationRepository.class
@@ -180,6 +182,7 @@ com\moscepa\controller\MatiereController$CreateMatiereDto.class
 com\moscepa\dto\QuestionnairePayload.class
 com\moscepa\dto\InscriptionValidationRequest.class
 com\moscepa\service\PermissionService.class
+com\moscepa\dto\MatiereSyllabusDto.class
 com\moscepa\config\DataInitializer.class
 com\moscepa\service\QuestionnaireService.class
 com\moscepa\repository\DepartementRepository.class

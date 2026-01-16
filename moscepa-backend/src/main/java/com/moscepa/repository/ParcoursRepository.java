@@ -4,6 +4,7 @@ import com.moscepa.entity.Parcours;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ParcoursRepository extends JpaRepository<Parcours, Long> {
@@ -27,4 +28,8 @@ public interface ParcoursRepository extends JpaRepository<Parcours, Long> {
      * @return true si une entrée correspondante existe, false sinon.
      */
     boolean existsByUtilisateurIdAndChapitreIdAndType(Long utilisateurId, Long chapitreId, Parcours.TypeParcours type);
+    boolean existsByUtilisateurIdAndChapitreId(Long utilisateurId, Long chapitreId);
+
+Optional<Parcours> findFirstByUtilisateurIdAndChapitreId(Long utilisateurId, Long chapitreId);
+
 }

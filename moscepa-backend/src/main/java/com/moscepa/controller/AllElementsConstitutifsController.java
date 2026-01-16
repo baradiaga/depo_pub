@@ -28,7 +28,7 @@ public class AllElementsConstitutifsController {
     // === MÉTHODE CORRIGÉE AVEC LOGIQUE ÉTUDIANTE ET TRAÇAGE COMPLET     ===
     // ====================================================================
     @GetMapping("/elements-constitutifs/mes-matieres")
-    @PreAuthorize("hasAnyAuthority('ROLE_ENSEIGNANT', 'ROLE_ADMIN', 'ROLE_RESPONSABLE_FORMATION','ROLE_ETUDIANT')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ENSEIGNANT', 'ROLE_ADMIN', 'ROLE_RESPONSABLE_FORMATION','ROLE_ETUDIANT', 'ROLE_TECHNOPEDAGOGUE')")
     public ResponseEntity<List<ElementConstitutifResponseDto>> getMesMatieres(Authentication authentication) {
         
         System.out.println("\n\n================== DÉBUT DU TRAÇAGE ==================");

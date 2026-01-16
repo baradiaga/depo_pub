@@ -1,14 +1,14 @@
 package com.moscepa.dto;
 
-// Ce DTO représente un chapitre dans un parcours, avec les informations nécessaires pour l'affichage.
+import java.util.Objects;
+
 public class ParcoursItemDto {
 
     private Long chapitreId;
     private String chapitreNom;
     private String matiereNom;
-    private double dernierScore; // On simulera ce score pour l'instant
+    private double dernierScore;
 
-    // --- Constructeurs ---
     public ParcoursItemDto() {}
 
     public ParcoursItemDto(Long chapitreId, String chapitreNom, String matiereNom, double dernierScore) {
@@ -16,6 +16,20 @@ public class ParcoursItemDto {
         this.chapitreNom = chapitreNom;
         this.matiereNom = matiereNom;
         this.dernierScore = dernierScore;
+    }
+
+    // --- CRUCIAL POUR LE .distinct() DANS LE SERVICE ---
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ParcoursItemDto that = (ParcoursItemDto) o;
+        return Objects.equals(chapitreId, that.chapitreId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(chapitreId);
     }
 
     // --- Getters et Setters ---

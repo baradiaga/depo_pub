@@ -121,7 +121,7 @@ export class AuthService {
       case 'TUTEUR': 
         return '/app/tuteur/dashboard';
         case 'TECHNOPEDAGOGUE': 
-        return '/app/TECHNOPEDAGOGUE/dashboard';
+        return '/app/technopedagogue/dashboard';
         
       default:
         return '/auth/login'; // Sécurité pour les rôles inconnus
@@ -193,4 +193,14 @@ export class AuthService {
   getPermissions$(): Observable<void> {
     return this.permissionsSubject.asObservable();
   }
+  updateProfile(profileData: any): Observable<any> {
+  return this.http.put<any>(`${this.apiUrl}/profile`, profileData ).pipe(
+    tap(response => {
+      if (response.nom) localStorage.setItem('user_nom', response.nom);
+      if (response.prenom) localStorage.setItem('user_prenom', response.prenom);
+      if (response.email) localStorage.setItem('user_email', response.email);
+    })
+  );
+}
+
 }
